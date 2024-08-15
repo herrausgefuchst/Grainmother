@@ -59,9 +59,10 @@ private:
 class UserInterface
 {
 public:
-    UserInterface() = delete;
-    UserInterface (AudioEngine* _engine);
+    UserInterface();
     ~UserInterface();
+    
+    void setup(AudioEngine* _engine);
     
     void savePresetToJSON (const int _index = -1);
     

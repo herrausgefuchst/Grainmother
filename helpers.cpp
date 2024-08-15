@@ -3,9 +3,10 @@
 // MARK: - RAMP
 // ********************************************************************************
 
-Ramp::Ramp (const float _value, const float _fs)
-: current(_value), goal(_value), fs(_fs)
+void Ramp::setup(const float value_, const float fs_)
 {
+    current = goal = value_;
+    fs = fs_;
     step = 0.f;
     countsteps = 0;
 }
@@ -15,43 +16,37 @@ bool Ramp::process()
     if (countsteps > 0)
     {
         --countsteps;
-        
         current += step;
-        
         return true;
     }
-    
-    else return false;
+    return false;
 }
 
-void Ramp::setRampTo (const float _goal, const float _time_ms)
+void Ramp::setRampTo(const float goal_, const float time_ms_)
 {
-    if (_goal != goal)
+    if (goal_ != goal)
     {
-        if (_time_ms == 0.f)
+        if (time_ms_ == 0.f)
         {
-            setValue(_goal);
+            setValue(goal_);
         }
         else
         {
-            goal = _goal;
-            
+            goal = goal_;
             float range = fabsf(goal - current);
-            
-            countsteps = fs * 0.001f * _time_ms;
-            
-            step = range / (float)countsteps;
-            
-            if (goal < current) step *= -1.f;
+            countsteps = fs * 0.001f * time_ms_;
+            step = range / static_cast<float>(countsteps);
+
+            if (goal < current)
+                step *= -1.f;
         }
     }
 }
 
-inline void Ramp::setValue (const float _value)
+void Ramp::setValue(const float value_)
 {
-    current = _value;
+    current = value_;
     goal = current;
-    
     countsteps = 0;
     step = 0.f;
 }

@@ -103,7 +103,7 @@ SlideParameter::SlideParameter (const String _id, const String _name, const Stri
           "AudioParameter " + name + " has no suitable step value",
           __FILE__, __LINE__, true);
     
-    value.setValue(_default);
+    value.setup(_default);
     setValue(_default, false);
 }
 

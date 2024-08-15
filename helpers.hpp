@@ -6,25 +6,57 @@
 // MARK: - RAMP
 // ********************************************************************************
 
+/**
+ * @class Ramp
+ * @brief A class that handles smooth transitions (ramping) between values over time.
+ */
 class Ramp
 {
 public:
-    Ramp() = delete;
-    Ramp (const float _value, const float _fs = 44100.f);
-        
+    /**
+     * @brief Sets up a Ramp with an initial value and sampling rate.
+     * @param value_ The initial value of the ramp.
+     * @param fs_ The sampling rate (default is 44100 Hz).
+     */
+    void setup(const float value_, const float fs_ = 44100.f);
+    
+    /**
+     * @brief Processes the ramp, updating the current value towards the goal.
+     * @return True if the ramp is still in progress, false if it has reached the goal.
+     */
     bool process();
 
-    void setRampTo (const float _goal, const float _time_ms = 100.f);
+    /**
+     * @brief Sets a new goal for the ramp, specifying the time to reach it.
+     * @param goal_ The target value to ramp to.
+     * @param time_ms_ The time in milliseconds to reach the goal (default is 100 ms).
+     */
+    void setRampTo(const float goal_, const float time_ms_ = 100.f);
     
-    void setValue (const float _value);
+    /**
+     * @brief Sets the current value of the ramp immediately.
+     * @param value_ The new current value.
+     */
+    void setValue(const float value_);
     
+    /**
+     * @brief Gets the current value of the ramp.
+     * @return The current value.
+     */
     float getCurrent() const { return current; }
+
+    /**
+     * @brief Gets the goal value of the ramp.
+     * @return The goal value.
+     */
     float getGoal() const { return goal; }
 
 private:
-    float current, goal, step;
-    int countsteps;
-    const float fs;
+    float current; /**< The current value of the ramp */
+    float goal; /**< The target value of the ramp */
+    float step; /**< The amount to change per step */
+    int countsteps; /**< The number of steps remaining to reach the goal */
+    float fs; /**< The sampling rate */
 };
 
 
@@ -136,9 +168,9 @@ class Debouncer
 public:
     Debouncer() = delete;
     Debouncer (const int _debounceunits, const int _defaultstate = OPENED)
-        : debounceunits(_debounceunits)
-        , state(INT2ENUM(_defaultstate, State))
+        : state(INT2ENUM(_defaultstate, State))
         , counter(_debounceunits)
+        , debounceunits(_debounceunits)
     {}
 
     bool update (const bool _rawvalue);

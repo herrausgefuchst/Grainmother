@@ -133,9 +133,8 @@ Effect* AudioEngine::getEffect (const int _index)
 // MARK: - USER INTERFACE
 // =======================================================================================
 
-UserInterface::UserInterface (AudioEngine* _engine)
-    : engine(_engine)
-    , menu(&globals)
+UserInterface::UserInterface()
+    : menu(&globals)
     , button {
         Button(Button::FX1, "Effect 1"),
         Button(Button::FX2, "Effect 2"),
@@ -166,11 +165,16 @@ UserInterface::UserInterface (AudioEngine* _engine)
         LED(LED::TEMPO, "Tempo"),
         LED(LED::BYPASS, "Bypass")
     }
+{}
+
+void UserInterface::setup(AudioEngine *_engine)
 {
+    engine = _engine;
+    
     // helper functions for initialization
     initializeJSON();
     initializeGlobalParameters();
-    initializeListeners();
+//    initializeListeners();
     
     // load last used Preset
     loadPresetFromJSON(globals.lastUsedPreset);

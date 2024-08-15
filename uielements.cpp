@@ -44,6 +44,16 @@ Potentiometer::Potentiometer(const int index_, const String name_, const float g
     std::fill(analogHistory.begin(), analogHistory.end(), INV_POT_MOVINGAVG_SIZE * analogCache);
 }
 
+void Potentiometer::setDefaults(const float guidefault_, const float analogdefault_)
+{
+    // setup caches
+    guiCache = guidefault_;
+    analogCache = analogdefault_;
+    analogAverage = analogdefault_;
+    
+    // fill the analogHistory with all same values
+    std::fill(analogHistory.begin(), analogHistory.end(), INV_POT_MOVINGAVG_SIZE * analogCache);
+}
 
 void Potentiometer::update(const float guivalue_, const float analogvalue_)
 {

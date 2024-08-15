@@ -96,8 +96,8 @@ public:
 
 protected:
     std::vector<Listener*> listeners; /**< List of listeners attached to the UIElement */
-    const String name; /**< Name of the UIElement */
     const int index; /**< Index of the UIElement */
+    const String name; /**< Name of the UIElement */
 };
 
 
@@ -132,6 +132,13 @@ public:
     /** Destructor for Potentiometer. */
     ~Potentiometer() {}
 
+    /**
+     * @brief sets dafault  values for input sources
+     * @param guidefault_ Default value for the GUI.
+     * @param analogdefault_ Default value for analog input.
+     */
+    void setDefaults(const float guidefault_ = 0.f, const float analogdefault_ = 0.f);
+    
     /**
      * @brief Updates the potentiometer with new GUI and analog values.
      * @param guivalue_ The new GUI value.

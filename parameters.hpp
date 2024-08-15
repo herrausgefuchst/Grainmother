@@ -139,7 +139,7 @@ private:
     const String unit;
     const float min, max, step, range, ramptime_ms;
     const Scaling scaling;
-    Ramp value = Ramp(0.f, 44100.f);
+    Ramp value;
     float normalizedValue;
 };
 
