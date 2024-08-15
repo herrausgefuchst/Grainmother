@@ -32,7 +32,7 @@ public:
 #ifdef BELA_CONNECTED
     bool setup();
     
-    FloatPair process();
+    StereoFloat process();
     
     AuxiliaryTask taskFillSampleBuffer;
 #endif
@@ -90,7 +90,7 @@ public:
     InputHandler (const float _fs, const float _oscfreq, const float _volume);
         
 #ifdef BELA_CONNECTED
-    FloatPair process (BelaContext* _context, const int _frame);
+    StereoFloat process (BelaContext* _context, const int _frame);
 #endif
     
     AudioPlayer player;

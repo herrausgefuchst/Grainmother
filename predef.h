@@ -9,10 +9,6 @@
 #include "engine.hpp"
 
 #define SCOPE_ACTIVE
-//#define CONSOLE_PRINT_ALLOWED
-
-#define FS 44100
-#define BLOCKSIZE 128
 
 namespace BelaVariables
 {

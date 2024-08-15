@@ -28,7 +28,7 @@ public:
     ~AudioEngine();
     
     void setup (const float _fs, const int _blocksize);
-    FloatPair process (const FloatPair _input);
+    StereoFloat process (const StereoFloat _input);
     void processBlock();
     
     AudioParameter* getParameter (const String _parameterID);

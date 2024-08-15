@@ -22,9 +22,9 @@ bool AudioPlayer::setup()
     return true;
 }
 
-FloatPair AudioPlayer::process()
+StereoFloat AudioPlayer::process()
 {
-    FloatPair output(0.f,0.f);
+    StereoFloat output = { 0.f,0.f };
     
     if (++read_ptr >= buflength)
     {
@@ -36,8 +36,8 @@ FloatPair AudioPlayer::process()
         Bela_scheduleAuxiliaryTask(taskFillSampleBuffer);
     }
 
-    output.first = buffer[activeBuffer][0][read_ptr];
-    output.second = buffer[activeBuffer][1][read_ptr];
+    output[0] = buffer[activeBuffer][0][read_ptr];
+    output[1] = buffer[activeBuffer][1][read_ptr];
     
     return output;
 }
@@ -127,11 +127,11 @@ InputHandler::InputHandler (const float _fs, const float _oscfreq, const float _
 
 #ifdef BELA_CONNECTED
 
-FloatPair InputHandler::process (BelaContext* _context, const int _frame)
+StereoFloat InputHandler::process (BelaContext* _context, const int _frame)
 {
     volume.process();
     
-    FloatPair output(0.f,0.f);
+    StereoFloat output = { 0.f,0.f };
     
     if (input == FILE)
     {
@@ -140,18 +140,17 @@ FloatPair InputHandler::process (BelaContext* _context, const int _frame)
     
     else if (input == SINEWAVE)
     {
-        output.first = 0.1f * oscillator.process(); // 0.1 = loudness compensation
-        output.second = output.first;
+        output[0] = 0.1f * oscillator.process(); // 0.1 = loudness compensation
+        output[1] = output[1];
     }
     
     else /* input == AUDIOIN */
     {
-        output.first = audioRead(_context, _frame, 0);
-        output.second = audioRead(_context, _frame, 1);
+        output[0] = audioRead(_context, _frame, 0);
+        output[1] = audioRead(_context, _frame, 1);
     }
     
-    output.first *= volume.getCurrent();
-    output.second *= volume.getCurrent();
+    output *= volume.getCurrent();
     
     return output;
 }

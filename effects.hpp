@@ -17,7 +17,7 @@ public:
     virtual ~Effect() {}
     
     virtual void setup (const float _fs = 44100.f, const int _blocksize = 128);
-    virtual FloatPair process (const FloatPair _input) = 0;
+    virtual StereoFloat process (const StereoFloat _input) = 0;
     virtual void processBlock() = 0;
             
     AudioParameterGroup* getParameterGroup() { return &parameters; }
@@ -49,42 +49,12 @@ public:
     ~Beatrepeat() {}
     
     void setup (const float _fs = 44100.f, const int _blocksize = 128) override;
-    FloatPair process (const FloatPair _input) override;
+    StereoFloat process (const StereoFloat _input) override;
     void processBlock() override;
     
 private:
     void initializeParameters();
     void initializeListeners();
-    
-    void calcLengthInSamples (const int _param = -1);
-    void calcPitchIncrement();
-    
-    FloatPair readSliceBuffer();
-    void writeSliceBuffer (const FloatPair _sample);
-    
-    int slicelength_idx = 0;
-    int slice_samples = 0;
-    int slice_samples_catch = 0;
-    int gate_samples = 0;
-    int trigger_samples = 0;
-    
-    int ctr_slice = 0;
-    int ctr_gate = 0;
-    int ctr_trigger = 0;
-    
-    bool isFirstSlice = true;
-    bool triggerIsValid = true;
-    
-    int fade = 120; // in samples
-    
-    float buffer[2][700000] = { 0.f };
-    // min bpm = 30 which are 3*fs per beat,
-    // max slice length = 1/1, which means 4*3*fs = 12*fs
-    // fs = 44100 - 529200 samples for min bpm, max slice length
-    
-    float readptr = 0.f;
-    float increment = 1.f;
-    float pitchdecay_modifier = 0.f;
 };
 
 
@@ -101,7 +71,7 @@ public:
     ~Granulator() {}
     
     void setup (const float _fs = 44100.f, const int _blocksize = 128) override;
-    FloatPair process (const FloatPair _input) override;
+    StereoFloat process (const StereoFloat _input) override;
     void processBlock() override;
     
 private:
@@ -123,7 +93,7 @@ public:
     ~Delay() {}
     
     void setup (const float _fs = 44100.f, const int _blocksize = 128) override;
-    FloatPair process (const FloatPair _input) override;
+    StereoFloat process (const StereoFloat _input) override;
     void processBlock() override;
 
 private:

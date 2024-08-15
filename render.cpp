@@ -1,3 +1,5 @@
+#ifdef BELA_CONNECTED
+
 #include "predef.h"
 
 using namespace BelaVariables;
@@ -174,3 +176,5 @@ void updateLEDs (void* _arg)
     
     gui.sendBuffer(guibuffer_idx[LEDS], led_catch);
 }
+
+#endif // BELA_CONNECTED

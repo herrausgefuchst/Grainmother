@@ -45,7 +45,7 @@ AudioEngine::~AudioEngine()
     for (auto i : effects) delete i;
 }
 
-FloatPair AudioEngine::process (const FloatPair _input)
+StereoFloat AudioEngine::process (const StereoFloat _input)
 {
     // Tempotapper
     if (tempotapper.process()) getParameter("tempo")->setValue(tempotapper.getBPM());
@@ -54,7 +54,7 @@ FloatPair AudioEngine::process (const FloatPair _input)
     metronome.process();
     
     // Effects
-    FloatPair output = _input;
+    StereoFloat output = _input;
     if (getParameter(AudioParameterGroup::ENGINE, BYPASS)->getValueI() == ButtonParameter::UP)
     {
         if (engineParameters.getParameter(BEATREPEAT)->getValueI() == ButtonParameter::DOWN)
