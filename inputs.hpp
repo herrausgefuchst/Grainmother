@@ -2,26 +2,39 @@
 #define inputs_hpp
 
 #include "functions.h"
-#include "helpers.hpp"
 
 #ifdef BELA_CONNECTED
 #include <Bela.h>
 #include <libraries/AudioFile/AudioFile.h>
-#include <libraries/math_neon/math_neon.h>
-#else
-#include <iostream>
-#include <vector>
-#include <cmath>
 #endif
-
-
-
-void fillBuffer(void* arg);
 
 // MARK: - AUDIO PLAYER
 // ********************************************************************************
 
-#define NUM_AUDIO_FILES 5
+/** predef of audio player thread function */
+void fillBuffer(void* arg);
+
+/** the number of available tracks */
+static const unsigned int NUM_AUDIO_FILES = 5;
+
+/** Paths of available tracks */
+static const std::array<String, NUM_AUDIO_FILES> trackPath = {{
+    "../AudioFiles/waves.wav",
+    "../AudioFiles/drums.wav",
+    "../AudioFiles/vocals.wav",
+    "../AudioFiles/orchestra.wav",
+    "../AudioFiles/synth.wav"
+}};
+
+/** Enum with available tracknames */
+enum class Track {
+    WAVES,
+    DRUMS,
+    VOCALS,
+    ORCHESTRA,
+    SYNTH
+};
+
 
 /**
  * @class AudioPlayer
@@ -30,12 +43,10 @@ void fillBuffer(void* arg);
 class AudioPlayer
 {
 public:
-#ifdef BELA_CONNECTED
     /**
      * @brief Sets up the audio player (e.g., initializing buffers).
-     * @return True if setup is successful, false otherwise.
      */
-    bool setup();
+    void setup();
     
     /**
      * @brief Processes the audio and returns the stereo output.
@@ -43,6 +54,7 @@ public:
      */
     StereoFloat process();
 
+#ifdef BELA_CONNECTED
     AuxiliaryTask taskFillSampleBuffer; /**< Thread for filling the sample buffer */
 #endif
     
@@ -50,25 +62,24 @@ public:
      * @brief Sets the current track to be played.
      * @param track_ The index of the track to set.
      */
-    void setTrack(const int track_);
+    void setTrack(const Track track_);
 
     /**
      * @brief Gets the current track index.
      * @return The index of the current track.
      */
-    int getTrack() const { return track; }
+    Track getTrack() const { return track; }
 
 public:
-    int track = 0; /**< Index of the current track */
-    std::vector<std::string> tracknames = {"waves.wav", "drums.wav", "vocals.wav", "orchestra.wav", "synth.wav"}; /**< Names of available tracks */
+    Track track = Track::WAVES; /**< Index of the current track */
     int numFramesInTrack[NUM_AUDIO_FILES]; /**< Number of frames in each track */
 
     std::vector<std::vector<float>> buffer[2]; /**< Double buffer for audio data */
-    const int buflength = 22050; /**< Length of each buffer */
-    int read_ptr = buflength; /**< Read pointer for the buffer */
-    int buf_read_ptr = 0; /**< Buffer read pointer */
-    int doneLoadingBuffer = 1; /**< Flag indicating if the buffer is done loading */
-    int activeBuffer = 0; /**< Index of the active buffer */
+    const int bufferLength = 22050; /**< Length of each buffer */
+    int readPtr = bufferLength; /**< Read pointer for the buffer */
+    int bufferReadPtr = 0; /**< Buffer read pointer */
+    bool doneLoadingBuffer = true; /**< Flag indicating if the buffer is done loading */
+    unsigned int activeBuffer = 0; /**< Index of the active buffer */
 };
 
 
@@ -105,13 +116,12 @@ public:
      * @brief Gets the current frequency of the oscillator.
      * @return The current frequency.
      */
-    float getFrequency() const { return freq.getCurrent(); }
+    float getFrequency() const { return freq; }
 
 private:
-    Ramp freq; /**< Ramp object to handle frequency changes */
+    float freq; /**< frequency of oscillator */
     float inv_fs; /**< Inverse of the sampling rate */
-    const float two_pi = 2.f * (float)M_PI; /**< Constant for 2 * PI */
-    float incr = 0.f; /**< Increment value per sample */
+    float incr; /**< Increment value per sample */
     float phase = 0.f; /**< Current phase of the oscillator */
 };
 
@@ -162,7 +172,11 @@ public:
      * @brief Sets the volume level with a ramp.
      * @param volume_ The target volume level.
      */
-    void setVolume(float volume_) { volume.setRampTo(volume_, 100.f); }
+    void setVolume(float volume_) 
+    {
+        volume = volume_;
+        boundValue(volume, 0.f, 1.f);
+    }
 
     /**
      * @brief Gets the current input source.
@@ -174,11 +188,11 @@ public:
      * @brief Gets the current volume level.
      * @return The current volume level.
      */
-    float getVolume() const { return volume.getCurrent(); }
+    float getVolume() const { return volume; }
         
 private:
-    Input input = FILE; /**< The current input source */
-    Ramp volume; /**< The volume ramp control */
+    Input input; /**< The current input source */
+    float volume; /**< The volume control */
 };
 
 #endif /* inputs_hpp */

@@ -11,15 +11,12 @@ using namespace BelaVariables;
 
 bool setup (BelaContext *context, void *userData)
 {
-    // scope
-    scope.setup(2, context->audioSampleRate);
-    
     // gui
     gui.setup(context->projectName);
-    guiBufferIdx[POTS] = gui.setBuffer('f', userinterface.getNumPotentiometers());
-    guiBufferIdx[BUTTONS] = gui.setBuffer('f', userinterface.getNumButtons());
+    guiBufferIdx[POTS] = gui.setBuffer('f', NUM_POTENTIOMETERS);
+    guiBufferIdx[BUTTONS] = gui.setBuffer('f', NUM_BUTTONS);
     guiBufferIdx[GUICTRLS] = gui.setBuffer('f', NUM_GUI_CONTROLS);
-    guiBufferIdx[LEDS] = gui.setBuffer('f', userinterface.getNumLEDs());
+    guiBufferIdx[LEDS] = gui.setBuffer('f', NUM_LEDS);
     for (unsigned int n = DSP1; n <= DSP10; n++) guiBufferIdx[n] = gui.setBuffer('c', DISPLAY_NUM_LETTERS_IN_ROW);
     
     // display
@@ -41,7 +38,7 @@ bool setup (BelaContext *context, void *userData)
     if((taskUpdateGUIDisplay = Bela_createAuxiliaryTask(&updateGUIdisplay, 88, "update-GUI-display", nullptr)) == 0) return false;
     
     // digital pinmodes
-    for (unsigned int n = 0; n < userinterface.getNumButtons(); ++n) pinMode(context, 0, HARDWARE_PIN_BUTTON[n], INPUT);
+    for (unsigned int n = 0; n < NUM_BUTTONS; ++n) pinMode(context, 0, HARDWARE_PIN_BUTTON[n], INPUT);
     
     // setup objects
     inputHandler.setup(context->audioSampleRate, 120.f, 0.7f);
@@ -49,14 +46,12 @@ bool setup (BelaContext *context, void *userData)
     engine.setup(context->audioSampleRate, context->audioFrames);
     
     userinterface.setup(&engine);
-
+    
     return true;
 }
 
-// MARK: - RENDER
-// ********************************************************************************
 
-void render (BelaContext *context, void *userData)
+void updateParameters(BelaContext *context)
 {
 
 // update BLOCKWISE +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -65,42 +60,49 @@ void render (BelaContext *context, void *userData)
     if (guiIsInitializing)
     {
         // analog default values must be read in render() function
-        if (guiInitializationCtr == GUI_INITIALIZATION_TIME_SEC)
-            FORLOOP(userinterface.getNumPotentiometers())
-                userinterface.potentiometer[n].setDefaults(0.f, analogRead(context, 0, HARDWARE_PIN_POTENTIOMETER[n]));
+//        if (guiInitializationCtr == GUI_INITIALIZATION_TIME_SEC)
+//            for (unsigned int n = 0; n < NUM_POTENTIOMETERS; ++n)
+//                userinterface.potentiometer[n].setDefaults(0.f, analogRead(context, 0, HARDWARE_PIN_POTENTIOMETER[n]));
                 
         // counter for awaiting the GUI page to reload
-        if (guiInitializationCtr-- <= 0) guiIsInitializing = false;
+        if (--guiInitializationCtr <= 0) guiIsInitializing = false;
     }
     
-    // buttons & potentiometer
-    if (--uiBlockCtr <= 0)
+    else
     {
-        // reset counter
-        uiBlockCtr = UI_BLOCKS_PER_FRAME;
-        
-        if (!guiIsInitializing)
+        // buttons & potentiometer
+        if (--uiBlockCtr <= 0)
         {
+            // reset counter
+            uiBlockCtr = UI_BLOCKS_PER_FRAME;
+            
             // get GUI buffers
             float* guibuttons = gui.getDataBuffer(guiBufferIdx[BUTTONS]).getAsFloat();
             float* guipots = gui.getDataBuffer(guiBufferIdx[POTS]).getAsFloat();
             float* guictrls = gui.getDataBuffer(guiBufferIdx[GUICTRLS]).getAsFloat();
             
             // update buttons and potentiometers
-            for (unsigned int n = 0; n < userinterface.getNumButtons(); ++n) userinterface.button[n].update(guibuttons[n], digitalRead(context, 0, HARDWARE_PIN_BUTTON[n]));
-            for (unsigned int n = 0; n < userinterface.getNumPotentiometers(); ++n) userinterface.potentiometer[n].update(guipots[n], analogRead(context, 0, HARDWARE_PIN_POTENTIOMETER[n]));
+            for (unsigned int n = 0; n < NUM_BUTTONS; ++n) 
+                userinterface.button[n].update(guibuttons[n], digitalRead(context, 0, HARDWARE_PIN_BUTTON[n]));
+            for (unsigned int n = 0; n < NUM_POTENTIOMETERS; ++n) 
+                userinterface.potentiometer[n].update(guipots[n], analogRead(context, 0, HARDWARE_PIN_POTENTIOMETER[n]));
             
             // get GUI input controls
-            int input = (int)guictrls[0];
-            int track = (int)guictrls[1];
+            InputHandler::Input input = INT2ENUM((int)guictrls[0], InputHandler::Input);
+            Track track = INT2ENUM((int)guictrls[1], Track);
             float freq = guictrls[2];
             float volume = 0.01f * guictrls[3];
-            
+                        
             // set GUI input paramters if changed
-            if (input != inputHandler.getInput()) inputHandler.setInput(INT2ENUM(input, InputHandler::Input));
+            if (input != inputHandler.getInput()) inputHandler.setInput(input);
             if (track != inputHandler.player.getTrack()) inputHandler.player.setTrack(track);
             if (freq != inputHandler.oscillator.getFrequency()) inputHandler.oscillator.setFrequency(freq);
-            if (volume != inputHandler.getVolume()) inputHandler.setVolume(volume);
+            if (volume != inputHandler.getVolume()) 
+            {
+                inputHandler.setVolume(volume);
+                consoleprint("volume is: " + TOSTRING(volume), __FILE__, __LINE__);
+                consoleprint("setted volume is" + TOSTRING(inputHandler.getVolume()), __FILE__, __LINE__);
+            }
         }
     }
     
@@ -128,7 +130,7 @@ void render (BelaContext *context, void *userData)
     for(unsigned int n = 0; n < context->audioFrames; n++)
     {
         // process effects
-        StereoFloat output = engine.process(inputHandler.process(context, n));
+        StereoFloat output = inputHandler.process(context, n);
         
         // write output buffer
         audioWrite(context, n, 0, output.leftSample);

@@ -5,11 +5,6 @@
 // MARK: - UIELEMENT
 // ********************************************************************************
 
-UIElement::UIElement(const int index_, const String name_)
-    : index(index_)
-    , name(name_)
-{}
-
 void UIElement::addListener (Listener* listener_)
 {
     listeners.push_back(listener_);
@@ -26,15 +21,17 @@ void UIElement::focusListener (Listener* listener_)
 // ********************************************************************************
 
 static const float POT_CATCHING_TOLERANCE = 0.008f; /**< Tolerance for catching potentiometer */
-static const float POT_NOISE = 0.001f; /**< Noise threshold for potentiometer */
+static const float POT_NOISE = 0.01f; /**< Noise threshold for potentiometer */
 static const float POT_MAX_VOLTAGE = 0.831f; /**< Maximum voltage for potentiometer */
 
 PotBehaviour Potentiometer::potBehaviour = PotBehaviour::CATCH;
 
-
-Potentiometer::Potentiometer(const int index_, const String name_, const float guidefault_, const float analogdefault_)
-    : UIElement(index_, name_)
+void Potentiometer::setup(const int index_, const String name_, const float guidefault_, const float analogdefault_)
 {
+    // set identifiers
+    index = index_;
+    name = name_;
+    
     // setup caches
     guiCache = guidefault_;
     analogCache = analogdefault_;
@@ -44,16 +41,6 @@ Potentiometer::Potentiometer(const int index_, const String name_, const float g
     std::fill(analogHistory.begin(), analogHistory.end(), INV_POT_MOVINGAVG_SIZE * analogCache);
 }
 
-void Potentiometer::setDefaults(const float guidefault_, const float analogdefault_)
-{
-    // setup caches
-    guiCache = guidefault_;
-    analogCache = analogdefault_;
-    analogAverage = analogdefault_;
-    
-    // fill the analogHistory with all same values
-    std::fill(analogHistory.begin(), analogHistory.end(), INV_POT_MOVINGAVG_SIZE * analogCache);
-}
 
 void Potentiometer::update(const float guivalue_, const float analogvalue_)
 {
@@ -186,10 +173,12 @@ void Potentiometer::decouple(const float newcurrent_)
 const int Button::DEBOUNCING_UNITS = 1;
 const int Button::LONGPRESS_UNITS = 25;
 
-Button::Button(const int index_, const String name_, const Phase guidefault_, const Phase analogdefault_)
-    : UIElement(index_, name_)
-    , debouncer(DEBOUNCING_UNITS)
+void Button::setup(const int index_, const String name_, const Phase guidefault_, const Phase analogdefault_)
 {
+    // set identifiers
+    index = index_;
+    name = name_;
+        
     // setup caches with default value
     guiCache = guidefault_;
     analogCache = analogdefault_;

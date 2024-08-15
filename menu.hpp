@@ -61,7 +61,7 @@ public:
 // MARK: - MENU
 // ********************************************************************************
     
-    Menu() = delete;
+    Menu() {}
     Menu (GlobalParameters* _globals);
     ~Menu ();
         

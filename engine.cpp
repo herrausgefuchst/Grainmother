@@ -133,43 +133,36 @@ Effect* AudioEngine::getEffect (const int _index)
 // MARK: - USER INTERFACE
 // =======================================================================================
 
-UserInterface::UserInterface()
-    : menu(&globals)
-    , button {
-        Button(Button::FX1, "Effect 1"),
-        Button(Button::FX2, "Effect 2"),
-        Button(Button::FX3, "Effect 3"),
-        Button(Button::ACTION, "Action"),
-        Button(Button::TEMPO, "Tempo"),
-        Button(Button::BYPASS, "Bypass"),
-        Button(Button::UP, "Up"),
-        Button(Button::DOWN, "Down"),
-        Button(Button::EXIT, "Exit"),
-        Button(Button::ENTER, "Enter")
-    }
-    , potentiometer {
-        Potentiometer(0, "Potentiometer 0"),
-        Potentiometer(1, "Potentiometer 1"),
-        Potentiometer(2, "Potentiometer 2"),
-        Potentiometer(3, "Potentiometer 3"),
-        Potentiometer(4, "Potentiometer 4"),
-        Potentiometer(5, "Potentiometer 5"),
-        Potentiometer(6, "Potentiometer 6"),
-        Potentiometer(7, "Potentiometer 7")
-    }
-    , led {
-        LED(LED::FX1, "Effect 1"),
-        LED(LED::FX2, "Effect 2"),
-        LED(LED::FX3, "Effect 3"),
-        LED(LED::ACTION, "Action"),
-        LED(LED::TEMPO, "Tempo"),
-        LED(LED::BYPASS, "Bypass")
-    }
-{}
-
 void UserInterface::setup(AudioEngine *_engine)
 {
     engine = _engine;
+  
+    button[Button::FX1].setup(Button::FX1, "Effect 1");
+    button[Button::FX2].setup(Button::FX2, "Effect 2");
+    button[Button::FX3].setup(Button::FX3, "Effect 3");
+    button[Button::ACTION].setup(Button::ACTION, "Action");
+    button[Button::TEMPO].setup(Button::TEMPO, "Tempo");
+    button[Button::BYPASS].setup(Button::BYPASS, "Bypass");
+    button[Button::UP].setup(Button::UP, "Up");
+    button[Button::DOWN].setup(Button::DOWN, "Down");
+    button[Button::EXIT].setup(Button::EXIT, "Exit");
+    button[Button::ENTER].setup(Button::ENTER, "Enter");
+    
+    potentiometer[0].setup(0, "Potentiometer 0");
+    potentiometer[1].setup(1, "Potentiometer 1");
+    potentiometer[2].setup(2, "Potentiometer 2");
+    potentiometer[3].setup(3, "Potentiometer 3");
+    potentiometer[4].setup(4, "Potentiometer 4");
+    potentiometer[5].setup(5, "Potentiometer 5");
+    potentiometer[6].setup(6, "Potentiometer 6");
+    potentiometer[7].setup(7, "Potentiometer 7");
+    
+    led[LED::FX1].setup(LED::FX1, "Effect 1");
+    led[LED::FX2].setup(LED::FX2, "Effect 2");
+    led[LED::FX3].setup(LED::FX3, "Effect 3");
+    led[LED::ACTION].setup(LED::ACTION, "Action");
+    led[LED::TEMPO].setup(LED::TEMPO, "Tempo");
+    led[LED::BYPASS].setup(LED::BYPASS, "Bypass");
     
     // helper functions for initialization
     initializeJSON();

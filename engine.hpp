@@ -59,7 +59,7 @@ private:
 class UserInterface
 {
 public:
-    UserInterface();
+    UserInterface() {}
     ~UserInterface();
     
     void setup(AudioEngine* _engine);

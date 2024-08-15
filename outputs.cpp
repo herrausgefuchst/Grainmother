@@ -332,10 +332,11 @@ void Display::displayPreset (const int _index, const String _name)
 const int LED::BLINKING_RATE = 3;
 const int LED::NUM_BLINKS = 3;
 
-LED::LED (const int _id, const String _name)
-    : id(_id)
-    , name(_name)
+void LED::setup(const int _id, const String _name)
 {
+    id = _id;
+    name = _name;
+    
     blinking_ctr = BLINKING_RATE;
     numblinks_ctr = NUM_BLINKS * 2;
 }

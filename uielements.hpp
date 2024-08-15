@@ -5,9 +5,6 @@
 #include "functions.h"
 #include "helpers.hpp"
 
-static const int NUM_BUTTONS = 10;
-static const int NUM_POTENTIOMETERS = 8;
-
 // MARK: - UIELEMENT
 // ********************************************************************************
 
@@ -18,15 +15,9 @@ static const int NUM_POTENTIOMETERS = 8;
 class UIElement
 {
 public:
-    UIElement() = delete;
+    /** @brief: default constructor */
+    UIElement() {}
     
-    /**
-     * @brief Constructs a UIElement with the specified index and name.
-     * @param index_ The index of the UI element, has to be unique!
-     * @param name_ The name of the UI element, has to be unique!
-     */
-    UIElement(const int index_, const String name_);
-
     /**
      * @brief Virtual destructor for UIElement.
      */
@@ -96,8 +87,8 @@ public:
 
 protected:
     std::vector<Listener*> listeners; /**< List of listeners attached to the UIElement */
-    const int index; /**< Index of the UIElement */
-    const String name; /**< Name of the UIElement */
+    unsigned int index; /**< Index of the UIElement */
+    String name; /**< Name of the UIElement */
 };
 
 
@@ -120,24 +111,20 @@ public:
      */
     enum class InputSource { GUI, ANALOG, MIDI, NONE };
     
-    /**
-     * @brief Constructs a Potentiometer with specified parameters.
-     * @param index_ The index of the potentiometer.
-     * @param name_ The name of the potentiometer.
-     * @param guidefault_ Default value for the GUI.
-     * @param analogdefault_ Default value for analog input.
-     */
-    Potentiometer(const int index_, const String name_, const float guidefault_ = 0.f, const float analogdefault_ = 0.f);
+    /** Constructor of Potentiometer */
+    Potentiometer() {}
     
     /** Destructor for Potentiometer. */
     ~Potentiometer() {}
 
     /**
-     * @brief sets dafault  values for input sources
+     * @brief sets up a Potentiometer with specified parameters.
+     * @param index_ The index of the potentiometer.
+     * @param name_ The name of the potentiometer.
      * @param guidefault_ Default value for the GUI.
      * @param analogdefault_ Default value for analog input.
      */
-    void setDefaults(const float guidefault_ = 0.f, const float analogdefault_ = 0.f);
+    void setup(const int index_, const String name_, const float guidefault_ = 0.f, const float analogdefault_ = 0.f);
     
     /**
      * @brief Updates the potentiometer with new GUI and analog values.
@@ -228,21 +215,24 @@ public:
      * @brief Enumeration for the button IDs.
      */
     enum ID { FX1, FX2, FX3, ACTION, BYPASS, TEMPO, UP, DOWN, EXIT, ENTER };
+
+    /** Constructor for Button */
+    Button() : debouncer(DEBOUNCING_UNITS) {}
     
     /**
-     * @brief Constructs a Button with the specified parameters.
+     * @brief Destructor for Button.
+     */
+    ~Button() {}
+    
+    /**
+     * @brief Sets up a Button with the specified parameters.
      * @param index_ The index of the button.
      * @param name_ The name of the button.
      * @param guidefault_ Default GUI value for the button.
      * @param analogdefault_ Default analog value for the button.
      */
-    Button(const int index_, const String name_, const Phase guidefault_ = HIGH, const Phase analogdefault_ = HIGH);
-
-    /**
-     * @brief Destructor for Button.
-     */
-    ~Button() {}
-        
+    void setup(const int index_, const String name_, const Phase guidefault_ = HIGH, const Phase analogdefault_ = HIGH);
+    
     /**
      * @brief Updates the button state with new GUI and analog values.
      * @param guivalue_ The new GUI value.

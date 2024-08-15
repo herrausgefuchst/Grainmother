@@ -10,8 +10,8 @@
 
 #define SCOPE_ACTIVE
 
-void updateGUIdisplay (void* _arg);
-void updateLEDs (void* _arg);
+//void updateGUIdisplay (void* _arg);
+//void updateLEDs (void* _arg);
 
 namespace BelaVariables
 {
@@ -49,7 +49,10 @@ namespace BelaVariables
 
     // object: BELA
     Gui gui;
+
+#ifdef SCOPE_ACTIVE
     Scope scope;
+#endif
 
     // object for the audio player and input controls in GUI
     InputHandler inputHandler;
@@ -61,8 +64,8 @@ namespace BelaVariables
     UserInterface userinterface;
 
     // threads
-    AuxiliaryTask taskUpdateGUIDisplay;
-    AuxiliaryTask taskUpdateLEDS;
+    //AuxiliaryTask taskUpdateGUIDisplay;
+    //AuxiliaryTask taskUpdateLEDS;
 };
 
 

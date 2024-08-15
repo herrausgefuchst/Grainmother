@@ -100,8 +100,6 @@ private:
 // ALARM: LED blinks LED_NUM_BLINK times and sets back to previous state afterwards (i.e. preset change)
 // BLINKONCE: LED blinks once ands returns to previous state afterwards
 
-static const int NUM_LEDS = 6;
-
 class LED : public AudioParameter::Listener
 {
 public:
@@ -109,10 +107,11 @@ public:
     enum State { VALUE, VALUEFOCUS, ALARM, BLINKONCE };
     String states[4] = {"value", "valuefocus", "alarm", "blinkonce"};
     
-    LED() = delete;
-    LED (const int _id, const String _name);
+    LED() {}
     ~LED() {}
     
+    void setup(const int _id, const String _name);
+
     void setValue (const float _value) { value = _value; }
     void setAlarm();
     void setBlinkOnce();
@@ -122,8 +121,8 @@ public:
     void parameterChanged (AudioParameter* _param);
     
 private:
-    const int id;
-    const String name;
+    unsigned int id;
+    String name;
     
     float value = 0.f;
     float blinker = 0.f;

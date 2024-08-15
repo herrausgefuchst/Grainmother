@@ -15,6 +15,7 @@ struct GlobalParameters
     unsigned int midiOutChannel = 1;
     
     unsigned int lastUsedPreset = 0;
+    
     unsigned int potBehaviour = ENUM2INT(PotBehaviour::JUMP);
     
     String presetNames[NUM_PRESETS] = { ("empty") };
