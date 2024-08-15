@@ -1,120 +1,170 @@
 #include "uielements.hpp"
 
-//#define USING_ANALOG_INS
+#define USING_ANALOG_INS
 
 // MARK: - UIELEMENT
 // ********************************************************************************
 
-UIElement::UIElement (const int _index, const String _name)
-    : index(_index)
-    , name(_name)
+UIElement::UIElement(const int index_, const String name_)
+    : index(index_)
+    , name(name_)
 {}
 
-void UIElement::addListener (Listener* _listener)
+void UIElement::addListener (Listener* listener_)
 {
-    listeners.push_back(_listener);
+    listeners.push_back(listener_);
 }
 
-void UIElement::focusListener (Listener* _listener)
+void UIElement::focusListener (Listener* listener_)
 {
     listeners.clear();
-    listeners.push_back(_listener);
+    listeners.push_back(listener_);
 }
 
 
 // MARK: - POTENTIOMETER
 // ********************************************************************************
 
-const float Potentiometer::CATCHING_POTENTIOMETER_TOLERANCE = 0.008f;
-const float Potentiometer::POT_NOISE = 0.001f;
-const float Potentiometer::MAX_VOLTAGE = 0.831f;
+static const float POT_CATCHING_TOLERANCE = 0.008f; /**< Tolerance for catching potentiometer */
+static const float POT_NOISE = 0.001f; /**< Noise threshold for potentiometer */
+static const float POT_MAX_VOLTAGE = 0.831f; /**< Maximum voltage for potentiometer */
 
-Potentiometer::Potentiometer (const int _index, const String _name, GlobalParameters* _parameters, const float _guidefault, const float _analogdefault)
-    : UIElement(_index, _name)
-    , globalparameters(_parameters)
+
+Potentiometer::Potentiometer(const int index_, const String name_, const float guidefault_, const float analogdefault_)
+    : UIElement(index_, name_)
 {
-    gui_cache = _guidefault;
-    analog_cache = _analogdefault;
-    analog_average = _analogdefault;
-    for (unsigned int n = 0; n < 8; n++) analog_history[n] = 0.125f * analog_cache;
+    // setup caches
+    guiCache = guidefault_;
+    analogCache = analogdefault_;
+    analogAverage = analogdefault_;
+    
+    // fill the analogHistory with all same values
+    std::fill(analogHistory.begin(), analogHistory.end(), INV_POT_MOVINGAVG_SIZE * analogCache);
 }
 
-void Potentiometer::update (const float _guivalue, const float _analogvalue)
-{
-    if (_guivalue != gui_cache)
-    {
-        gui_cache = _guivalue;
-        
-        consoleprint("Potentiomteter " + TOSTRING(index) + " detected new GUI Value: " + TOSTRING(_guivalue) , __FILE__, __LINE__);
 
-        if (listen == GUI ||
-            (globalparameters->potBehaviour == POTBEHAVIOUR_JUMP && listen != NONE) ||
-            isClose(gui_cache, current, CATCHING_POTENTIOMETER_TOLERANCE))
+void Potentiometer::update(const float guivalue_, const float analogvalue_)
+{
+    // check for change in the GUI
+    if (guivalue_ != guiCache)
+    {
+        // update cache
+        guiCache = guivalue_;
+        
+#ifdef CONSOLE_PRINT
+        consoleprint("Potentiometer " + TOSTRING(index) + " detected new GUI Value: " + TOSTRING(guivalue_), __FILE__, __LINE__);
+#endif
+
+        // Set value if:
+        // 1. inputFocus is set to GUI.
+        // 2. Pot behavior is JUMP (only if inputFocus is already set).
+        // 3. Pot behavior is CATCH, and the new value is within tolerance of the current value.
+        if (inputFocus == InputSource::GUI ||
+            (potBehaviour == PotBehaviour::JUMP && inputFocus != InputSource::NONE) ||
+            isClose(guiCache, current, POT_CATCHING_TOLERANCE))
         {
-            listen = GUI;
-            setValue(gui_cache);
+            // update inputFocus
+            inputFocus = InputSource::GUI;
+            
+            // set the new value
+            setValue(guiCache);
         }
     }
     
-    #ifdef USING_ANALOG_INS
-    // calculating moving average
-    analog_average -= analog_history[analog_ptr];
-    analog_history[analog_ptr] = _analogvalue * 0.125f;
-    analog_average += analog_history[analog_ptr];
-    if (++analog_ptr >= 8) analog_ptr = 0;
+#ifdef USING_ANALOG_INS
+    // TODO: coould i make this pointer static?
+    // calculate moving average
+    analogAverage -= analogHistory[analogPtr];
+    analogHistory[analogPtr] = analogvalue_ * INV_POT_MOVINGAVG_SIZE;
+    analogAverage += analogHistory[analogPtr];
+    if (++analogPtr >= POT_MOVINGAVG_SIZE) analogPtr = 0;
     
-    // is change detected?
-    if (fabsf_neon(analog_average - analog_cache) > POT_NOISE)
+    // calculte the absolute value (the step of change)
+    float absValue = analogAverage - analogCache;
+    absValue = absValue < 0 ? -absValue : absValue;
+    
+    // chack for change in Analog Input, any change smaller than the POT_NOISE will be ignored
+    if (absValue > POT_NOISE)
     {
-        analog_cache = analog_average;
-        float value = round_float_3(mapValue(analog_cache, 0.001f, MAX_VOLTAGE, 0.f, 1.0f));
+        // update cache
+        analogCache = analogAverage;
+    
+        // map the incoming value (0...MAX_VOLTAGE) to unipolar value (0...1)
+        // round it to three decimal places
+        float value = round_float_3(mapValue(analogCache, 0.001f, POT_MAX_VOLTAGE, 0.f, 1.0f));
+        // bounding the value, saftey first
         boundValue(value, 0.f, 1.f);
         
-        consoleprint("Potentiomteter " + TOSTRING(index) + " detected new ANALOG Value: " + TOSTRING(value) , __FILE__, __LINE__);
-
-        if (listen == ANALOG ||
-            (globalparameters->potBehaviour == POTBEHAVIOUR_JUMP && listen != NONE) ||
-            isClose(value, current, CATCHING_POTENTIOMETER_TOLERANCE))
+#ifdef CONSOLE_PRINT
+        consoleprint("Potentiometer " + TOSTRING(index) + " detected new ANALOG Value: " + TOSTRING(value), __FILE__, __LINE__);
+#endif
+        
+        // Set value if:
+        // 1. inputFocus is set to ANALOG.
+        // 2. Pot behavior is JUMP (only if inputFocus is already set).
+        // 3. Pot behavior is CATCH, and the new value is within tolerance of the current value.
+        if (inputFocus == InputSource::ANALOG ||
+            (potBehaviour == PotBehaviour::JUMP && inputFocus != InputSource::NONE) ||
+            isClose(value, current, POT_CATCHING_TOLERANCE))
         {
-            listen = ANALOG;
+            // update inputFocus
+            inputFocus = InputSource::ANALOG;
+            
+            // set the new value
             setValue(value);
         }
     }
-    #endif
+#endif // USING_ANALOG_INS
 }
 
-void Potentiometer::setNewMIDIMessage (const float _midivalue)
+
+void Potentiometer::setNewMIDIMessage(const float midivalue_)
 {
-    if (listen == MIDI ||
-        (globalparameters->potBehaviour == POTBEHAVIOUR_JUMP && listen != NONE) ||
-        isClose(_midivalue, current, CATCHING_POTENTIOMETER_TOLERANCE))
+    // Set value if:
+    // 1. inputFocus is set to MIDI.
+    // 2. Pot behavior is JUMP (only if inputFocus is already set).
+    // 3. Pot behavior is CATCH, and the new value is within tolerance of the current value.
+    if (inputFocus == InputSource::MIDI ||
+        (potBehaviour == PotBehaviour::JUMP && inputFocus != InputSource::NONE) ||
+        isClose(midivalue_, current, POT_CATCHING_TOLERANCE))
     {
-        listen = MIDI;
-        setValue(_midivalue);
+        // update inputFocus
+        inputFocus = InputSource::MIDI;
+        
+        // set the new value
+        setValue(midivalue_);
     }
 }
 
-void Potentiometer::notifyListeners (const int _specifier)
+
+void Potentiometer::notifyListeners(const int specifier_)
 {
     for (auto i : listeners) i->potChanged(this);
 }
 
-void Potentiometer::setValue (const float _value)
+
+void Potentiometer::setValue(const float value_)
 {
-    if (_value < 0.f || _value > 1.f)
-        engine_rt_error("new value for " + name + " exceeds range 0..1: " + std::to_string(_value),
+    // check for unbounded value
+    if (value_ < 0.f || value_ > 1.f)
+        engine_rt_error("new value for " + name + " exceeds range 0..1: " + std::to_string(value_),
                         __FILE__, __LINE__, true);
 
+    // TODO: for what do we need last?
     last = current;
-    current = _value;
+    current = value_;
     
     notifyListeners();
 }
 
-void Potentiometer::decouple (const float _newcurrent)
+
+void Potentiometer::decouple(const float newcurrent_)
 {
-    current = _newcurrent;
-    listen = NONE;
+    // set new current value
+    current = newcurrent_;
+    
+    // inputFocus release
+    inputFocus = InputSource::NONE;
 }
 
 

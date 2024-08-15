@@ -5,7 +5,7 @@
 
 #define NUM_PRESETS 4
 
-enum PotBehaviour { POTBEHAVIOUR_JUMP, POTBEHAVIOUR_CATCH };
+enum class PotBehaviour { JUMP, CATCH };
 
 struct GlobalParameters
 {
@@ -15,8 +15,7 @@ struct GlobalParameters
     unsigned int midiOutChannel = 1;
     
     unsigned int lastUsedPreset = 0;
-    
-    unsigned int potBehaviour = POTBEHAVIOUR_JUMP;
+    unsigned int potBehaviour = ENUM2INT(PotBehaviour::JUMP);
     
     String presetNames[NUM_PRESETS] = { ("empty") };
     
