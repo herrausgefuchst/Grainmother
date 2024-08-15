@@ -191,45 +191,93 @@ private:
 // MARK: - BUTTON
 // ********************************************************************************
 
-// all incoming Buttons should be of Type Momentary
-// if Button receives new values in update():
-// - case guivalue: need to determine wether its a click, press or release message
-// - case analog: debounce first, then determine wether its a click, press or release message
-
+/**
+ * @class Button
+ * @brief A class representing a button UI element with various states and actions.
+ *
+ * all incoming Buttons should be of Type Momentary
+ * if Button receives new values in update():
+ * - case guivalue: need to determine wether its a click, press or release message
+ * - case analog: debounce first, then determine wether its a click, press or release message
+ *
+ */
 class Button : public UIElement
 {
 public:
-    enum Phase { LOW, HIGH };
-    enum Action { CLICK, PRESS, RELEASE };
+    /**
+     * @enum Phase
+     * @brief Enumeration for the phase of the button (LOW or HIGH).
+     */
+    enum Phase { LOW = 0, HIGH = 1 };
+
+    /**
+     * @enum Action
+     * @brief Enumeration for the possible actions of the button (CLICK, PRESS, RELEASE).
+     */
+    enum Action { CLICK, LONGPRESS, RELEASE };
+
+    /**
+     * @enum ID
+     * @brief Enumeration for the button IDs.
+     */
     enum ID { FX1, FX2, FX3, ACTION, BYPASS, TEMPO, UP, DOWN, EXIT, ENTER };
     
-    Button (const int _index, const String _name, const int _guidefault = HIGH, const int _analogdefault = HIGH);
+    /**
+     * @brief Constructs a Button with the specified parameters.
+     * @param index_ The index of the button.
+     * @param name_ The name of the button.
+     * @param guidefault_ Default GUI value for the button.
+     * @param analogdefault_ Default analog value for the button.
+     */
+    Button(const int index_, const String name_, const Phase guidefault_ = HIGH, const Phase analogdefault_ = HIGH);
+
+    /**
+     * @brief Destructor for Button.
+     */
     ~Button() {}
         
-    void update (const int _guivalue, const int _analogvalue = HIGH);
+    /**
+     * @brief Updates the button state with new GUI and analog values.
+     * @param guivalue_ The new GUI value.
+     * @param analogvalue_ The new analog value (optional).
+     */
+    void update(const unsigned int guivalue_, const unsigned int analogvalue_ = HIGH);
             
-    void notifyListeners (const int _specifier) override;
-    std::vector<std::function<void()>> onClick;
-    std::vector<std::function<void()>> onPress;
-    std::vector<std::function<void()>> onRelease;
+    /**
+     * @brief Notifies all listeners of an event.
+     * @param specifier_ An optional specifier for the event.
+     */
+    void notifyListeners(const int specifier_) override;
+
+    std::vector<std::function<void()>> onClick; /**< List of functions to call on button click */
+    std::vector<std::function<void()>> onPress; /**< List of functions to call on button press */
+    std::vector<std::function<void()>> onRelease; /**< List of functions to call on button release */
     
-    int getPhase() const { return phase; }
+    /**
+     * @brief Gets the current phase of the button.
+     * @return The current phase.
+     */
+    Phase getPhase() const { return phase; }
     
 private:
-    int phase = HIGH;
-    int analog_cache = HIGH;
-    int gui_cache = HIGH;
+    Phase phase = HIGH; /**< Current phase of the button */
+    Phase analogCache = HIGH; /**< Cached analog value */
+    Phase guiCache = HIGH; /**< Cached GUI value */
     
+    /**
+     * @enum State
+     * @brief Enumeration for the internal state of the button.
+     */
     enum State { JUST_CHANGED, AWAITING_LONGPRESS, NO_ACTION };
-    int state = NO_ACTION;
-    int state_counter = 0;
 
-    int lastaction = CLICK;
+    State state = NO_ACTION; /**< Current state of the button */
+    int stateCounter = 0; /**< Counter for the state machine */
+    Action lastAction = CLICK; /**< Last action performed by the button */
     
-    Debouncer debouncer;
+    Debouncer debouncer; /**< Debouncer object for handling button debouncing */
     
-    static const int DEBOUNCING_UNITS;
-    static const int LONGPRESS_UNITS;
+    static const int DEBOUNCING_UNITS; /**< Number of units for debouncing */
+    static const int LONGPRESS_UNITS; /**< Number of units for detecting a long press */
 };
 
 #endif /* uielements_hpp */

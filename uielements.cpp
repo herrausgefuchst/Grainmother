@@ -29,6 +29,8 @@ static const float POT_CATCHING_TOLERANCE = 0.008f; /**< Tolerance for catching 
 static const float POT_NOISE = 0.001f; /**< Noise threshold for potentiometer */
 static const float POT_MAX_VOLTAGE = 0.831f; /**< Maximum voltage for potentiometer */
 
+PotBehaviour Potentiometer::potBehaviour = PotBehaviour::CATCH;
+
 
 Potentiometer::Potentiometer(const int index_, const String name_, const float guidefault_, const float analogdefault_)
     : UIElement(index_, name_)
@@ -174,95 +176,137 @@ void Potentiometer::decouple(const float newcurrent_)
 const int Button::DEBOUNCING_UNITS = 1;
 const int Button::LONGPRESS_UNITS = 25;
 
-Button::Button (const int _index, const String _name, const int _guidefault, const int _analogdefault)
-    : UIElement(_index, _name)
+Button::Button(const int index_, const String name_, const Phase guidefault_, const Phase analogdefault_)
+    : UIElement(index_, name_)
     , debouncer(DEBOUNCING_UNITS)
 {
-    gui_cache = _guidefault;
-    analog_cache = _analogdefault;
-    state_counter = LONGPRESS_UNITS;
+    // setup caches with default value
+    guiCache = guidefault_;
+    analogCache = analogdefault_;
+    
+    // initialize counter
+    stateCounter = LONGPRESS_UNITS;
 }
 
-void Button::update (const int _guivalue, const int _analogvalue)
+void Button::update(const unsigned int guivalue_, const unsigned int analogvalue_)
 {
-    if (_guivalue != gui_cache)
+    // check for change in GUI
+    if (guivalue_ != guiCache)
     {
-        gui_cache = _guivalue;
+        // update cache
+        guiCache = INT2ENUM(guivalue_, Phase);
         
-        phase = gui_cache;
+        // set momentary phase
+        phase = guiCache;
+        
+        // set internal state, mark that the value just changed
         state = JUST_CHANGED;
 
-        consoleprint("Button " + TOSTRING(index) + " detected new GUI Value: " + TOSTRING(_guivalue) , __FILE__, __LINE__);
+#ifdef CONSOLE_PRINT
+        consoleprint("Button " + TOSTRING(index) + " detected new GUI Value: " + TOSTRING(guivalue_), __FILE__, __LINE__);
+#endif
     }
     
-    #ifdef USING_ANALOG_INS
-    bool debouncedvalue = debouncer.update((bool)_analogvalue);
+#ifdef USING_ANALOG_INS
+    
+    // update debouncer
+    bool debouncedValue = debouncer.update((bool)analogvalue_);
 
-    if (debouncedvalue != analog_cache)
+    // check for change in Analog Input
+    if (debouncedValue != analogCache)
     {
-        analog_cache = debouncedvalue;
+        analogCache = INT2ENUM(debouncedValue, Phase);
         
-        phase = analog_cache;
+        // set momentary phase
+        phase = analogCache;
+
+        // set internal state, mark that the value just changed
         state = JUST_CHANGED;
         
-        consoleprint("Button " + TOSTRING(index) + " detected new ANALOG Value: " + TOSTRING(debouncedvalue) , __FILE__, __LINE__);
+#ifdef CONSOLE_PRINT
+        consoleprint("Button " + TOSTRING(index) + " detected new ANALOG Value: " + TOSTRING(debouncedValue), __FILE__, __LINE__);
+#endif
     }
-    #endif
+
+#endif // USING_ANALOG_INS
     
+    // state machine looks for the appropriate Action that fits to the momentary behaviour
     switch (state)
     {
+        // the button just changed
         case JUST_CHANGED:
         {
+            // the button was released
             if (phase == HIGH)
             {
-                if (lastaction == PRESS) notifyListeners(RELEASE);
+                // if the last action was a long press, this action is a release
+                if (lastAction == LONGPRESS) notifyListeners(RELEASE);
+                
+                // else: this action is a click
                 else notifyListeners(CLICK);
+                
+                // reset state variable
                 state = NO_ACTION;
             }
+            
+            // the button was pressed
             else // phase == LOW
             {
-                state_counter = LONGPRESS_UNITS;
+                // reinitialize the counter for determing a long press
+                stateCounter = LONGPRESS_UNITS;
+                
+                // set state variable
                 state = AWAITING_LONGPRESS;
             }
             break;
         }
+            
+        // the button was pressed, looking for a long press
         case AWAITING_LONGPRESS:
         {
-            if (state_counter <= 0)
+            // if time ran out and no other change was detected, this action is a long press
+            if (stateCounter <= 0)
             {
-                notifyListeners(PRESS);
+                notifyListeners(LONGPRESS);
+                
+                // reset state variable
                 state = NO_ACTION;
             }
-            --state_counter;
+            
+            // decrement state machine counter
+            --stateCounter;
+            
             break;
         }
+            
+        // default bevaiour: break
         case NO_ACTION:
         default:
             break;
     }
 }
 
-void Button::notifyListeners (const int _specifier)
+void Button::notifyListeners(const int specifier_)
 {
-    if (_specifier == CLICK)
+    if (specifier_ == CLICK)
     {
         for (auto i : onClick) i();
         for (auto i : listeners) i->buttonClicked(this);
     }
-    
-    else if (_specifier == PRESS)
+    else if (specifier_ == LONGPRESS)
     {
         for (auto i : onPress) i();
         for (auto i : listeners) i->buttonPressed(this);
     }
-    
-    else if (_specifier == RELEASE)
+    else if (specifier_ == RELEASE)
     {
         for (auto i : onRelease) i();
         for (auto i : listeners) i->buttonReleased(this);
     }
     
-    consoleprint("Button " + name + " notifies Listeners with message: " + TOSTRING(_specifier), __FILE__, __LINE__);
+#ifdef CONSOLE_PRINT
+    consoleprint("Button " + name + " notifies Listeners with message: " + TOSTRING(specifier_), __FILE__, __LINE__);
+#endif
     
-    lastaction = _specifier;
+    lastAction = INT2ENUM(specifier_, Action);
 }

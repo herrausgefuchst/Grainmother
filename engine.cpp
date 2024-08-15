@@ -149,14 +149,14 @@ UserInterface::UserInterface (AudioEngine* _engine)
         Button(Button::ENTER, "Enter")
     }
     , potentiometer {
-        Potentiometer(0, "Potentiometer 0", &globals),
-        Potentiometer(1, "Potentiometer 1", &globals),
-        Potentiometer(2, "Potentiometer 2", &globals),
-        Potentiometer(3, "Potentiometer 3", &globals),
-        Potentiometer(4, "Potentiometer 4", &globals),
-        Potentiometer(5, "Potentiometer 5", &globals),
-        Potentiometer(6, "Potentiometer 6", &globals),
-        Potentiometer(7, "Potentiometer 7", &globals)
+        Potentiometer(0, "Potentiometer 0"),
+        Potentiometer(1, "Potentiometer 1"),
+        Potentiometer(2, "Potentiometer 2"),
+        Potentiometer(3, "Potentiometer 3"),
+        Potentiometer(4, "Potentiometer 4"),
+        Potentiometer(5, "Potentiometer 5"),
+        Potentiometer(6, "Potentiometer 6"),
+        Potentiometer(7, "Potentiometer 7")
     }
     , led {
         LED(LED::FX1, "Effect 1"),
