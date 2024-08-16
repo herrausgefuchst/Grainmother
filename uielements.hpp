@@ -5,8 +5,9 @@
 #include "functions.h"
 #include "helpers.hpp"
 
+// =======================================================================================
 // MARK: - UIELEMENT
-// ********************************************************************************
+// =======================================================================================
 
 /**
  * @class UIElement
@@ -92,12 +93,32 @@ protected:
 };
 
 
+// =======================================================================================
 // MARK: - POTENTIOMETER
-// ********************************************************************************
+// =======================================================================================
 
 /**
  * @class Potentiometer
  * @brief A class representing a potentiometer UI element with various input sources.
+ *
+ * This class can read inputs from the GUI, Bela Analog Input, and MIDI.
+ * 
+ * One of these input sources is always in focus, and the class monitors
+ * if another input source can take over (when incoming values are close
+ * to the current value).
+ *
+ * Call `update()` periodically to ensure proper functioning.
+ *
+ * If a preset change occurs, you need to call `decouple()` to release the
+ * current focus and set a new reference value.
+ *
+ * If a change is detected and the class decides to adopt it as the new value,
+ * it notifies its listeners and updates the cache with the new value.
+ *
+ * Smoothing of analog input is achieved by comparing the difference between
+ * the incoming value and the cached value against a predefined pot noise threshold.
+ * If the change exceeds the noise threshold, the value is accepted.
+ *
  */
 class Potentiometer : public UIElement
 {
@@ -176,17 +197,25 @@ private:
 };
 
 
+// =======================================================================================
 // MARK: - BUTTON
-// ********************************************************************************
+// =======================================================================================
 
 /**
  * @class Button
  * @brief A class representing a button UI element with various states and actions.
  *
- * all incoming Buttons should be of Type Momentary
- * if Button receives new values in update():
- * - case guivalue: need to determine wether its a click, press or release message
- * - case analog: debounce first, then determine wether its a click, press or release message
+ * This class can read inputs from the GUI and Bela Analog Input.
+ * All incoming button values should be of type `momentary`, where:
+ * - 0 indicates the button is pushed
+ * - 1 indicates the button is not pushed
+ *
+ * Call `update()` periodically to ensure proper functioning.
+ * The analog value will be debounced.
+ *
+ * If a new value is detected, the class determines the type of action:
+ * CLICK, LONGPRESS, or RELEASE, and notifies its listeners with the
+ * corresponding message.
  *
  */
 class Button : public UIElement
@@ -226,7 +255,7 @@ public:
      * @param guivalue_ The new GUI value.
      * @param analogvalue_ The new analog value (optional).
      */
-    void update(const unsigned int guivalue_, const unsigned int analogvalue_ = HIGH);
+    void update(const unsigned int guivalue_ = HIGH, const unsigned int analogvalue_ = HIGH);
             
     /**
      * @brief Notifies all listeners of an event.

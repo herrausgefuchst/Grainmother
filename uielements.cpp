@@ -1,14 +1,18 @@
 #include "uielements.hpp"
 
 #define USING_ANALOG_INS
+//#define USING_GUI
 
+// =======================================================================================
 // MARK: - UIELEMENT
-// ********************************************************************************
+// =======================================================================================
+
 
 void UIElement::addListener (Listener* listener_)
 {
     listeners.push_back(listener_);
 }
+
 
 void UIElement::focusListener (Listener* listener_)
 {
@@ -17,14 +21,17 @@ void UIElement::focusListener (Listener* listener_)
 }
 
 
+// =======================================================================================
 // MARK: - POTENTIOMETER
-// ********************************************************************************
+// =======================================================================================
+
 
 static const float POT_CATCHING_TOLERANCE = 0.008f; /**< Tolerance for catching potentiometer */
 static const float POT_NOISE = 0.01f; /**< Noise threshold for potentiometer */
 static const float POT_MAX_VOLTAGE = 0.831f; /**< Maximum voltage for potentiometer */
 
 PotBehaviour Potentiometer::potBehaviour = PotBehaviour::CATCH;
+
 
 void Potentiometer::setup(const int index_, const String name_, const float guidefault_, const float analogdefault_)
 {
@@ -40,15 +47,16 @@ void Potentiometer::setup(const int index_, const String name_, const float guid
 
 void Potentiometer::update(const float guivalue_, const float analogvalue_)
 {
+    #ifdef USING_GUI
     // check for change in the GUI
     if (guivalue_ != guiCache)
     {
         // update cache
         guiCache = guivalue_;
         
-#ifdef CONSOLE_PRINT
+        #ifdef CONSOLE_PRINT
         consoleprint("Potentiometer " + TOSTRING(index) + " detected new GUI Value: " + TOSTRING(guivalue_), __FILE__, __LINE__);
-#endif
+        #endif
 
         // Set value if:
         // 1. inputFocus is set to GUI.
@@ -65,8 +73,9 @@ void Potentiometer::update(const float guivalue_, const float analogvalue_)
             setValue(guiCache);
         }
     }
+    #endif
     
-#ifdef USING_ANALOG_INS
+    #ifdef USING_ANALOG_INS
     // calculte the absolute value (the step of change)
     float absValue = analogvalue_ - analogCache;
     absValue = absValue < 0 ? -absValue : absValue;
@@ -83,9 +92,9 @@ void Potentiometer::update(const float guivalue_, const float analogvalue_)
         // bounding the value, saftey first
         boundValue(value, 0.f, 1.f);
         
-#ifdef CONSOLE_PRINT
+        #ifdef CONSOLE_PRINT
         consoleprint("Potentiometer " + TOSTRING(index) + " detected new ANALOG Value: " + TOSTRING(value), __FILE__, __LINE__);
-#endif
+        #endif
         
         // Set value if:
         // 1. inputFocus is set to ANALOG.
@@ -102,7 +111,7 @@ void Potentiometer::update(const float guivalue_, const float analogvalue_)
             setValue(value);
         }
     }
-#endif // USING_ANALOG_INS
+    #endif // USING_ANALOG_INS
 }
 
 
@@ -156,11 +165,14 @@ void Potentiometer::decouple(const float newcurrent_)
 }
 
 
+// =======================================================================================
 // MARK: - BUTTON
-// ********************************************************************************
+// =======================================================================================
+
 
 const int Button::DEBOUNCING_UNITS = 1;
 const int Button::LONGPRESS_UNITS = 25;
+
 
 void Button::setup(const int index_, const String name_, const Phase guidefault_, const Phase analogdefault_)
 {
@@ -176,8 +188,10 @@ void Button::setup(const int index_, const String name_, const Phase guidefault_
     stateCounter = LONGPRESS_UNITS;
 }
 
+
 void Button::update(const unsigned int guivalue_, const unsigned int analogvalue_)
 {
+    #ifdef USING_GUI
     // check for change in GUI
     if (guivalue_ != guiCache)
     {
@@ -190,13 +204,13 @@ void Button::update(const unsigned int guivalue_, const unsigned int analogvalue
         // set internal state, mark that the value just changed
         state = JUST_CHANGED;
 
-#ifdef CONSOLE_PRINT
+        #ifdef CONSOLE_PRINT
         consoleprint("Button " + TOSTRING(index) + " detected new GUI Value: " + TOSTRING(guivalue_), __FILE__, __LINE__);
-#endif
+        #endif
     }
+    #endif
     
-#ifdef USING_ANALOG_INS
-    
+    #ifdef USING_ANALOG_INS
     // update debouncer
     bool debouncedValue = debouncer.update((bool)analogvalue_);
 
@@ -211,12 +225,11 @@ void Button::update(const unsigned int guivalue_, const unsigned int analogvalue
         // set internal state, mark that the value just changed
         state = JUST_CHANGED;
         
-#ifdef CONSOLE_PRINT
+        #ifdef CONSOLE_PRINT
         consoleprint("Button " + TOSTRING(index) + " detected new ANALOG Value: " + TOSTRING(debouncedValue), __FILE__, __LINE__);
-#endif
+        #endif
     }
-
-#endif // USING_ANALOG_INS
+    #endif // USING_ANALOG_INS
     
     // state machine looks for the appropriate Action that fits to the momentary behaviour
     switch (state)
@@ -267,12 +280,13 @@ void Button::update(const unsigned int guivalue_, const unsigned int analogvalue
             break;
         }
             
-        // default bevaiour: break
+        // default behaviour: break
         case NO_ACTION:
         default:
             break;
     }
 }
+
 
 void Button::notifyListeners(const int specifier_)
 {
@@ -292,9 +306,11 @@ void Button::notifyListeners(const int specifier_)
         for (auto i : listeners) i->buttonReleased(this);
     }
     
-#ifdef CONSOLE_PRINT
-    consoleprint("Button " + name + " notifies Listeners with message: " + TOSTRING(specifier_), __FILE__, __LINE__);
-#endif
+    #ifdef CONSOLE_PRINT
+    String message = specifier_ == 0 ? "CLICK" : "LONGPRESS";
+    if (specifier_ == 2) message = "RELEASE";
+    consoleprint("Button " + name + " notifies Listeners with message: " + message, __FILE__, __LINE__);
+    #endif
     
     lastAction = INT2ENUM(specifier_, Action);
 }
