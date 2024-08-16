@@ -14,18 +14,41 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     sampleRate = sampleRate_;
     blockSize = blockSize_;
     
-    // Parameters
-    engineParameters.addParameter("tempo", "Tempo", "BPM", 20.f, 300.f, 0.f, 60.f);
-    engineParameters.addParameter("globalbypass", "Global Bypass", ButtonParameter::COUPLED);
-    engineParameters.addParameter("beatrepeat", "Beatrepeat", ButtonParameter::TOGGLE);
-    engineParameters.addParameter("granulator", "Granulator", ButtonParameter::TOGGLE);
-    engineParameters.addParameter("delay", "Delay", ButtonParameter::TOGGLE);
-    engineParameters.addParameter("effecteditfocus", "Effect Edit Focus", { "Beatrepeat", "Granulator", "Delay" });
+    // engine parameters
+    {
+        using enum EngineParameters;
+    
+        // tempo
+        engineParameters.addParameter(engineParameterID[ENUM2INT(TEMPO)], 
+                                      engineParameterName[ENUM2INT(TEMPO)],
+                                      "bpm", 20.f, 300.f, 0.f, 60.f);
+        
+        // global bypass
+        engineParameters.addParameter(engineParameterID[ENUM2INT(GLOBALBYPASS)],
+                                      engineParameterName[ENUM2INT(GLOBALBYPASS)],
+                                      ButtonParameter::COUPLED);
+        
+        // effect bypasses
+        engineParameters.addParameter(engineParameterID[ENUM2INT(EFFECT1BYPASS)],
+                                      engineParameterName[ENUM2INT(EFFECT1BYPASS)],
+                                      ButtonParameter::TOGGLE);
+        engineParameters.addParameter(engineParameterID[ENUM2INT(EFFECT2BYPASS)],
+                                      engineParameterName[ENUM2INT(EFFECT2BYPASS)],
+                                      ButtonParameter::TOGGLE);
+        engineParameters.addParameter(engineParameterID[ENUM2INT(EFFECT3BYPASS)],
+                                      engineParameterName[ENUM2INT(EFFECT3BYPASS)],
+                                      ButtonParameter::TOGGLE);
+
+        // effect edit focus
+        engineParameters.addParameter(engineParameterID[ENUM2INT(EFFECTEDITFOCUS)],
+                                      engineParameterName[ENUM2INT(EFFECTEDITFOCUS)],
+                                      { "Beatrepeat", "Granulator", "Delay" });
+    }
     
     // Effects
-    effects.at(0) = std::make_unique<Beatrepeat>(&engineParameters, "Beatrepeat");
+    effects.at(0) = std::make_unique<Beatrepeat>(&engineParameters, "Reverb");
     effects.at(1) = std::make_unique<Granulator>(&engineParameters, "Granulator");
-    effects.at(2) = std::make_unique<Delay>(&engineParameters, "Delay");
+    effects.at(2) = std::make_unique<Delay>(&engineParameters, "Resonator");
     
     effects.at(0)->setup(sampleRate, blockSize);
     effects.at(1)->setup(sampleRate, blockSize);
@@ -33,8 +56,8 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     
     // add all Parameters to a vector of AudioParameterGroups which holds all Program Parameters
     programParameters.at(0) = (&engineParameters);
-    for (unsigned int n = 0; n < 3; n++)
-        programParameters.at(n+1) = effects.at(n)->getParameterGroup();
+    for (unsigned int n = 1; n < NUM_EFFECTS+1; ++n)
+        programParameters.at(n) = effects.at(n-1)->getParameterGroup();
     
     // Tempo & Metronome
     tempoTapper.setup(engineParameters.getParameter("tempo")->getMin(), engineParameters.getParameter("tempo")->getMax(), sampleRate);
