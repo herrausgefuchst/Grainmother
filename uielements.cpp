@@ -35,10 +35,6 @@ void Potentiometer::setup(const int index_, const String name_, const float guid
     // setup caches
     guiCache = guidefault_;
     analogCache = analogdefault_;
-    analogAverage = analogdefault_;
-    
-    // fill the analogHistory with all same values
-    std::fill(analogHistory.begin(), analogHistory.end(), INV_POT_MOVINGAVG_SIZE * analogCache);
 }
 
 
@@ -71,22 +67,15 @@ void Potentiometer::update(const float guivalue_, const float analogvalue_)
     }
     
 #ifdef USING_ANALOG_INS
-    // TODO: coould i make this pointer static?
-    // calculate moving average
-    analogAverage -= analogHistory[analogPtr];
-    analogHistory[analogPtr] = analogvalue_ * INV_POT_MOVINGAVG_SIZE;
-    analogAverage += analogHistory[analogPtr];
-    if (++analogPtr >= POT_MOVINGAVG_SIZE) analogPtr = 0;
-    
     // calculte the absolute value (the step of change)
-    float absValue = analogAverage - analogCache;
+    float absValue = analogvalue_ - analogCache;
     absValue = absValue < 0 ? -absValue : absValue;
     
     // chack for change in Analog Input, any change smaller than the POT_NOISE will be ignored
     if (absValue > POT_NOISE)
     {
         // update cache
-        analogCache = analogAverage;
+        analogCache = analogvalue_;
     
         // map the incoming value (0...MAX_VOLTAGE) to unipolar value (0...1)
         // round it to three decimal places

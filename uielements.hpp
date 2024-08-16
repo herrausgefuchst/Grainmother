@@ -172,9 +172,6 @@ private:
     
     float guiCache; /**< Cached GUI value */
     float analogCache; /**< Cached analog value */
-    float analogAverage; /**< Average of analog values */
-    std::array<float, POT_MOVINGAVG_SIZE> analogHistory; /**< History of analog values */
-    unsigned int analogPtr = 0; /**< Pointer to the current position in analog history */
     
     InputSource inputFocus = InputSource::NONE; /**< Current listening focus */
     
