@@ -61,7 +61,7 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     
     // Tempo & Metronome
     tempoTapper.setup(engineParameters.getParameter("tempo")->getMin(), engineParameters.getParameter("tempo")->getMax(), sampleRate);
-    metronome.setup(sampleRate, engineParameters.getParameter("tempo")->getValueF());
+    metronome.setup(sampleRate, engineParameters.getParameter("tempo")->getValueAsFloat());
 }
 
 StereoFloat AudioEngine::processAudioSamples(const StereoFloat input_)
@@ -74,15 +74,15 @@ StereoFloat AudioEngine::processAudioSamples(const StereoFloat input_)
     
     // Effects
     StereoFloat output = input_;
-    if (getParameter(AudioParameterGroup::ENGINE, BYPASS)->getValueI() == ButtonParameter::UP)
+    if (getParameter(AudioParameterGroup::ENGINE, BYPASS)->getValueAsInt() == ButtonParameter::UP)
     {
-        if (engineParameters.getParameter(BEATREPEAT)->getValueI() == ButtonParameter::DOWN)
+        if (engineParameters.getParameter(BEATREPEAT)->getValueAsInt() == ButtonParameter::DOWN)
             output = effects[Effect::BEATREPEAT]->process(output);
 
-        if (engineParameters.getParameter(GRANULATOR)->getValueI() == ButtonParameter::DOWN)
+        if (engineParameters.getParameter(GRANULATOR)->getValueAsInt() == ButtonParameter::DOWN)
             output = effects[Effect::GRANULATOR]->process(output);
 
-        if (engineParameters.getParameter(DELAY)->getValueI() == ButtonParameter::DOWN)
+        if (engineParameters.getParameter(DELAY)->getValueAsInt() == ButtonParameter::DOWN)
             output = effects[Effect::DELAY]->process(output);
     }
     
@@ -93,15 +93,15 @@ StereoFloat AudioEngine::processAudioSamples(const StereoFloat input_)
 
 void AudioEngine::updateAudioBlock()
 {
-    if (getParameter(AudioParameterGroup::ENGINE, BYPASS)->getValueI() == ButtonParameter::UP)
+    if (getParameter(AudioParameterGroup::ENGINE, BYPASS)->getValueAsInt() == ButtonParameter::UP)
     {
-        if (engineParameters.getParameter(BEATREPEAT)->getValueI() == ButtonParameter::DOWN)
+        if (engineParameters.getParameter(BEATREPEAT)->getValueAsInt() == ButtonParameter::DOWN)
             effects[Effect::BEATREPEAT]->processBlock();
 
-        if (engineParameters.getParameter(GRANULATOR)->getValueI() == ButtonParameter::DOWN)
+        if (engineParameters.getParameter(GRANULATOR)->getValueAsInt() == ButtonParameter::DOWN)
             effects[Effect::GRANULATOR]->processBlock();
 
-        if (engineParameters.getParameter(DELAY)->getValueI() == ButtonParameter::DOWN)
+        if (engineParameters.getParameter(DELAY)->getValueAsInt() == ButtonParameter::DOWN)
             effects[Effect::DELAY]->processBlock();
     }
 }
@@ -316,7 +316,7 @@ inline void UserInterface::initializeListeners()
 void UserInterface::setEffectEditFocus (const bool _withNotification)
 {
     auto focus = engine->getParameter("effecteditfocus");
-    auto effect = engine->getEffect(focus->getValueI());
+    auto effect = engine->getEffect(focus->getValueAsInt());
     
     for (unsigned int n = 0; n < NUM_POTENTIOMETERS; n++)
     {
@@ -327,7 +327,7 @@ void UserInterface::setEffectEditFocus (const bool _withNotification)
     
     button[ButtonID::ACTION].focusListener( effect->getParameter(NUM_POTENTIOMETERS) );
     
-    led[LED::ACTION].setValue(effect->getParameter(NUM_POTENTIOMETERS)->getValueF());
+    led[LED::ACTION].setValue(effect->getParameter(NUM_POTENTIOMETERS)->getValueAsFloat());
     
     
 }

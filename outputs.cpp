@@ -223,7 +223,7 @@ void Display::displaySlideParameter (AudioParameter* _param)
     displaycatch.add(parameter->getUnit());
     displaycatch.add(parameter->getMin());
     displaycatch.add(parameter->getMax());
-    displaycatch.add(parameter->getPrintValueF());
+    displaycatch.add(parameter->getPrintValueAsFloat());
     displaycatch.createRows();
 }
 
@@ -249,7 +249,7 @@ void Display::displayChoiceParameter (AudioParameter *_param)
     displaycatch.add(parameter->getName());
     displaycatch.add(choices, parameter->getNumChoices());
     displaycatch.add(parameter->getNumChoices());
-    displaycatch.add(parameter->getValueI());
+    displaycatch.add(parameter->getValueAsInt());
     displaycatch.createRows();
 }
 
@@ -265,7 +265,7 @@ void Display::displayButtonParameter (AudioParameter *_param)
     
     displaycatch.newMessage("/parameterChange_button");
     displaycatch.add(parameter->getName());
-    displaycatch.add(parameter->getValueI());
+    displaycatch.add(parameter->getValueAsInt());
     displaycatch.createRows();
 }
 
@@ -345,11 +345,11 @@ void LED::parameterChanged (AudioParameter *_param)
 {
     if (instanceof<ButtonParameter>(_param))
     {
-        value = _param->getValueF();
+        value = _param->getValueAsFloat();
     }
     else if (_param->getParameterID() == "effecteditfocus")
     {
-        if (_param->getValueI() == id)
+        if (_param->getValueAsInt() == id)
         {
             if (state == ALARM) lastState = VALUEFOCUS;
             else state = VALUEFOCUS;
@@ -460,7 +460,7 @@ void Metronome::process()
 
 void Metronome::parameterChanged (AudioParameter* _param)
 {
-    float tempo_bpm = _param->getValueF();
+    float tempo_bpm = _param->getValueAsFloat();
     
     // 60 bpm = 1 tic p sec = 44100 samples
     // 120 bpm = 2 tics p sec = 22050 samples
