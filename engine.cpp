@@ -1,16 +1,18 @@
 #include "engine.hpp"
 
+// =======================================================================================
 // MARK: - AUDIO ENGINE
 // =======================================================================================
 
 AudioEngine::AudioEngine() : engineParameters("Engine", AudioParameterGroup::Type::ENGINE)
 {}
 
-void AudioEngine::setup(const float _fs, const int _blocksize)
+
+void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
 {
     // Member Variables
-    fs = _fs;
-    blocksize = _blocksize;
+    sampleRate = sampleRate_;
+    blockSize = blockSize_;
     
     // Parameters
     engineParameters.addParameter("tempo", "Tempo", "BPM", 20.f, 300.f, 0.f, 60.f);
@@ -18,17 +20,16 @@ void AudioEngine::setup(const float _fs, const int _blocksize)
     engineParameters.addParameter("beatrepeat", "Beatrepeat", ButtonParameter::TOGGLE);
     engineParameters.addParameter("granulator", "Granulator", ButtonParameter::TOGGLE);
     engineParameters.addParameter("delay", "Delay", ButtonParameter::TOGGLE);
-    const String choices[] = { "Beatrepeat", "Granulator", "Delay" };
-    engineParameters.addParameter("effecteditfocus", "Effect Edit Focus", 3, choices);
+    engineParameters.addParameter("effecteditfocus", "Effect Edit Focus", { "Beatrepeat", "Granulator", "Delay" });
     
     // Effects
-    effects.at(0) = new Beatrepeat(&engineParameters, "Beatrepeat");
-    effects.at(1) = new Granulator(&engineParameters, "Granulator");
-    effects.at(2) = new Delay(&engineParameters, "Delay");
+    effects.at(0) = std::make_unique<Beatrepeat>(&engineParameters, "Beatrepeat");
+    effects.at(1) = std::make_unique<Granulator>(&engineParameters, "Granulator");
+    effects.at(2) = std::make_unique<Delay>(&engineParameters, "Delay");
     
-    effects.at(0)->setup(fs, blocksize);
-    effects.at(1)->setup(fs, blocksize);
-    effects.at(2)->setup(fs, blocksize);
+    effects.at(0)->setup(sampleRate, blockSize);
+    effects.at(1)->setup(sampleRate, blockSize);
+    effects.at(2)->setup(sampleRate, blockSize);
     
     // add all Parameters to a vector of AudioParameterGroups which holds all Program Parameters
     programParameters.at(0) = (&engineParameters);
@@ -36,25 +37,20 @@ void AudioEngine::setup(const float _fs, const int _blocksize)
         programParameters.at(n+1) = effects.at(n)->getParameterGroup();
     
     // Tempo & Metronome
-    tempotapper.setup(engineParameters.getParameter("tempo")->getMin(), engineParameters.getParameter("tempo")->getMax(), fs);
-    metronome.setup(fs, engineParameters.getParameter("tempo")->getValueF());
+    tempoTapper.setup(engineParameters.getParameter("tempo")->getMin(), engineParameters.getParameter("tempo")->getMax(), sampleRate);
+    metronome.setup(sampleRate, engineParameters.getParameter("tempo")->getValueF());
 }
 
-AudioEngine::~AudioEngine()
-{
-    for (auto i : effects) delete i;
-}
-
-StereoFloat AudioEngine::process (const StereoFloat _input)
+StereoFloat AudioEngine::processAudioSamples(const StereoFloat input_)
 {
     // Tempotapper
-    if (tempotapper.process()) getParameter("tempo")->setValue(tempotapper.getBPM());
+    if (tempoTapper.process()) getParameter("tempo")->setValue(tempoTapper.getBPM());
     
     // Metronome
     metronome.process();
     
     // Effects
-    StereoFloat output = _input;
+    StereoFloat output = input_;
     if (getParameter(AudioParameterGroup::ENGINE, BYPASS)->getValueI() == ButtonParameter::UP)
     {
         if (engineParameters.getParameter(BEATREPEAT)->getValueI() == ButtonParameter::DOWN)
@@ -72,7 +68,7 @@ StereoFloat AudioEngine::process (const StereoFloat _input)
     // TODO: order of effects
 }
 
-void AudioEngine::processBlock()
+void AudioEngine::updateAudioBlock()
 {
     if (getParameter(AudioParameterGroup::ENGINE, BYPASS)->getValueI() == ButtonParameter::UP)
     {
@@ -88,41 +84,41 @@ void AudioEngine::processBlock()
 }
 
 
-AudioParameter* AudioEngine::getParameter (const String _parameterID)
+AudioParameter* AudioEngine::getParameter(const String parameterID_)
 {
     AudioParameter* parameter = nullptr;
     
     for (auto i : programParameters)
     {
-        parameter = i->getParameter(_parameterID, false);
+        parameter = i->getParameter(parameterID_, false);
         if (parameter) break;
     }
     
     if (!parameter)
-        engine_rt_error( "AudioEngine couldnt find Parameter with ID " + _parameterID, __FILE__, __LINE__, false);
+        engine_rt_error( "AudioEngine couldnt find Parameter with ID " + parameterID_, __FILE__, __LINE__, false);
     
     return parameter;
 }
 
-AudioParameter* AudioEngine::getParameter (const int _paramgroup, const int _paramindex)
+AudioParameter* AudioEngine::getParameter(const unsigned int paramgroup_, const unsigned int paramindex_)
 {
-    AudioParameter* parameter = programParameters[_paramgroup]->getParameter(_paramindex);
+    AudioParameter* parameter = programParameters[paramgroup_]->getParameter(paramindex_);
     
     if (!parameter)
-        engine_rt_error("AudioEngine couldnt find Parameter with index " + TOSTRING(_paramindex) + " in Parametergroup " + TOSTRING(_paramgroup), __FILE__, __LINE__, false);
+        engine_rt_error("AudioEngine couldnt find Parameter with index " + TOSTRING(paramindex_) + " in Parametergroup " + TOSTRING(paramgroup_), __FILE__, __LINE__, false);
     
     return parameter;
 }
 
-Effect* AudioEngine::getEffect (const int _index)
+Effect* AudioEngine::getEffect(const unsigned int index_)
 {
-    if (_index > effects.size()-1 || _index < 0)
-        engine_rt_error("Audio Engine holds no Effect with Index " + std::to_string(_index), __FILE__, __LINE__, true);
+    if (index_ > effects.size()-1 || index_ < 0)
+        engine_rt_error("Audio Engine holds no Effect with Index " + TOSTRING(index_), __FILE__, __LINE__, true);
     
     if (effects.size() == 0)
         engine_rt_error("Audio Engine holds no Effects", __FILE__, __LINE__, true);
     
-    auto effect = effects[_index];
+    auto effect = effects.at(index_).get();
     
     if (!effect)
         engine_rt_error("Audio Engine can't find effect", __FILE__, __LINE__, true);

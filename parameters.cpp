@@ -353,6 +353,15 @@ void AudioParameterGroup::addParameter (const String _id, const String _name, co
     parametergroup.push_back(new ChoiceParameter(_id, _name, _numChoices, _array));
 }
 
+void AudioParameterGroup::addParameter(const String _id, const String _name, std::initializer_list<String> choices) 
+{
+    engine_error(type == Type::EFFECT && parametergroup.size() > 8,
+          "AudioParameterGroup '" + name + "' doesn't accept AudioParameter of type ChoiceParameter at slot " + TOSTRING(parametergroup.size()),
+          __FILE__, __LINE__, true);
+    
+    parametergroup.push_back(new ChoiceParameter(_id, _name, (int)choices.size(), choices.begin()));
+}
+
 AudioParameter* AudioParameterGroup::getParameter (const int _index)
 {
     if (_index >= parametergroup.size() || _index < 0)

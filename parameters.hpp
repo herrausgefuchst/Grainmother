@@ -210,6 +210,8 @@ public:
     
     void addParameter (const String _id, const String _name, const int _numChoices, const String* _array);
     
+    void addParameter(const String _id, const String _name, std::initializer_list<String> choices);
+    
     AudioParameter* getParameter (const int _index);
     
     AudioParameter* getParameter (const String _id, const bool _withErrorMessage = true);

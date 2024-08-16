@@ -16,43 +16,98 @@
 using json = nlohmann::json;
 #endif
 
+// =======================================================================================
 // MARK: - AUDIO ENGINE
 // =======================================================================================
 
+/**
+ * @class AudioEngine
+ * @brief A class that manages audio processing, effects, and parameters.
+ */
 class AudioEngine
 {
 public:
+    /**
+     * @enum Parameters
+     * @brief Enumeration for the various parameters in the audio engine.
+     */
+    // TODO: what is this?
     enum Parameters { TEMPO, BYPASS, BEATREPEAT, GRANULATOR, DELAY, FXFOCUS };
     
+    /**
+     * @brief Constructor for AudioEngine.
+     */
     AudioEngine();
-    ~AudioEngine();
     
-    void setup (const float _fs, const int _blocksize);
-    StereoFloat process (const StereoFloat _input);
-    void processBlock();
+    /**
+     * @brief Destructor for AudioEngine.
+     */
+    ~AudioEngine() {}
     
-    AudioParameter* getParameter (const String _parameterID);
-    AudioParameter* getParameter (const int _paramgroup, const int _paramindex);
+    /**
+     * @brief Sets up the audio engine with the specified sample rate and block size.
+     * @param sampleRate_ The sample rate.
+     * @param blockSize_ The block size.
+     */
+    void setup(const float sampleRate_, const unsigned int blockSize_);
+
+    /**
+     * @brief Processes a stereo input and returns the processed stereo output.
+     * @param input_ The stereo input to process.
+     * @return The processed stereo output.
+     */
+    StereoFloat processAudioSamples(const StereoFloat input_);
+
+    /**
+     * @brief update function, should be called blockwise
+     */
+    void updateAudioBlock();
     
+    /**
+     * @brief Retrieves an audio parameter by its ID.
+     * @param parameterID_ The ID of the parameter to retrieve.
+     * @return A pointer to the requested AudioParameter.
+     */
+    AudioParameter* getParameter(const String parameterID_);
+
+    /**
+     * @brief Retrieves an audio parameter by its group and index.
+     * @param paramGroup_ The group index of the parameter.
+     * @param paramIndex_ The index of the parameter within the group.
+     * @return A pointer to the requested AudioParameter.
+     */
+    AudioParameter* getParameter(const unsigned int paramGroup_, const unsigned int paramIndex_);
+    
+    /**
+     * @brief Gets the program parameters.
+     * @return An array of pointers to the program parameter groups.
+     */
     std::array<AudioParameterGroup*, 4> getProgramParameters() { return programParameters; }
     
-    Effect* getEffect (const int _index);
-    TempoTapper* getTempoTapper() { return &tempotapper; }
+    /**
+     * @brief Gets an effect by its index.
+     * @param index_ The index of the effect to retrieve.
+     * @return A pointer to the requested Effect.
+     */
+    Effect* getEffect(const unsigned int index_);
+
+    TempoTapper* getTempoTapper() { return &tempoTapper; }
+    
     Metronome* getMetronome() { return &metronome; }
         
 private:
-    std::array<Effect*, 3> effects;
-    std::array<AudioParameterGroup*, 4> programParameters;
-    AudioParameterGroup engineParameters;
+    std::array<std::unique_ptr<Effect>, 3> effects; /**< Array of unique pointers to effects */
+    std::array<AudioParameterGroup*, 4> programParameters; /**< Array of program parameter groups */
+    AudioParameterGroup engineParameters; /**< Parameters specific to the audio engine */
     
-    TempoTapper tempotapper;
-    Metronome metronome;
+    TempoTapper tempoTapper; /**< The tempo tapper instance */
+    Metronome metronome; /**< The metronome instance */
     
-    float fs;
-    int blocksize;
+    float sampleRate; /**< Sample rate */
+    unsigned int blockSize; /**< Block size */
 };
 
-
+// =======================================================================================
 // MARK: - USER INTERFACE
 // =======================================================================================
 
