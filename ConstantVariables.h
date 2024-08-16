@@ -1,6 +1,6 @@
 #pragma once
 
-#define BELA_CONNECTED
+//#define BELA_CONNECTED
 #define CONSOLE_PRINT
 //#define JSON_USED
 
@@ -54,7 +54,3 @@ static const float log_2 = logf(2.f); ///< The natural logarithm of 2, approxima
 
 static const float SMALLEST_POSITIVE_FLOATVALUE = 1.17549e-38; ///< The smallest positive representable float value, approximately 1.17549e-38.
 static const float SMALLEST_NEGATIVE_FLOATVALUE = -1.17549e-38; ///< The smallest negative representable float value, approximately -1.17549e-38.
-
-static const unsigned int NUM_POTENTIOMETERS = 8;
-static const unsigned int NUM_BUTTONS = 10;
-static const unsigned int NUM_LEDS = 6;

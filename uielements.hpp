@@ -95,9 +95,6 @@ protected:
 // MARK: - POTENTIOMETER
 // ********************************************************************************
 
-static const unsigned int POT_MOVINGAVG_SIZE = 8;
-static const float INV_POT_MOVINGAVG_SIZE = 1.f / (float)POT_MOVINGAVG_SIZE;
-
 /**
  * @class Potentiometer
  * @brief A class representing a potentiometer UI element with various input sources.
@@ -207,12 +204,6 @@ public:
      */
     enum Action { CLICK, LONGPRESS, RELEASE };
 
-    /**
-     * @enum ID
-     * @brief Enumeration for the button IDs.
-     */
-    enum ID { FX1, FX2, FX3, ACTION, BYPASS, TEMPO, UP, DOWN, EXIT, ENTER };
-
     /** Constructor for Button */
     Button() : debouncer(DEBOUNCING_UNITS) {}
     
@@ -270,8 +261,8 @@ private:
     
     Debouncer debouncer; /**< Debouncer object for handling button debouncing */
     
-    static const int DEBOUNCING_UNITS; /**< Number of units for debouncing */
-    static const int LONGPRESS_UNITS; /**< Number of units for detecting a long press */
+    static const int DEBOUNCING_UNITS; /**< Number of calls for debouncing */
+    static const int LONGPRESS_UNITS; /**< Number of calls for detecting a long press */
 };
 
 #endif /* uielements_hpp */

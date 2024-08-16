@@ -70,10 +70,6 @@ public:
     
     void setEffectEditFocus (const bool _withNotification = true);
     void nudgeTempo (const int _direction);
-    
-    int getNumButtons() const { return NUM_BUTTONS; }
-    int getNumPotentiometers() const { return NUM_POTENTIOMETERS; }
-    int getNumLEDs() const { return NUM_LEDS; }
         
 private:
     inline void initializeJSON();

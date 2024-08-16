@@ -137,16 +137,16 @@ void UserInterface::setup(AudioEngine *_engine)
 {
     engine = _engine;
   
-    button[Button::FX1].setup(Button::FX1, "Effect 1");
-    button[Button::FX2].setup(Button::FX2, "Effect 2");
-    button[Button::FX3].setup(Button::FX3, "Effect 3");
-    button[Button::ACTION].setup(Button::ACTION, "Action");
-    button[Button::TEMPO].setup(Button::TEMPO, "Tempo");
-    button[Button::BYPASS].setup(Button::BYPASS, "Bypass");
-    button[Button::UP].setup(Button::UP, "Up");
-    button[Button::DOWN].setup(Button::DOWN, "Down");
-    button[Button::EXIT].setup(Button::EXIT, "Exit");
-    button[Button::ENTER].setup(Button::ENTER, "Enter");
+    button[ButtonID::FX1].setup(ButtonID::FX1, "Effect 1");
+    button[ButtonID::FX2].setup(ButtonID::FX2, "Effect 2");
+    button[ButtonID::FX3].setup(ButtonID::FX3, "Effect 3");
+    button[ButtonID::ACTION].setup(ButtonID::ACTION, "Action");
+    button[ButtonID::TEMPO].setup(ButtonID::TEMPO, "Tempo");
+    button[ButtonID::BYPASS].setup(ButtonID::BYPASS, "Bypass");
+    button[ButtonID::UP].setup(ButtonID::UP, "Up");
+    button[ButtonID::DOWN].setup(ButtonID::DOWN, "Down");
+    button[ButtonID::EXIT].setup(ButtonID::EXIT, "Exit");
+    button[ButtonID::ENTER].setup(ButtonID::ENTER, "Enter");
     
     potentiometer[0].setup(0, "Potentiometer 0");
     potentiometer[1].setup(1, "Potentiometer 1");
@@ -236,24 +236,24 @@ inline void UserInterface::initializeGlobalParameters()
 inline void UserInterface::initializeListeners()
 {
     // Buttons -> Parameters
-    button[Button::FX1].addListener(engine->getParameter("beatrepeat"));
-    button[Button::FX2].addListener(engine->getParameter("granulator"));
-    button[Button::FX3].addListener(engine->getParameter("delay"));
-    button[Button::BYPASS].addListener(engine->getParameter("globalbypass"));
+    button[ButtonID::FX1].addListener(engine->getParameter("beatrepeat"));
+    button[ButtonID::FX2].addListener(engine->getParameter("granulator"));
+    button[ButtonID::FX3].addListener(engine->getParameter("delay"));
+    button[ButtonID::BYPASS].addListener(engine->getParameter("globalbypass"));
     
     // Buttons -> Menu
-    button[Button::UP].addListener(&menu);
-    button[Button::UP].onClick.push_back([this] { nudgeTempo(+1); });
-    button[Button::DOWN].addListener(&menu);
-    button[Button::DOWN].onClick.push_back([this] { nudgeTempo(-1); });
-    button[Button::EXIT].addListener(&menu);
-    button[Button::ENTER].addListener(&menu);
-    button[Button::TEMPO].onClick.push_back([this] { engine->getTempoTapper()->tapTempo(); });
+    button[ButtonID::UP].addListener(&menu);
+    button[ButtonID::UP].onClick.push_back([this] { nudgeTempo(+1); });
+    button[ButtonID::DOWN].addListener(&menu);
+    button[ButtonID::DOWN].onClick.push_back([this] { nudgeTempo(-1); });
+    button[ButtonID::EXIT].addListener(&menu);
+    button[ButtonID::ENTER].addListener(&menu);
+    button[ButtonID::TEMPO].onClick.push_back([this] { engine->getTempoTapper()->tapTempo(); });
     
     // Buttons -> Effect Edit Focus
-    button[Button::FX1].onPress.push_back([this] {  engine->getParameter("effecteditfocus")->setValue(0); });
-    button[Button::FX2].onPress.push_back([this] {  engine->getParameter("effecteditfocus")->setValue(1); });
-    button[Button::FX3].onPress.push_back([this] {  engine->getParameter("effecteditfocus")->setValue(2); });
+    button[ButtonID::FX1].onPress.push_back([this] {  engine->getParameter("effecteditfocus")->setValue(0); });
+    button[ButtonID::FX2].onPress.push_back([this] {  engine->getParameter("effecteditfocus")->setValue(1); });
+    button[ButtonID::FX3].onPress.push_back([this] {  engine->getParameter("effecteditfocus")->setValue(2); });
     engine->getParameter("effecteditfocus")->onChange.push_back([this] { setEffectEditFocus(); });
     
     // ! DISPLAY MUST BE FIRST LISTENER OF EACH PARAMETER !
@@ -306,7 +306,7 @@ void UserInterface::setEffectEditFocus (const bool _withNotification)
         potentiometer[n].decouple(noramlizedValue);
     }
     
-    button[Button::ACTION].focusListener( effect->getParameter(NUM_POTENTIOMETERS) );
+    button[ButtonID::ACTION].focusListener( effect->getParameter(NUM_POTENTIOMETERS) );
     
     led[LED::ACTION].setValue(effect->getParameter(NUM_POTENTIOMETERS)->getValueF());
     
@@ -315,7 +315,7 @@ void UserInterface::setEffectEditFocus (const bool _withNotification)
 
 void UserInterface::nudgeTempo(const int _direction)
 {
-    if (button[Button::TEMPO].getPhase() == Button::LOW)
+    if (button[ButtonID::TEMPO].getPhase() == Button::LOW)
     {
         menu.setBypass(true);
         engine->getParameter("tempo")->nudgeValue(_direction);

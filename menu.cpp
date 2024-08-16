@@ -142,7 +142,7 @@ void Menu::buttonClicked (UIElement* _uielement)
             
     switch (button->getIndex())
     {
-        case Button::UP:
+        case ButtonID::UP:
         {
             if (!bypass)
             {
@@ -152,7 +152,7 @@ void Menu::buttonClicked (UIElement* _uielement)
             else bypass = !bypass;
             break;
         }
-        case Button::DOWN:
+        case ButtonID::DOWN:
         {
             if (!bypass)
             {
@@ -162,12 +162,12 @@ void Menu::buttonClicked (UIElement* _uielement)
             else bypass = !bypass;
             break;
         }
-        case Button::EXIT:
+        case ButtonID::EXIT:
         {
             currentPage->exit();
             break;
         }
-        case Button::ENTER:
+        case ButtonID::ENTER:
         {
             currentPage->enter();
             break;
@@ -183,18 +183,18 @@ void Menu::buttonPressed (UIElement* _uielement)
 
     switch (button->getIndex())
     {
-        case Button::UP:
-        case Button::DOWN:
+        case ButtonID::UP:
+        case ButtonID::DOWN:
         {
             isScrolling = true;
             break;
         }
-        case Button::EXIT:
+        case ButtonID::EXIT:
         {
             if (currentPage == pages[Page::HOME]) loadPreset();
             break;
         }
-        case Button::ENTER:
+        case ButtonID::ENTER:
         default:
             break;
     }
@@ -206,8 +206,8 @@ void Menu::buttonReleased (UIElement* _uielement)
 
     switch (button->getIndex())
     {
-        case Button::UP:
-        case Button::DOWN:
+        case ButtonID::UP:
+        case ButtonID::DOWN:
         {
             isScrolling = false;
         }

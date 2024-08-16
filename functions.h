@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ConstantVariables.h"
+#include "EngineVariables.h"
 
 #define TOSTRING(x) std::to_string(x)
 #define INT2ENUM(x, ENUM) static_cast<ENUM>(x)
