@@ -79,7 +79,7 @@ void Potentiometer::update(const float guivalue_, const float analogvalue_)
     
         // map the incoming value (0...MAX_VOLTAGE) to unipolar value (0...1)
         // round it to three decimal places
-        float value = round_float_3(mapValue(analogCache, 0.001f, POT_MAX_VOLTAGE, 0.f, 1.0f));
+        float value = round_float_3(mapValue(analogCache, 0.f, POT_MAX_VOLTAGE, -0.003f, 1.0f));
         // bounding the value, saftey first
         boundValue(value, 0.f, 1.f);
         
