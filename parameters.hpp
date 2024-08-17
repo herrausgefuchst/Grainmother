@@ -4,8 +4,9 @@
 #include "uielements.hpp"
 #include "helpers.hpp"
 
+// =======================================================================================
 // MARK: - AUDIO PARAMETER
-// *******************************************************************************
+// =======================================================================================
 
 /**
  * @class AudioParameter
@@ -68,7 +69,7 @@ public:
      * @brief Notifies all listeners of a parameter change.
      * @param withPrint_ Whether to print the change or not.
      */
-    virtual void notifyListeners(const bool withPrint_) = 0;
+    virtual void notifyListeners(const bool withPrint_);
 
     std::vector<std::function<void()>> onChange;  /**< List of functions to call on value change */
     std::vector<std::function<void()>> onClick;   /**< List of functions to call on click */
@@ -76,23 +77,23 @@ public:
     std::vector<std::function<void()>> onRelease; /**< List of functions to call on release */
 
     /**
-     * @brief Processes the parameter (can be overridden).
+     * @brief Processes the parameter ramp (can be overridden).
      */
-    virtual void process() {}
+    virtual void processRamp() {}
 
     /**
      * @brief Sets the parameter value (float version).
      * @param value_ The new value.
-     * @param withNotification_ Whether to notify listeners.
+     * @param withPrint_ Whether to print new value to display
      */
-    virtual void setValue(const float value_, const bool withNotification_ = true) {}
+    virtual void setValue(const float value_, const bool withPrint_ = true) {}
 
     /**
      * @brief Sets the parameter value (int version).
      * @param value_ The new value.
-     * @param withNotification_ Whether to notify listeners.
+     * @param withPrint_ Whether to print new value to display
      */
-    virtual void setValue(const int value_, const bool withNotification_ = true) {}
+    virtual void setValue(const int value_, const bool withPrint_ = true) {}
 
     /**
      * @brief Nudges the parameter value by a given direction.
@@ -178,8 +179,9 @@ protected:
 };
 
 
+// =======================================================================================
 // MARK: - CHOICE PARAMETER
-// *******************************************************************************
+// =======================================================================================
 
 /**
  * @class ChoiceParameter
@@ -193,26 +195,26 @@ public:
      * @param id_ The ID of the parameter.
      * @param name_ The name of the parameter.
      * @param numChoices_ The number of choices available.
-     * @param choices_ Pointer to an array of choice names.
+     * @param choiceNames_ Pointer to an array of choice names.
      */
-    ChoiceParameter(const String id_, const String name_, const int numChoices_, const String* choices_);
+    ChoiceParameter(const String id_, const String name_, const String* choiceNames_, const unsigned int numChoices_);
 
     /**
      * @brief Destructor for ChoiceParameter.
      */
-    ~ChoiceParameter();
+    ~ChoiceParameter() {}
         
     /**
      * @brief Sets the value of the parameter (int version).
      * @param value_ The new value.
-     * @param withPrint_ Whether to notify listeners.
+     * @param withPrint_ Whether to print new value to display
      */
     void setValue(const int value_, const bool withPrint_ = true) override;
 
     /**
      * @brief Sets the value of the parameter (float version).
      * @param value_ The new value.
-     * @param withPrint_ Whether to notify listeners.
+     * @param withPrint_ Whether to print new value to display
      */
     void setValue(const float value_, const bool withPrint_ = true) override;
 
@@ -223,44 +225,49 @@ public:
     void potChanged(UIElement* uielement_) override;
 
     /**
-     * @brief Notifies all listeners of a parameter change.
-     * @param withPrint_ Whether to print the change or not.
+     * @brief Handles button clicks from a UI element.
+     * @param uielement_ Pointer to the UI element that changed.
      */
-    void notifyListeners(const bool withPrint_) override;
+    void buttonClicked(UIElement* uielement_) override;
+    
+    void nudgeValue(const int direction_) override;
 
     float getValueAsFloat() const override { return static_cast<float>(getValueAsInt()); }
-    int getValueAsInt() const override { return choice; }
-    String getPrintValueAsString() const override { return choice_names[choice]; }
     float getPrintValueAsFloat() const override { return getValueAsFloat(); }
+    int getValueAsInt() const override { return choice; }
     int getPrintValueAsInt() const override { return getValueAsInt(); }
+    String getPrintValueAsString() const override { return choiceNames[choice]; }
 
     /**
      * @brief Gets the number of choices available.
      * @return The number of choices.
      */
-    int getNumChoices() const { return numChoices; }
+    unsigned int getNumChoices() const { return numChoices; }
 
     /**
      * @brief Gets the names of the available choices.
      * @return Pointer to an array of choice names.
      */
-    String* getChoiceNames() const { return choice_names; }
+    String* getChoiceNames() const { return choiceNames.get(); }
     
 private:
-    const int numChoices = 0; /**< Number of choices available */
-    int choice = 0; /**< The current choice */
-    String* choice_names; /**< Array of choice names */
+    const unsigned int numChoices = 0; /**< Number of choices available */
+    unsigned int choice = 0; /**< The current choice */
+    std::unique_ptr<String[]> choiceNames; /**< Array of choice names */
 };
 
 
+
+// =======================================================================================
 // MARK: - SLIDE PARAMETER
-// *******************************************************************************
-
-
+// =======================================================================================
 
 /**
  * @class SlideParameter
  * @brief A class representing a parameter with a sliding scale, supporting linear and frequency scaling.
+ *
+ * the SlideParameter includes a ramp for the print value
+ *
  */
 class SlideParameter : public AudioParameter
 {
@@ -278,22 +285,27 @@ public:
      * @param unit_ The unit of measurement for the parameter.
      * @param min_ The minimum value of the parameter.
      * @param max_ The maximum value of the parameter.
-     * @param step_ The step size for the parameter.
+     * @param nudgeStep_ The step size for the parameter.
      * @param default_ The default value of the parameter.
      * @param scaling_ The scaling type (linear or frequency).
-     * @param ramptime_ms_ The ramp time in milliseconds for changes.
+     * @param ramptimeMs_ The ramp time in milliseconds for changes
      */
-    SlideParameter(const String id_, const String name_, const String unit_, const float min_, const float max_, const float step_, const float default_, const Scaling scaling_ = LIN, const float ramptime_ms_ = 0.f);
+    SlideParameter(const String id_, const String name_, const String unit_, 
+                   const float min_, const float max_, const float nudgeStep_,
+                   const float default_,
+                   const float sampleRate_,
+                   const Scaling scaling_ = LIN,
+                   const float ramptimeMs_ = 0.f);
 
     /**
      * @brief Destructor for SlideParameter.
      */
     ~SlideParameter() {}
     
-    void process() override;
+    void processRamp() override;
+    
     void potChanged(UIElement* uielement_) override;
-    void notifyListeners(const bool withPrint_) override;
-
+    
     void setValue(float value_, const bool withPrint_ = true) override;
     void setValue(const int value_, const bool withPrint_ = true) override;
     
@@ -302,12 +314,12 @@ public:
      * @param value_ The normalized value to set.
      * @param withPrint_ Whether to notify listeners.
      */
-    void setNormalizedValue(float value_, const bool withPrint_ = true);
+    void setNormalizedValue(const float value_, const bool withPrint_ = true);
 
     void nudgeValue(const int direction_) override;
 
-    float getValueAsFloat() const override { return value.getCurrent(); }
-    float getPrintValueAsFloat() const override { return value.getGoal(); }
+    float getValueAsFloat() const override { return value(); }
+    float getPrintValueAsFloat() const override { return value.getTarget(); }
     float getNormalizedValue() const override { return normalizedValue; }
     int getValueAsInt() const override { return static_cast<int>(getValueAsFloat()); }
     int getPrintValueAsInt() const override { return static_cast<int>(getPrintValueAsFloat()); }
@@ -318,28 +330,31 @@ public:
      */
     String getUnit() const { return unit; }
 
-    String getPrintValueAsString() const override { return TOSTRING(value.getGoal()); }
+    String getPrintValueAsString() const override { return TOSTRING(value.getTarget()); }
     
     float getMin() const override { return min; }
     float getMax() const override { return max; }
-    float getStep() const override { return step; }
+    float getStep() const override { return nudgeStep; }
     float getRange() const override { return range; }
     
 private:
+    void setRampValue(const float value_, const bool withRamp_ = true);
+    
     const String unit;
     const float min;
     const float max;
-    const float step;
+    float nudgeStep;
     const float range;
-    const float ramptime_ms;
+    const float ramptimeMs;
     const Scaling scaling;
-    Ramp value;
+    RampLinear value;
     float normalizedValue;
 };
 
 
+// =======================================================================================
 // MARK: - BUTTON PARAMETER
-// ********************************************************************************
+// =======================================================================================
 
 /**
  * @class ButtonParameter
@@ -375,18 +390,18 @@ public:
     enum Type { TOGGLE, MOMENTARY, COUPLED };
 
     /**
-     * @enum Toggle
+     * @enum ToggleSte
      * @brief Enumeration for the toggle state (UP, DOWN).
      */
-    enum Toggle { UP, DOWN };
-        
+    enum ToggleState { UP, DOWN };
+    
     /**
      * @brief Constructs a ButtonParameter with a specified ID, name, and interaction type.
      * @param id_ The ID of the parameter.
      * @param name_ The name of the parameter.
      * @param type_ The type of button interaction.
      */
-    ButtonParameter(const String id_, const String name_, const Type type_);
+    ButtonParameter(const String id_, const String name_, const Type type_, const String* toggleStateNames_ = nullptr);
 
     /**
      * @brief Destructor for ButtonParameter.
@@ -396,9 +411,7 @@ public:
     void buttonClicked(UIElement* uielement_) override;
     void buttonPressed(UIElement* uielement_) override;
     void buttonReleased(UIElement* uielement_) override;
-    
-    void notifyListeners(const bool withPrint_) override;
-
+        
     void setValue(const float value_, const bool withPrint_ = true) override;
     void setValue(const int value_, const bool withPrint_ = true) override;
 
@@ -406,16 +419,18 @@ public:
     float getPrintValueAsFloat() const override { return getValueAsFloat(); }
     int getValueAsInt() const override { return value; }
     int getPrintValueAsInt() const override { return getValueAsInt(); }
-    String getPrintValueAsString() const override { return TOSTRING(value); } // TODO: enum to string?
+    String getPrintValueAsString() const override;
     
 private:
     const Type type;
-    int value = UP;
+    ToggleState value = UP;
+    std::unique_ptr<String[]> toggleStateNames;
 };
 
 
+// =======================================================================================
 // MARK: - AUDIO PARAMETER GROUP
-// *******************************************************************************
+// =======================================================================================
 
 /**
  * @class AudioParameterGroup
@@ -425,6 +440,7 @@ private:
  * by grouping them together. This class supports different types of parameters,
  * such as sliders, buttons, and choices, and enables easy retrieval and management.
  */
+template<size_t N>
 class AudioParameterGroup
 {
 public:
@@ -455,7 +471,7 @@ public:
     /**
      * @brief Destructor for AudioParameterGroup.
      */
-    ~AudioParameterGroup();
+    ~AudioParameterGroup() {}
         
     /**
      * @brief Adds a slider parameter to the group.
@@ -464,20 +480,28 @@ public:
      * @param unit_ The unit of measurement for the parameter.
      * @param min_ The minimum value of the parameter.
      * @param max_ The maximum value of the parameter.
-     * @param step_ The step size for the parameter.
+     * @param nudgeStep_ The step size for the parameter.
      * @param default_ The default value of the parameter.
+     * @param sampleRate_ the sample rate
      * @param scaling_ The scaling type for the parameter (linear or frequency).
-     * @param ramptime_ms_ The ramp time in milliseconds for value changes.
+     * @param ramptimeMs_ The ramp time in milliseconds for value changes.
      */
-    void addParameter(const String id_, const String name_, const String unit_, const float min_, const float max_, const float step_, const float default_, const SlideParameter::Scaling scaling_ = SlideParameter::LIN, const float ramptime_ms_ = 0.f);
+    void addParameter(const String id_, const String name_, const String unit_,
+                      const float min_, const float max_,
+                      const float nudgeStep_, const float default_,
+                      const float sampleRate_,
+                      const SlideParameter::Scaling scaling_ = SlideParameter::Scaling::LIN,
+                      const float ramptimeMs_ = 0.f);
 
     /**
      * @brief Adds a button parameter to the group.
      * @param id_ The ID of the parameter.
      * @param name_ The name of the parameter.
      * @param type_ The button type (e.g., TOGGLE, MOMENTARY).
+     * @param toggleStateNames_ the print Strings of the two toggle states (optional)
      */
-    void addParameter(const String id_, const String name_, const ButtonParameter::Type type_);
+    void addParameter(const String id_, const String name_,
+                      const ButtonParameter::Type type_, const String* toggleStateNames_ = nullptr);
 
     /**
      * @brief Adds a choice parameter to the group.
@@ -486,7 +510,7 @@ public:
      * @param numChoices_ The number of choices available.
      * @param array_ A pointer to an array of choice names.
      */
-    void addParameter(const String id_, const String name_, const int numChoices_, const String* array_);
+    void addParameter(const String id_, const String name_, const String* array_, const int numChoices_);
 
     /**
      * @brief Adds a choice parameter to the group using an initializer list.
@@ -501,7 +525,7 @@ public:
      * @param index_ The index of the parameter in the group.
      * @return A pointer to the requested AudioParameter.
      */
-    AudioParameter* getParameter(const int index_);
+    AudioParameter* getParameter(const unsigned int index_);
     
     /**
      * @brief Retrieves a parameter by its ID.
@@ -509,7 +533,7 @@ public:
      * @param withErrorMessage_ Whether to print an error message if the parameter is not found.
      * @return A pointer to the requested AudioParameter.
      */
-    AudioParameter* getParameter(const String id_, const bool withErrorMessage_ = true);
+    AudioParameter* getParameter(const String id_);
     
     /**
      * @brief Gets the name of the parameter group.
@@ -521,10 +545,12 @@ public:
      * @brief Gets the number of parameters in the group.
      * @return The number of parameters in the group.
      */
-    int getNumParametersInGroup() const { return static_cast<int>(parametergroup.size()); }
+    size_t getNumParametersInGroup() const { return N; }
     
 private:
-    std::vector<AudioParameter*> parametergroup; /**< Vector containing the parameters in the group */
+    int getNextFreeGroupIndex();
+    
+    std::array<std::unique_ptr<AudioParameter>, N> parameterGroup; /**< array containing the parameters in the group */
     const String name; /**< Name of the parameter group */
     const Type type; /**< Type of the parameter group (ENGINE or EFFECT) */
 };

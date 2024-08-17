@@ -149,7 +149,6 @@ void Potentiometer::setValue(const float value_)
         engine_rt_error("new value for " + name + " exceeds range 0..1: " + std::to_string(value_),
                         __FILE__, __LINE__, true);
 
-    // TODO: for what do we need last?
     last = current;
     current = value_;
     

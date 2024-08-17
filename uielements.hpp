@@ -186,7 +186,7 @@ public:
     
 private:
     float current = 0.f; /**< Current value of the potentiometer */
-    float last = 0.f; /**< Last value of the potentiometer */
+    float last = 0.f; /**< Last value of the potentiometer (i.e. used in ChoiceParameter)  */
     
     float guiCache; /**< Cached GUI value */
     float analogCache; /**< Cached analog value */

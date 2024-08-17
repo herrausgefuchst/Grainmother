@@ -59,6 +59,112 @@ private:
     float fs; /**< The sampling rate */
 };
 
+/**
+ * @class RampLinear
+ * @brief The RampLinear object implements a linear fade between two values.
+ *
+ * This class is used for parameters that glitch or crackle when changing them in the UI too fast. One can set the time, the ramp needs to process.
+ */
+class RampLinear
+{
+public:
+    /** ()-operator returns the momentary value.*/
+    const float& operator() () const
+    {
+        return value;
+    }
+    
+    /** !=-operator compres the two momentary values of both objects */
+    bool operator!= (const RampLinear& otherRamp) const
+    {
+        if (value != otherRamp() || !rampFinished) return true;
+        else return false;
+    }
+    
+    /** =-operator sets a new value directly, without ramping it */
+    void operator= (const float& newValue_)
+    {
+        setValueWithoutRamping(newValue_);
+    }
+    
+    /**
+     * @brief sets up the ramp
+     * @param initialValue_ the start value
+     * @param sampleRate_ sample rate
+     * @param blocksize_ rates how often the ramp should be processed
+     * @param blockwiseProcessing_ if yes, the increments will be calculated accordingly
+     *
+     * blockSize_ can be audio blocksize, but can also be something else. Just be sure to call the processRamp() function in the same rate.
+     */
+    void setup (const float& initialValue_, const float& sampleRate_, const unsigned int& blocksize_, const bool& blockwiseProcessing_ = true)
+    {
+        value = target = initialValue_;
+        fs = sampleRate_;
+        blocksize_inv = 1.f / (float)blocksize_;
+        blockwiseProcessing = blockwiseProcessing_;
+    }
+    
+    /** increments value, deincrements counter and sets finished-flag if counter is off */
+    bool processRamp()
+    {
+        value += incr;
+        
+        if (--counter <= 0)
+        {
+            rampFinished = true;
+            value = target;
+        }
+        
+        return true;
+    }
+    
+    /** sets value and target to the same value, no ramping needed */
+    void setValueWithoutRamping (const float& newValue_)
+    {
+        value = target = newValue_;
+        
+        rampFinished = true;
+        
+        incr = 0.f;
+    }
+    
+    /** sets a new target value for the ramp with a certain time */
+    void setRampTo (const float& target_, const float& time_sec)
+    {
+        target = target_;
+        
+        if (target != value)
+        {
+            // calculate the num of steps that the ramp takes
+            // if process will be called blockwise, the counter has to be set accordingly
+            counter = (int)(time_sec * fs);
+            if (blockwiseProcessing) counter *= blocksize_inv;
+            
+            // calculate the increment that's added every call of process
+            if (counter != 0) incr = (target - value) / (float)counter;
+            // counter == 0 would mean that the value will be set immediatly without ramping
+            else setValueWithoutRamping(target);
+        }
+        else incr = 0.f;
+        
+        rampFinished = false;
+    }
+    
+    /** returns the current value,  ()-operator does the same */
+    const float& getValue() const { return value; }
+    
+    const float& getTarget() const { return target; }
+
+private:
+    float incr = 0.f; ///< the increment step of the ramp
+    float value = 0.f; ///< the current value
+    float target = 0.f; ///< the target value of the ramp
+    unsigned int counter = 0; ///< counts if ramp has finished
+    float fs, blocksize_inv;
+    bool blockwiseProcessing = false;
+public:
+    bool rampFinished = true;
+};
 
 // MARK: - TempoTapper
 // ********************************************************************************

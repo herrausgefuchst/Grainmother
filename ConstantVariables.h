@@ -36,6 +36,7 @@
 #define floorf_neon(x) floorf(x)
 #define ceilf_neon(x) ceilf(x)
 #define fabsf_neon(x) fabsf(x)
+#define modf_neon(x, y) modf(x, &(y))
 
 #define rt_printf(...) printf(__VA_ARGS__)
 
