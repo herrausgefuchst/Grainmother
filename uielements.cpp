@@ -172,7 +172,7 @@ void Potentiometer::decouple(const float newcurrent_)
 
 
 const int Button::DEBOUNCING_UNITS = 1;
-const int Button::LONGPRESS_UNITS = 25;
+const int Button::LONGPRESS_UNITS = 10;
 
 
 void Button::setup(const int index_, const String name_, const Phase guidefault_, const Phase analogdefault_)

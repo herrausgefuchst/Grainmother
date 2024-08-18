@@ -329,8 +329,8 @@ void Display::displayPreset (const int _index, const String _name)
 // MARK: - LED
 // ********************************************************************************
 
-const int LED::BLINKING_RATE = 3;
-const int LED::NUM_BLINKS = 3;
+const int LED::BLINKING_RATE = 1;
+const int LED::NUM_BLINKS = 5;
 
 void LED::setup(const int _id, const String _name)
 {
@@ -343,11 +343,16 @@ void LED::setup(const int _id, const String _name)
 
 void LED::parameterChanged (AudioParameter *_param)
 {
-    if (instanceof<ButtonParameter>(_param))
+    if (instanceof<ButtonParameter>(_param) || instanceof<ToggleParameter>(_param))
     {
         value = _param->getValueAsFloat();
     }
-    else if (_param->getParameterID() == "effecteditfocus")
+    else if (instanceof<ChoiceParameter>(_param) && _param->getParameterID() != "effect_edit_focus")
+    {
+        ChoiceParameter* param = static_cast<ChoiceParameter*>(_param);
+        value = 0.3f + 0.7f * ((param->getValueAsFloat() + 1.f) / (float)param->getNumChoices());
+    }
+    else if (_param->getParameterID() == "effect_edit_focus")
     {
         if (_param->getValueAsInt() == id)
         {
@@ -396,8 +401,8 @@ float LED::get()
                 blinking_ctr = BLINKING_RATE;
                 blinker = !blinker;
             }
-            if (value > 0.5f) output = 0.6f * value + 0.4f * blinker;
-            else output = 0.5f * blinker;
+            if (value > 0.5f) output = 0.68f * value + 0.32f * blinker;
+            else output = 0.08f * blinker + 0.42f;
             break;
         }
             

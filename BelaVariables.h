@@ -11,7 +11,7 @@
 #define SCOPE_ACTIVE
 
 //void updateGUIdisplay (void* _arg);
-//void updateLEDs (void* _arg);
+void updateLEDs (void* _arg);
 
 namespace BelaVariables
 {
@@ -32,7 +32,7 @@ namespace BelaVariables
 
     unsigned int LED_BLOCKS_PER_FRAME;
     int ledBlockCtr;
-    std::vector<float> ledCache;
+    std::array<float, NUM_LEDS> ledCache;
 
     unsigned int UI_BLOCKS_PER_FRAME;
     int uiBlockCtr;
@@ -65,7 +65,7 @@ namespace BelaVariables
 
     // threads
     //AuxiliaryTask taskUpdateGUIDisplay;
-    //AuxiliaryTask taskUpdateLEDS;
+    AuxiliaryTask THREAD_updateLEDs;
 };
 
 

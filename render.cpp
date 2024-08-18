@@ -27,11 +27,11 @@ bool setup (BelaContext *context, void *userData)
 //    // display
 //    DISPLAY_BLOCKS_PER_FRAME = context->audioSampleRate / ( DISPLAY_FRAMERATE * context->audioFrames );
 //    displayBlockCtr = DISPLAY_BLOCKS_PER_FRAME;
-//    
-//    // leds
-//    LED_BLOCKS_PER_FRAME = context->audioSampleRate / ( LED_FRAMERATE * context->audioFrames );
-//    ledBlockCtr = LED_BLOCKS_PER_FRAME;
-//    for (unsigned int n = 0; n < userinterface.getNumLEDs(); ++n) ledCache.push_back(0.f);
+    
+    // leds
+    LED_BLOCKS_PER_FRAME = context->audioSampleRate / ( LED_FRAMERATE * context->audioFrames );
+    ledBlockCtr = LED_BLOCKS_PER_FRAME;
+    std::fill(ledCache.begin(), ledCache.end(), 0.f);
     
     // ui rate
     UI_BLOCKS_PER_FRAME = context->audioSampleRate / ( UI_FRAMERATE * context->audioFrames );
@@ -39,7 +39,7 @@ bool setup (BelaContext *context, void *userData)
     guiInitializationCtr = GUI_INITIALIZATION_TIME_SEC * context->audioFrames;
     
     // aux tasks
-//    if((taskUpdateLEDS = Bela_createAuxiliaryTask(&updateLEDs, 89, "update-LEDs", context)) == 0) return false;
+    if((THREAD_updateLEDs = Bela_createAuxiliaryTask(&updateLEDs, 89, "updateLEDs", context)) == 0) return false;
 //    if((taskUpdateGUIDisplay = Bela_createAuxiliaryTask(&updateGUIdisplay, 88, "update-GUI-display", nullptr)) == 0) return false;
     
     // digital pinmodes
@@ -56,7 +56,7 @@ bool setup (BelaContext *context, void *userData)
 }
 
 
-void updateParameters(BelaContext *context)
+void updateUserInterface(BelaContext *context)
 {
 
 // update BLOCKWISE +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -105,14 +105,6 @@ void updateParameters(BelaContext *context)
             }
         }
     }
-    
-//    // leds
-//    if (--ledBlockCtr <= 0)
-//    {
-//        ledBlockCtr = LED_BLOCKS_PER_FRAME;
-//        Bela_scheduleAuxiliaryTask(taskUpdateLEDS);
-//    }
-//    FORLOOP(userinterface.getNumLEDs()) analogWrite(context, 0, HARDWARE_PIN_LED[n], ledCache[n]);
 //    
 //    // display
 //    if (--displayBlockCtr <= 0)
@@ -132,58 +124,18 @@ void render (BelaContext *context, void *userData)
 
 // update BLOCKWISE +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    updateParameters(context);
-//    // Initializing UI
-//    if (guiIsInitializing)
-//    {
-//        // analog default values must be read in render() function
-//        if (guiInitializationCtr == GUI_INITIALIZATION_TIME_SEC)
-//            FORLOOP(userinterface.getNumPotentiometers())
-//                userinterface.potentiometer[n].setDefaults(0.f, analogRead(context, 0, HARDWARE_PIN_POTENTIOMETER[n]));
-//                
-//        // counter for awaiting the GUI page to reload
-//        if (guiInitializationCtr-- <= 0) guiIsInitializing = false;
-//    }
-//    
-//    // buttons & potentiometer
-//    if (--uiBlockCtr <= 0)
-//    {
-//        // reset counter
-//        uiBlockCtr = UI_BLOCKS_PER_FRAME;
-//        
-//        if (!guiIsInitializing)
-//        {
-//            // get GUI buffers
-//            float* guibuttons = gui.getDataBuffer(guiBufferIdx[BUTTONS]).getAsFloat();
-//            float* guipots = gui.getDataBuffer(guiBufferIdx[POTS]).getAsFloat();
-//            float* guictrls = gui.getDataBuffer(guiBufferIdx[GUICTRLS]).getAsFloat();
-//            
-//            // update buttons and potentiometers
-//            for (unsigned int n = 0; n < userinterface.getNumButtons(); ++n) userinterface.button[n].update(guibuttons[n], digitalRead(context, 0, HARDWARE_PIN_BUTTON[n]));
-//            for (unsigned int n = 0; n < userinterface.getNumPotentiometers(); ++n) userinterface.potentiometer[n].update(guipots[n], analogRead(context, 0, HARDWARE_PIN_POTENTIOMETER[n]));
-//            
-//            // get GUI input controls
-//            int input = (int)guictrls[0];
-//            int track = (int)guictrls[1];
-//            float freq = guictrls[2];
-//            float volume = 0.01f * guictrls[3];
-//            
-//            // set GUI input paramters if changed
-//            if (input != inputHandler.getInput()) inputHandler.setInput(INT2ENUM(input, InputHandler::Input));
-//            if (track != inputHandler.player.getTrack()) inputHandler.player.setTrack(track);
-//            if (freq != inputHandler.oscillator.getFrequency()) inputHandler.oscillator.setFrequency(freq);
-//            if (volume != inputHandler.getVolume()) inputHandler.setVolume(volume);
-//        }
-//    }
-//    
-//    // leds
-//    if (--ledBlockCtr <= 0)
-//    {
-//        ledBlockCtr = LED_BLOCKS_PER_FRAME;
-//        Bela_scheduleAuxiliaryTask(taskUpdateLEDS);
-//    }
-//    FORLOOP(userinterface.getNumLEDs()) analogWrite(context, 0, HARDWARE_PIN_LED[n], ledCache[n]);
-//    
+    updateUserInterface(context);
+
+    // leds
+    if (--ledBlockCtr <= 0)
+    {
+        ledBlockCtr = LED_BLOCKS_PER_FRAME;
+        Bela_scheduleAuxiliaryTask(THREAD_updateLEDs);
+    }
+    
+    for (unsigned int n = 0; n < NUM_LEDS; ++n)
+        analogWrite(context, 0, HARDWARE_PIN_LED[n], ledCache[n]);
+        
 //    // display
 //    if (--displayBlockCtr <= 0)
 //    {
@@ -244,12 +196,12 @@ void cleanup (BelaContext *context, void *userData)
 //        gui.sendBuffer(n+guiBufferIdx[DSP1], rows[n]);
 //}
 //
-//void updateLEDs (void* _arg)
-//{
-//    for (unsigned int n = 0; n < userinterface.getNumLEDs(); n++)
-//        ledCache[n] = userinterface.led[n].get();
-//    
+void updateLEDs (void* _arg)
+{
+    for (unsigned int n = 0; n < NUM_LEDS; ++n)
+        ledCache[n] = userinterface.led[n].get();
+    
 //    gui.sendBuffer(guiBufferIdx[LEDS], ledCache);
-//}
+}
 
 #endif // BELA_CONNECTED

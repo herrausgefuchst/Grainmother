@@ -111,6 +111,8 @@ public:
     
     using Effect::Effect;
     
+    void setup() override;
+    
     ~Granulator() {}
     
     StereoFloat processAudioSamples(const StereoFloat input_) override;

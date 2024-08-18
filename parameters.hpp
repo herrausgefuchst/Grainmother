@@ -490,12 +490,6 @@ class AudioParameterGroup
 {
 public:
     /**
-     * @enum ID
-     * @brief Identifiers for different parameter groups.
-     */
-    enum ID { ENGINE, BEATREPEAT, GRANULATOR, DELAY };
-
-    /**
      * @enum Type
      * @brief Types of parameter groups, indicating their purpose.
      */

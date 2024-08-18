@@ -44,11 +44,12 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     
     // Effects
     // TODO: change setup
-    effects.at(0) = std::make_unique<Reverb>(&engineParameters, 12, "ReverbParameters", sampleRate, blockSize);
-    effects.at(1) = std::make_unique<Granulator>(&engineParameters, 8, "GranulatorParameters", sampleRate, blockSize);
+    effects.at(0) = std::make_unique<Reverb>(&engineParameters, GrainmotherReverb::NUM_PARAMETERS, "ReverbParameters", sampleRate, blockSize);
+    effects.at(1) = std::make_unique<Granulator>(&engineParameters, GrainmotherGranulator::NUM_PARAMETERS, "GranulatorParameters", sampleRate, blockSize);
     effects.at(2) = std::make_unique<Resonator>(&engineParameters, 8, "ResonatorParameters", sampleRate, blockSize);
     
     effects.at(0)->setup();
+    effects.at(1)->setup();
     
     // add all Parameters to a vector of AudioParameterGroups which holds all Program Parameters
     programParameters.at(0) = (&engineParameters);
@@ -184,7 +185,7 @@ void UserInterface::setup(AudioEngine *_engine)
     initializeListeners();
     
     // load last used Preset
-//    loadPresetFromJSON(globals.lastUsedPreset);
+    loadPresetFromJSON(globals.lastUsedPreset);
 }
 
 UserInterface::~UserInterface()
@@ -283,17 +284,17 @@ inline void UserInterface::initializeListeners()
 //    //TODO: add Resonator
 //    
 //    // Parameters -> LEDs
-//    engine->getParameter("globalbypass")->addListener(&led[LED::BYPASS]);
-//    engine->getParameter("beatrepeat")->addListener(&led[LED::FX1]);
-//    engine->getParameter("granulator")->addListener(&led[LED::FX2]);
-//    engine->getParameter("delay")->addListener(&led[LED::FX3]);
-//    engine->getParameter(AudioParameterGroup::BEATREPEAT, NUM_POTENTIOMETERS)->addListener(&led[LED::ACTION]);
-//    engine->getParameter(AudioParameterGroup::GRANULATOR, NUM_POTENTIOMETERS)->addListener(&led[LED::ACTION]);
+    engine->getParameter("global_bypass")->addListener(&led[LED::BYPASS]);
+    engine->getParameter("effect1_bypass")->addListener(&led[LED::FX1]);
+    engine->getParameter("effect2_bypass")->addListener(&led[LED::FX2]);
+    engine->getParameter("effect3_bypass")->addListener(&led[LED::FX3]);
+    engine->getParameter((uint)ParameterGroupID::REVERB, NUM_POTENTIOMETERS)->addListener(&led[LED::ACTION]);
+    engine->getParameter((uint)ParameterGroupID::GRANULATOR, NUM_POTENTIOMETERS)->addListener(&led[LED::ACTION]);
 //    //TODO: add Resonator
-//    engine->getParameter("effecteditfocus")->addListener(&led[LED::FX1]);
-//    engine->getParameter("effecteditfocus")->addListener(&led[LED::FX2]);
-//    engine->getParameter("effecteditfocus")->addListener(&led[LED::FX3]);
-//    
+    engine->getParameter("effect_edit_focus")->addListener(&led[LED::FX1]);
+    engine->getParameter("effect_edit_focus")->addListener(&led[LED::FX2]);
+    engine->getParameter("effect_edit_focus")->addListener(&led[LED::FX3]);
+//
 //    // Parameter -> Metronome
 //    engine->getParameter("tempo")->addListener(engine->getMetronome());
 //    
@@ -322,7 +323,7 @@ void UserInterface::setEffectEditFocus (const bool _withNotification)
     
     button[ButtonID::ACTION].focusListener( effect->getParameter(NUM_POTENTIOMETERS) );
     
-//    led[LED::ACTION].setValue(effect->getParameter(NUM_POTENTIOMETERS)->getValueAsFloat());
+    led[LED::ACTION].parameterChanged(effect->getParameter(NUM_POTENTIOMETERS));
 }
 
 void UserInterface::nudgeTempo(const int _direction)
@@ -375,7 +376,7 @@ void UserInterface::loadPresetFromJSON (const int _index)
     // parameters
     auto parameters = engine->getProgramParameters();
 //    auto engineP = parameters[AudioParameterGroup::ENGINE];
-    auto beatrepeatP = parameters[AudioParameterGroup::BEATREPEAT];
+//    auto beatrepeatP = parameters[AudioParameterGroup::BEATREPEAT];
 //    auto granulatorP = parameters[AudioParameterGroup::GRANULATOR];
 //    auto delayP = parameters[AudioParameterGroup::DELAY];
     
@@ -418,13 +419,13 @@ void UserInterface::loadPresetFromJSON (const int _index)
 //    for (unsigned int n = 0; n < granulatorP->getNumParametersInGroup(); n++)
 //        granulatorP->getParameter(n)->setValue(defaultgranulator[n], withPrint);
 
-    float defaultbeatrepeat[] = { 0.f, 10.f, 3.f, 100.f, 100.f, 0.f, 0.f, 100.f, ButtonParameter::UP };
-    for (unsigned int n = 0; n < beatrepeatP->getNumParametersInGroup(); n++)
-        beatrepeatP->getParameter(n)->setValue(defaultbeatrepeat[n], withPrint);
+//    float defaultbeatrepeat[] = { 0.f, 10.f, 3.f, 100.f, 100.f, 0.f, 0.f, 100.f, ButtonParameter::UP };
+//    for (unsigned int n = 0; n < beatrepeatP->getNumParametersInGroup(); n++)
+//        beatrepeatP->getParameter(n)->setValue(defaultbeatrepeat[n], withPrint);
     
 #endif
     
     // LED-notification
-    for (unsigned int n = 0; n < NUM_LEDS; n++)
+    for (unsigned int n = 0; n < NUM_LEDS; ++n)
         led[n].setAlarm();
 }

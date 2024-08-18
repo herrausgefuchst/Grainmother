@@ -97,6 +97,14 @@ void Reverb::initializeListeners()
 // MARK: - GRANULATOR
 // ********************************************************************************
 
+
+void Granulator::setup()
+{
+    initializeParameters();
+    initializeListeners();
+}
+
+
 StereoFloat Granulator::processAudioSamples(const StereoFloat input_)
 {
     // process ramps
@@ -113,15 +121,41 @@ void Granulator::updateAudioBlock()
 
 void Granulator::initializeParameters()
 {
-//    parameters.addParameter("granulator_param1", "Gran1", "%", 0.f, 100.f, 0.f, 0.f);
-//    parameters.addParameter("granulator_param2", "Gran2", "%", 0.f, 100.f, 0.f, 0.f);
-//    parameters.addParameter("granulator_param3", "Gran3", "%", 0.f, 100.f, 0.f, 0.f);
-//    parameters.addParameter("granulator_param4", "Gran4", "%", 0.f, 100.f, 0.f, 0.f);
-//    parameters.addParameter("granulator_param5", "Gran5", "semitones", 0.f, 24.f, 1.f, 0.f);
-//    parameters.addParameter("granulator_param6", "Gran6", "%", 0.f, 100.f, 0.f, 0.f);
-//    parameters.addParameter("granulator_param7", "Gran7", "seconds", 0.f, 2.f, 0.f, 0.f);
-//    parameters.addParameter("granulator_param8", "Gran8", "%", 0.f, 100.f, 0.f, 50.f);
-//    parameters.addParameter("granulator_param9", "Gran9", ButtonParameter::COUPLED);
+    using namespace GrainmotherGranulator;
+    
+    rt_printf("Granulator Parameters initializing!\n");
+    
+    // parameters controlled by potentiometers/sliders (index 0...7)
+    for (unsigned int n = 0; n < NUM_POTENTIOMETERS; ++n)
+        parameters.addParameter(parameterID[n],
+                                parameterName[n],
+                                parameterSuffix[n],
+                                parameterMin[n],
+                                parameterMax[n],
+                                parameterStep[n],
+                                parameterInitialValue[n],
+                                sampleRate);
+    
+    // parameter controlled by the Action-Button (index 8)
+    parameters.addParameter(parameterID[NUM_POTENTIOMETERS],
+                            parameterName[NUM_POTENTIOMETERS],
+                            ButtonParameter::Type::COUPLED,
+                            {"Off", "On"});
+    
+    // parameters controlled by menu (index 9...11)
+    for (unsigned int n = NUM_POTENTIOMETERS+1; n < NUM_PARAMETERS; ++n)
+        parameters.addParameter(parameterID[n],
+                                parameterName[n],
+                                parameterSuffix[n],
+                                parameterMin[n],
+                                parameterMax[n],
+                                parameterStep[n],
+                                parameterInitialValue[n],
+                                sampleRate);
+    
+    // special cases: scaling and ramps:
+    static_cast<SlideParameter*>(parameters.getParameter("gran_density"))->setScaling(SlideParameter::Scaling::FREQ);
+    static_cast<SlideParameter*>(parameters.getParameter("gran_highcut"))->setScaling(SlideParameter::Scaling::FREQ);
 }
 
 void Granulator::initializeListeners()
