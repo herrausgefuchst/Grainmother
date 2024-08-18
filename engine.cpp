@@ -48,6 +48,8 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     effects.at(1) = std::make_unique<Granulator>(&engineParameters, 8, "GranulatorParameters", sampleRate, blockSize);
     effects.at(2) = std::make_unique<Resonator>(&engineParameters, 8, "ResonatorParameters", sampleRate, blockSize);
     
+    effects.at(0)->setup();
+    
     // add all Parameters to a vector of AudioParameterGroups which holds all Program Parameters
     programParameters.at(0) = (&engineParameters);
     for (unsigned int n = 1; n < NUM_EFFECTS+1; ++n)
@@ -248,11 +250,11 @@ inline void UserInterface::initializeGlobalParameters()
 inline void UserInterface::initializeListeners()
 {
 //    // Buttons -> Parameters
-//    button[ButtonID::FX1].addListener(engine->getParameter("beatrepeat"));
-//    button[ButtonID::FX2].addListener(engine->getParameter("granulator"));
-//    button[ButtonID::FX3].addListener(engine->getParameter("delay"));
-//    button[ButtonID::BYPASS].addListener(engine->getParameter("globalbypass"));
-//    
+    button[ButtonID::FX1].addListener(engine->getParameter("effect1_bypass"));
+    button[ButtonID::FX2].addListener(engine->getParameter("effect2_bypass"));
+    button[ButtonID::FX3].addListener(engine->getParameter("effect3_bypass"));
+    button[ButtonID::BYPASS].addListener(engine->getParameter("global_bypass"));
+//
 //    // Buttons -> Menu
 //    button[ButtonID::UP].addListener(&menu);
 //    button[ButtonID::UP].onClick.push_back([this] { nudgeTempo(+1); });
@@ -263,11 +265,11 @@ inline void UserInterface::initializeListeners()
 //    button[ButtonID::TEMPO].onClick.push_back([this] { engine->getTempoTapper()->tapTempo(); });
 //    
 //    // Buttons -> Effect Edit Focus
-//    button[ButtonID::FX1].onPress.push_back([this] {  engine->getParameter("effecteditfocus")->setValue(0); });
-//    button[ButtonID::FX2].onPress.push_back([this] {  engine->getParameter("effecteditfocus")->setValue(1); });
-//    button[ButtonID::FX3].onPress.push_back([this] {  engine->getParameter("effecteditfocus")->setValue(2); });
-//    engine->getParameter("effecteditfocus")->onChange.push_back([this] { setEffectEditFocus(); });
-//    
+    button[ButtonID::FX1].onPress.push_back([this] {  engine->getParameter("effect_edit_focus")->setValue(0); });
+    button[ButtonID::FX2].onPress.push_back([this] {  engine->getParameter("effect_edit_focus")->setValue(1); });
+    button[ButtonID::FX3].onPress.push_back([this] {  engine->getParameter("effect_edit_focus")->setValue(2); });
+    engine->getParameter("effect_edit_focus")->onChange.push_back([this] { setEffectEditFocus(); });
+//
 //    // ! DISPLAY MUST BE FIRST LISTENER OF EACH PARAMETER !
 //    // Parameters -> Display
 //    engine->getParameter("tempo")->addListener(&display);
@@ -308,7 +310,7 @@ inline void UserInterface::initializeListeners()
 
 void UserInterface::setEffectEditFocus (const bool _withNotification)
 {
-    auto focus = engine->getParameter("effecteditfocus");
+    auto focus = engine->getParameter("effect_edit_focus");
     auto effect = engine->getEffect(focus->getValueAsInt());
     
     for (unsigned int n = 0; n < NUM_POTENTIOMETERS; n++)
@@ -320,9 +322,7 @@ void UserInterface::setEffectEditFocus (const bool _withNotification)
     
     button[ButtonID::ACTION].focusListener( effect->getParameter(NUM_POTENTIOMETERS) );
     
-    led[LED::ACTION].setValue(effect->getParameter(NUM_POTENTIOMETERS)->getValueAsFloat());
-    
-    
+//    led[LED::ACTION].setValue(effect->getParameter(NUM_POTENTIOMETERS)->getValueAsFloat());
 }
 
 void UserInterface::nudgeTempo(const int _direction)

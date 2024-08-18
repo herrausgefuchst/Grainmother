@@ -27,7 +27,7 @@ void UIElement::focusListener (Listener* listener_)
 
 
 static const float POT_CATCHING_TOLERANCE = 0.008f; /**< Tolerance for catching potentiometer */
-static const float POT_NOISE = 0.01f; /**< Noise threshold for potentiometer */
+static const float POT_NOISE = 0.005f; /**< Noise threshold for potentiometer */
 static const float POT_MAX_VOLTAGE = 0.831f; /**< Maximum voltage for potentiometer */
 
 PotBehaviour Potentiometer::potBehaviour = PotBehaviour::CATCH;

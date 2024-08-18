@@ -38,6 +38,8 @@ public:
      */
     virtual ~Effect() {}
 
+    virtual void setup() {}
+    
     /**
      * @brief Processes audio samples and returns the processed stereo output.
      * @param input_ The stereo input to process.
@@ -82,12 +84,12 @@ protected:
 
 class Reverb : public Effect
 {
-public:
-    enum Parameters { SLICELENGTH, GATE, TRIGGER, CHANCE, VARIATION, PITCH, PITCHDECAY, MIX, FREEZE };
-    
+public:    
     using Effect::Effect;
     
     ~Reverb() {}
+    
+    void setup() override;
     
     StereoFloat processAudioSamples(const StereoFloat input_) override;
     

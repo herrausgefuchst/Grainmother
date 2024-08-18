@@ -51,8 +51,11 @@ void ChoiceParameter::setValue(const int value_, const bool withPrint_)
                         __FILE__, __LINE__, true);
     
     // set value and notify listeners
-    choice = value_;
-    notifyListeners(withPrint_);
+//    if (choice != value_)
+//    {
+        choice = value_;
+        notifyListeners(withPrint_);
+//    }
 
     #ifdef CONSOLE_PRINT
     if (withPrint_)
@@ -264,13 +267,18 @@ void SlideParameter::setNormalizedValue(float value_, const bool withPrint_)
     {
         // linear scaling
         case Scaling::LIN:
+        {
             printValue = mapValue(value_, 0.f, 1.f, min, max);
             break;
+        }
         // frequency related scaling
         // f(x) = 2 ^(log2(range + 1) * x) - 1 + min
         case Scaling::FREQ:
-            printValue = powf_neon(2.f, logbase(range + 1.f, 2.f) * value_) - 1.f + min;
+        {
+            printValue = powf_neon(2.f, logbase(range + nudgeStep + 1.f, 2.f) * value_) - 1.f + min;
+            boundValue(printValue, min, max);
             break;
+        }
         default:
             break;
     }
@@ -584,6 +592,12 @@ void ToggleParameter::buttonClicked(UIElement* uielement_)
     for (auto i : onClick) i();
 }
 
+void ToggleParameter::buttonPressed(UIElement* uielement_)
+{
+    // call any connected functions that should react on a long press
+    for (auto i : onPress) i();
+}
+
 
 String ToggleParameter::getPrintValueAsString() const
 {
@@ -723,7 +737,9 @@ AudioParameter* AudioParameterGroup::getParameter(const unsigned int index_)
     
     AudioParameter* parameter = parameterGroup[index_];
     
-    if (!parameter) engine_rt_error("Parameter is nullptr", __FILE__, __LINE__, true);
+    if (!parameter) engine_rt_error("Parameter in Group " + name
+                                    + " with index " + TOSTRING(index_)
+                                    + " is nullptr", __FILE__, __LINE__, true);
     
     return parameter;
 }
@@ -742,7 +758,7 @@ AudioParameter* AudioParameterGroup::getParameter(const String id_)
         }
     }
     
-    if (!parameter) engine_rt_error("Parameter is nullptr", __FILE__, __LINE__, true);
+    if (!parameter) engine_rt_error("Parameter with ID " + id_ + " is nullptr", __FILE__, __LINE__, true);
 
     return parameter;
 }

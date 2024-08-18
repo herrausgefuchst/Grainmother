@@ -15,28 +15,67 @@ Effect::Effect(AudioParameterGroup* engineParameters_,
 // MARK: - BEATREPEAT
 // ********************************************************************************
 
+
+void Reverb::setup()
+{
+    initializeParameters();
+    initializeListeners();
+}
+
+
 StereoFloat Reverb::processAudioSamples(const StereoFloat input_)
 {
     StereoFloat effect = input_;
     
     return effect;
 }
+
+
 void Reverb::updateAudioBlock()
 {
     
 }
 
+
 void Reverb::initializeParameters()
 {
-//    parameters.addParameter("beatrepeat_slicelength", "Slice Length", sizeof(slice_choices) / sizeof(String), slice_choices);
-//    parameters.addParameter("beatrepeat_gate", "Gate", sizeof(gate_choices) / sizeof(String), gate_choices);
-//    parameters.addParameter("beatrepeat_trigger", "Trigger", sizeof(trigger_choices) / sizeof(String), trigger_choices);
-//    parameters.addParameter("beatrepeat_chance", "Chance", "%", 0.f, 100.f, 100.f, 0.f);
-//    parameters.addParameter("beatrepeat_variation", "Variation", "%", 0.f, 100.f, 0.f, 0.f);
-//    parameters.addParameter("beatrepeat_pitch", "Down Pitch", "semitones", 0.f, 24.f, 1.f, 0.f);
-//    parameters.addParameter("beatrepeat_pitchdecay", "Pitch Decay", "%", 0.f, 100.f, 0.f, 0.f);
-//    parameters.addParameter("beatrepeat_mix", "Mix", "%", 0.f, 100.f, 0.f, 50.f, SlideParameter::LIN, 1.f);
-//    parameters.addParameter("beatrepeat_freeze", "Freeze", ButtonParameter::COUPLED);
+    using namespace GrainmotherReverb;
+    
+    rt_printf("Reverb Parameters initializing!\n");
+    
+    // parameters controlled by potentiometers/sliders (index 0...7)
+    for (unsigned int n = 0; n < NUM_POTENTIOMETERS; ++n)
+        parameters.addParameter(parameterID[n],
+                                parameterName[n],
+                                parameterSuffix[n],
+                                parameterMin[n],
+                                parameterMax[n],
+                                parameterStep[n],
+                                parameterInitialValue[n],
+                                sampleRate);
+    
+    // parameter controlled by the Action-Button (index 8)
+    parameters.addParameter(parameterID[NUM_POTENTIOMETERS],
+                            parameterName[NUM_POTENTIOMETERS],
+                            reverbTypeNames, NUM_TYPES);
+    
+    // parameters controlled by menu (index 9...11)
+    for (unsigned int n = NUM_POTENTIOMETERS+1; n < NUM_PARAMETERS; ++n)
+        parameters.addParameter(parameterID[n],
+                                parameterName[n],
+                                parameterSuffix[n],
+                                parameterMin[n],
+                                parameterMax[n],
+                                parameterStep[n],
+                                parameterInitialValue[n],
+                                sampleRate);
+    
+    // special cases: scaling and ramps:
+    static_cast<SlideParameter*>(parameters.getParameter("reverb_highcut"))->setScaling(SlideParameter::Scaling::FREQ);
+    static_cast<SlideParameter*>(parameters.getParameter("reverb_lowcut"))->setScaling(SlideParameter::Scaling::FREQ);
+    static_cast<SlideParameter*>(parameters.getParameter("reverb_multfreq"))->setScaling(SlideParameter::Scaling::FREQ);
+    static_cast<SlideParameter*>(parameters.getParameter("reverb_modrate"))->setScaling(SlideParameter::Scaling::FREQ);
+    static_cast<SlideParameter*>(parameters.getParameter("reverb_decay"))->setScaling(SlideParameter::Scaling::FREQ);
 }
 
 void Reverb::initializeListeners()

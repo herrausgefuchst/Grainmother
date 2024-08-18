@@ -316,6 +316,9 @@ public:
     void setValue(float value_, const bool withPrint_ = true) override;
     void setValue(const int value_, const bool withPrint_ = true) override;
     
+    void setScaling(const Scaling scaling_) { scaling = scaling_; }
+    void setRampTimeMs(const float rampTimeMs_) { ramptimeMs = rampTimeMs_; }
+    
     /**
      * @brief Sets the normalized value of the parameter.
      * @param value_ The normalized value to set.
@@ -352,8 +355,8 @@ private:
     const float max;
     float nudgeStep;
     const float range;
-    const float ramptimeMs;
-    const Scaling scaling;
+    float ramptimeMs;
+    Scaling scaling;
     RampLinear value;
     float normalizedValue;
 };
@@ -452,6 +455,7 @@ public:
     ~ToggleParameter() {}
         
     void buttonClicked(UIElement* uielement_) override;
+    void buttonPressed(UIElement* uielement_) override;
         
     void setValue(const float value_, const bool withPrint_ = true) override;
     void setValue(const int value_, const bool withPrint_ = true) override;
