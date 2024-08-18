@@ -1,6 +1,6 @@
 #pragma once
 
-//#define BELA_CONNECTED
+#define BELA_CONNECTED
 #define CONSOLE_PRINT
 //#define JSON_USED
 
@@ -36,7 +36,7 @@
 #define floorf_neon(x) floorf(x)
 #define ceilf_neon(x) ceilf(x)
 #define fabsf_neon(x) fabsf(x)
-#define modf_neon(x, y) modf(x, &(y))
+#define fmodf_neon(x, y) fmodf(x, y)
 
 #define rt_printf(...) printf(__VA_ARGS__)
 

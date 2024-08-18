@@ -33,6 +33,10 @@ ChoiceParameter::ChoiceParameter(const String id_, const String name_,
     , numChoices(numChoices_)
     , choiceNames(std::make_unique<String[]>(numChoices_))
 {
+    if (numChoices_ <= 1)
+        engine_rt_error("ChoiceParameter cannot have 0 or 1 choices",
+                        __FILE__, __LINE__, true);
+    
     // copy the names of choices into member array
     for (int i = 0; i < numChoices_; ++i) choiceNames[i] = choiceNames_[i];
 }
@@ -67,19 +71,25 @@ void ChoiceParameter::setValue(const float value_, const bool withPrint_)
 
 void ChoiceParameter::potChanged(UIElement* uielement_)
 {
+    // choice 0
+    
     // Cast the generic UI element pointer to a Potentiometer pointer
     Potentiometer* pot = static_cast<Potentiometer*>(uielement_);
 
     // Retrieve the current value of the potentiometer
+    // 0.1
     float value = pot->getValue();
 
     // Calculate the change (delta) in value since the last check
+    // last value = 0.0, delta = 0.1
     float delta = value - pot->getLastValue();
 
     // Determine the step size based on the number of choices available
-    float step = 1.f / static_cast<float>(numChoices);
+    // 1/2
+    float step = 1.f / static_cast<float>(numChoices - 1);
 
     // Calculate the current step index based on the potentiometer value
+    // 0
     int steps = static_cast<int>(value * (numChoices - 1));
 
     // Potentiometer has moved upwards (positive delta)
@@ -96,9 +106,11 @@ void ChoiceParameter::potChanged(UIElement* uielement_)
     else if (delta < 0.f)
     {
         // Check if the current step index is less than the current choice
+        // true
         if (steps < choice)
         {
             // Check if the potentiometer value is less than or equal to the previous step threshold
+            // choice - 1 * step = 1/2 -> true
             if (value <= (choice - 1) * step)
             {
                 // If the value is not zero, increment the step index
@@ -124,7 +136,7 @@ void ChoiceParameter::nudgeValue(const int direction_)
     
     // nudge up or down and wrap if necessary
     if (direction_ >= 0) newChoice = (choice + 1) >= numChoices ? 0 : choice + 1;
-    else newChoice = (choice - 1) < 0 ? numChoices - 1 : choice - 1;
+    else newChoice = (choice == 0) ? numChoices - 1 : choice - 1;
     
     // set new value
     setValue(newChoice);
@@ -145,6 +157,7 @@ void ChoiceParameter::buttonClicked(UIElement* uielement_)
 // MARK: - SLIDE PARAMETER
 // =======================================================================================
 
+// TODO: check if ramps work
 
 SlideParameter::SlideParameter(const String id_, const String name_, const String unit_,
                                const float min_, const float max_, 
@@ -152,7 +165,7 @@ SlideParameter::SlideParameter(const String id_, const String name_, const Strin
                                const float sampleRate_,
                                const Scaling scaling_, const float ramptimeMs_)
     : AudioParameter(id_, name_)
-    , unit(unit_), min(min_), max(max_), nudgeStep(nudgeStep_), range(max_ - min_), ramptimeMs(ramptimeMs_)
+    , unit(unit_), min(min_), max(max_), nudgeStep(round_float_3(nudgeStep_)), range(max_ - min_), ramptimeMs(ramptimeMs_)
     , scaling(scaling_)
 {
     // handling wrong initialization values
@@ -318,11 +331,14 @@ void SlideParameter::nudgeValue(const int direction_)
     float newValue;
     
     // modulo defines if the current value is in the grid of steps
-    float modulo = modf_neon(currentValue, nudgeStep);
-
+    float modulo = round_float_3(fabsf_neon(fmodf_neon(currentValue, nudgeStep)));
+    // check for floating point precision issues, set flag for in Grid value
+    bool inGrid = false;
+    if (isClose(modulo, nudgeStep, 0.001f) || isClose(modulo, 0.f, 0.001f)) inGrid = true;
+    
     // the current value is in the grid of steps:
     // nudge one step up or down
-    if (modulo == 0.f)
+    if (inGrid)
     {
         newValue = direction_ >= 0 ? currentValue + nudgeStep : currentValue - nudgeStep;
     }
@@ -331,13 +347,22 @@ void SlideParameter::nudgeValue(const int direction_)
     // nudge up or down to the next closest step in the grid
     else
     {
-        if (direction_ >= 0) newValue = currentValue + (nudgeStep - modulo);
-        else newValue = currentValue - modulo;
+        if (direction_ >= 0) 
+        {
+            if (currentValue >= 0.f) newValue = currentValue + (nudgeStep - modulo);
+            else newValue = currentValue + modulo;
+        }
+        else
+        {
+            if (currentValue >= 0.f) newValue = currentValue - modulo;
+            else newValue = currentValue - (nudgeStep - modulo);
+        }
     }
     
     // bound the new value to minimum and maximum
     boundValue(newValue, min, max);
-    
+    newValue = round_float_3(newValue);
+        
     // if its different than the current value, set new value
     if (newValue != currentValue) setValue(newValue);
 }
@@ -347,6 +372,7 @@ void SlideParameter::nudgeValue(const int direction_)
 // MARK: - BUTTON PARAMETER
 // =======================================================================================
 
+// TODO: i dont understand the meaning of the parameter types, lets see...
 
 ButtonParameter::ButtonParameter(const String id_, const String name_,
                                  const Type type_, const String* toggleStateNames_)
@@ -405,8 +431,10 @@ void ButtonParameter::buttonClicked(UIElement* uielement_)
         #ifdef CONSOLE_PRINT
         consoleprint("AudioParameter(Button) '" + name
                      + "' received Click of button "
-                     + TOSTRING(button->getIndex()) + ", toggle: "
-                     + TOSTRING(value), __FILE__, __LINE__);
+                     + TOSTRING(button->getIndex()) 
+                     + ", toggle: " + TOSTRING(value)
+                     + ", print: " + getPrintValueAsString()
+                     , __FILE__, __LINE__);
         #endif
         
         // notify listeners with display print
@@ -485,21 +513,111 @@ String ButtonParameter::getPrintValueAsString() const
 }
 
 
+// =======================================================================================
+// MARK: - TOGGLE PARAMETER
+// =======================================================================================
+
+
+ToggleParameter::ToggleParameter(const String id_, const String name_,
+                                 const String* toggleStateNames_)
+    : AudioParameter(id_, name_)
+{
+    // if its valid, copy the names of toogle states into member array
+    if (toggleStateNames_)
+    {
+        toggleStateNames = std::make_unique<String[]>(2);
+        for (int i = 0; i < 2; ++i) toggleStateNames[i] = toggleStateNames_[i];
+    }
+}
+
+
+void ToggleParameter::setValue(const float value_, const bool withPrint_)
+{
+    setValue(static_cast<int>(value_), withPrint_);
+}
+
+
+void ToggleParameter::setValue(const int value_, const bool withPrint_)
+{
+    // check if value is not 0 or 1
+    if (value_ != 1 && value_ != 0)
+        engine_rt_error("Button Parameter '" + name + "' only accepts binary values",
+                        __FILE__, __LINE__, true);
+    
+    // set new value
+    value = INT2ENUM(value_, ToggleState);
+    
+    // notify listeners
+    notifyListeners(withPrint_);
+    
+    // console print
+    #ifdef CONSOLE_PRINT
+    if (withPrint_)
+        consoleprint("AudioParameter(Button) '" + name + "' received new value, toggle: " 
+                     + TOSTRING(value), __FILE__, __LINE__);
+    #endif
+}
+
+
+void ToggleParameter::buttonClicked(UIElement* uielement_)
+{
+    // cast the generic UI element pointer to a button pointer
+    Button* button = static_cast<Button*>(uielement_);
+
+    // toggle
+    value = (value == INACTIVE) ? ACTIVE : INACTIVE;
+        
+    // console print
+    #ifdef CONSOLE_PRINT
+    consoleprint("AudioParameter(Button) '" + name
+                 + "' received Click of button "
+                 + TOSTRING(button->getIndex())
+                 + ", toggle: " + TOSTRING(value)
+                 + ", print: " + getPrintValueAsString()
+                 , __FILE__, __LINE__);
+    #endif
+    
+    // notify listeners with display print
+    notifyListeners(true);
+    
+    // call any connected functions that should react on a click
+    for (auto i : onClick) i();
+}
+
+
+String ToggleParameter::getPrintValueAsString() const
+{
+    if (toggleStateNames)
+        return value == ACTIVE ? toggleStateNames[ACTIVE] : toggleStateNames[INACTIVE];
+    
+    else return TOSTRING(value);
+}
+
+
 
 // =======================================================================================
 // MARK: - AUDIO PARAMETER GROUP
 // =======================================================================================
 
 
-template<size_t N>
-AudioParameterGroup<N>::AudioParameterGroup(const String name_, const Type type_)
+AudioParameterGroup::AudioParameterGroup(const String name_, const Type type_, const size_t size_)
     : name(name_)
     , type(type_)
-{}
+    , parameterGroup(size_)
+{
+    parameterGroup.reserve(size_);
+    
+//    std::cout << "ParameterGroup " << name << " with size: " << parameterGroup.size() << std::endl;
+}
 
 
-template<size_t N>
-void AudioParameterGroup<N>::addParameter(const String id_, const String name_, const String unit_,
+AudioParameterGroup::~AudioParameterGroup()
+{
+    for (auto i : parameterGroup) delete i;
+}
+
+
+void AudioParameterGroup::addParameter(const String id_, const String name_, const String unit_,
                                        const float min_, const float max_,
                                        const float nudgeStep_, const float default_,
                                        const float sampleRate_,
@@ -516,13 +634,12 @@ void AudioParameterGroup<N>::addParameter(const String id_, const String name_, 
     int nextFreeIndex = getNextFreeGroupIndex();
     
     if (nextFreeIndex >= 0)
-        parameterGroup[nextFreeIndex] = std::make_unique<SlideParameter>
+        parameterGroup[nextFreeIndex] = new SlideParameter
         (id_, name_, unit_, min_, max_, nudgeStep_, default_, sampleRate_, scaling_, ramptimeMs_);
 }
 
 
-template<size_t N>
-void AudioParameterGroup<N>::addParameter(const String id_, const String name_,
+void AudioParameterGroup::addParameter(const String id_, const String name_,
                                        const ButtonParameter::Type type_,
                                        const String* toggleStateNames_)
 {
@@ -535,13 +652,24 @@ void AudioParameterGroup<N>::addParameter(const String id_, const String name_,
     int nextFreeIndex = getNextFreeGroupIndex();
     
     if (nextFreeIndex >= 0)
-        parameterGroup[nextFreeIndex] = std::make_unique<ButtonParameter>
+        parameterGroup[nextFreeIndex] = new ButtonParameter
         (id_, name_, type_, toggleStateNames_);
 }
 
 
-template<size_t N>
-void AudioParameterGroup<N>::addParameter(const String id_, const String name_,
+void AudioParameterGroup::addParameter(const String id_, const String name_,
+                                       const ButtonParameter::Type type_,
+                                       std::initializer_list<String> toggleStateNames_)
+{
+    int nextFreeIndex = getNextFreeGroupIndex();
+    
+    if (nextFreeIndex >= 0)
+        parameterGroup[nextFreeIndex] = new ButtonParameter
+        (id_, name_, type_, toggleStateNames_.begin());
+}
+
+
+void AudioParameterGroup::addParameter(const String id_, const String name_,
                                        const String* array_, const int numChoices_)
 {
 //    engine_error(type == Type::EFFECT && parameterGroup.size() > 8,
@@ -553,34 +681,43 @@ void AudioParameterGroup<N>::addParameter(const String id_, const String name_,
     int nextFreeIndex = getNextFreeGroupIndex();
     
     if (nextFreeIndex >= 0)
-        parameterGroup[nextFreeIndex] = std::make_unique<ChoiceParameter>
+        parameterGroup[nextFreeIndex] = new ChoiceParameter
         (id_, name_, array_, numChoices_);
 }
 
 
-template<size_t N>
-void AudioParameterGroup<N>::addParameter(const String id_, const String name_,
-                                       std::initializer_list<String> choices)
+void AudioParameterGroup::addParameter(const String id_, const String name_,
+                                       std::initializer_list<String> choices, ParameterTypes type_)
 {
-//    engine_error(type == Type::EFFECT && parameterGroup.size() > 8,
-//                 "AudioParameterGroup '" + name 
-//                 + "' doesn't accept AudioParameter of type ChoiceParameter at slot "
-//                 + TOSTRING(parameterGroup.size()),
-//                 __FILE__, __LINE__, true);
+    //    engine_error(type == Type::EFFECT && parameterGroup.size() > 8,
+    //                 "AudioParameterGroup '" + name
+    //                 + "' doesn't accept AudioParameter of type ChoiceParameter at slot "
+    //                 + TOSTRING(parameterGroup.size()),
+    //                 __FILE__, __LINE__, true);
     
     int nextFreeIndex = getNextFreeGroupIndex();
     
     if (nextFreeIndex >= 0)
-        parameterGroup[nextFreeIndex] = std::make_unique<ChoiceParameter>
-        (id_, name_, choices.begin(), static_cast<int>(choices.size()));
+    {
+        if (type_ == ParameterTypes::CHOICE)
+            parameterGroup[nextFreeIndex] = new ChoiceParameter
+            (id_, name_, choices.begin(), static_cast<int>(choices.size()));
+        
+        else if (type_ == ParameterTypes::TOGGLE)
+            parameterGroup[nextFreeIndex] = new ToggleParameter
+            (id_, name_, choices.begin());
+        
+        else
+            engine_rt_error("Parameter of this Type can't be initialized with these variables",
+                            __FILE__, __LINE__, true);
+    }
 }
 
 
-template<size_t N>
-AudioParameter* AudioParameterGroup<N>::getParameter(const unsigned int index_)
+AudioParameter* AudioParameterGroup::getParameter(const unsigned int index_)
 {
-    if (index_ >= N)
-        engine_rt_error("AudioParameterGroup " + name 
+    if (index_ >= parameterGroup.size())
+        engine_rt_error("AudioParameterGroup " + name
                         + " couldn't find Parameter with Index " + TOSTRING(index_),
                         __FILE__, __LINE__, true);
     
@@ -592,12 +729,11 @@ AudioParameter* AudioParameterGroup<N>::getParameter(const unsigned int index_)
 }
 
 
-template<size_t N>
-AudioParameter* AudioParameterGroup<N>::getParameter(const String id_)
+AudioParameter* AudioParameterGroup::getParameter(const String id_)
 {
     AudioParameter* parameter = nullptr;
     
-    for (unsigned int n = 0; n < N; ++n)
+    for (unsigned int n = 0; n < parameterGroup.size(); ++n)
     {
         if (parameterGroup[n]->getParameterID() == id_)
         {
@@ -612,8 +748,7 @@ AudioParameter* AudioParameterGroup<N>::getParameter(const String id_)
 }
 
 
-template<size_t N>
-int AudioParameterGroup<N>::getNextFreeGroupIndex()
+int AudioParameterGroup::getNextFreeGroupIndex()
 {
     int freeIndex = 0;
 
@@ -622,7 +757,7 @@ int AudioParameterGroup<N>::getNextFreeGroupIndex()
         ++freeIndex;
         
         // Return -1 if no free slot is found
-        if (freeIndex >= N) 
+        if (freeIndex >= parameterGroup.size())
         {
             engine_rt_error("This AudioParameterGroup is already full!",
                             __FILE__, __LINE__, false);

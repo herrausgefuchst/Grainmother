@@ -4,9 +4,8 @@
 // MARK: - AUDIO ENGINE
 // =======================================================================================
 
-AudioEngine::AudioEngine() : engineParameters("Engine", AudioParameterGroup::Type::ENGINE)
+AudioEngine::AudioEngine() : engineParameters("EngineParameters", AudioParameterGroup::Type::ENGINE, NUM_ENGINEPARAMETERS)
 {}
-
 
 void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
 {
@@ -16,48 +15,43 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     
     // engine parameters
     {
-        using enum EngineParameters;
-    
         // tempo
-        engineParameters.addParameter(engineParameterID[ENUM2INT(TEMPO)], 
-                                      engineParameterName[ENUM2INT(TEMPO)],
-                                      "bpm", 20.f, 300.f, 0.f, 60.f);
-        
+        engineParameters.addParameter(engineParameterID[ENUM2INT(EngineParameters::TEMPO)],
+                                      engineParameterName[ENUM2INT(EngineParameters::TEMPO)],
+                                      "bpm", -300.f, 300.f, 8.f, 60.f, sampleRate);
+
         // global bypass
-        engineParameters.addParameter(engineParameterID[ENUM2INT(GLOBALBYPASS)],
-                                      engineParameterName[ENUM2INT(GLOBALBYPASS)],
-                                      ButtonParameter::COUPLED);
-        
+        engineParameters.addParameter(engineParameterID[ENUM2INT(EngineParameters::GLOBALBYPASS)],
+                                      engineParameterName[ENUM2INT(EngineParameters::GLOBALBYPASS)],
+                                      ButtonParameter::COUPLED, { "OFF", "ON" });
+
         // effect bypasses
-        engineParameters.addParameter(engineParameterID[ENUM2INT(EFFECT1BYPASS)],
-                                      engineParameterName[ENUM2INT(EFFECT1BYPASS)],
-                                      ButtonParameter::TOGGLE);
-        engineParameters.addParameter(engineParameterID[ENUM2INT(EFFECT2BYPASS)],
-                                      engineParameterName[ENUM2INT(EFFECT2BYPASS)],
-                                      ButtonParameter::TOGGLE);
-        engineParameters.addParameter(engineParameterID[ENUM2INT(EFFECT3BYPASS)],
-                                      engineParameterName[ENUM2INT(EFFECT3BYPASS)],
-                                      ButtonParameter::TOGGLE);
+        engineParameters.addParameter(engineParameterID[ENUM2INT(EngineParameters::EFFECT1BYPASS)],
+                                      engineParameterName[ENUM2INT(EngineParameters::EFFECT1BYPASS)],
+                                      { "OFF", "ON" }, ParameterTypes::TOGGLE);
+        engineParameters.addParameter(engineParameterID[ENUM2INT(EngineParameters::EFFECT2BYPASS)],
+                                      engineParameterName[ENUM2INT(EngineParameters::EFFECT2BYPASS)],
+                                      { "OFF", "ON" }, ParameterTypes::TOGGLE);
+        engineParameters.addParameter(engineParameterID[ENUM2INT(EngineParameters::EFFECT3BYPASS)],
+                                      engineParameterName[ENUM2INT(EngineParameters::EFFECT3BYPASS)],
+                                      { "OFF", "ON" }, ParameterTypes::TOGGLE);
 
         // effect edit focus
-        engineParameters.addParameter(engineParameterID[ENUM2INT(EFFECTEDITFOCUS)],
-                                      engineParameterName[ENUM2INT(EFFECTEDITFOCUS)],
-                                      { "Beatrepeat", "Granulator", "Delay" });
+        engineParameters.addParameter(engineParameterID[ENUM2INT(EngineParameters::EFFECTEDITFOCUS)],
+                                      engineParameterName[ENUM2INT(EngineParameters::EFFECTEDITFOCUS)],
+                                      { "Reverb", "Granulator", "Resonator" }, ParameterTypes::CHOICE);
     }
     
     // Effects
-    effects.at(0) = std::make_unique<Beatrepeat>(&engineParameters, "Reverb");
-    effects.at(1) = std::make_unique<Granulator>(&engineParameters, "Granulator");
-    effects.at(2) = std::make_unique<Delay>(&engineParameters, "Resonator");
-    
-    effects.at(0)->setup(sampleRate, blockSize);
-    effects.at(1)->setup(sampleRate, blockSize);
-    effects.at(2)->setup(sampleRate, blockSize);
+    // TODO: change setup
+    effects.at(0) = std::make_unique<Reverb>(&engineParameters, 12, "ReverbParameters", sampleRate, blockSize);
+    effects.at(1) = std::make_unique<Granulator>(&engineParameters, 8, "GranulatorParameters", sampleRate, blockSize);
+    effects.at(2) = std::make_unique<Resonator>(&engineParameters, 8, "ResonatorParameters", sampleRate, blockSize);
     
     // add all Parameters to a vector of AudioParameterGroups which holds all Program Parameters
     programParameters.at(0) = (&engineParameters);
     for (unsigned int n = 1; n < NUM_EFFECTS+1; ++n)
-        programParameters.at(n) = effects.at(n-1)->getParameterGroup();
+        programParameters.at(n) = effects.at(n-1)->getEffectParameterGroup();
     
     // Tempo & Metronome
     tempoTapper.setup(engineParameters.getParameter("tempo")->getMin(), engineParameters.getParameter("tempo")->getMax(), sampleRate);
@@ -74,17 +68,17 @@ StereoFloat AudioEngine::processAudioSamples(const StereoFloat input_)
     
     // Effects
     StereoFloat output = input_;
-    if (getParameter(AudioParameterGroup::ENGINE, BYPASS)->getValueAsInt() == ButtonParameter::UP)
-    {
-        if (engineParameters.getParameter(BEATREPEAT)->getValueAsInt() == ButtonParameter::DOWN)
-            output = effects[Effect::BEATREPEAT]->process(output);
-
-        if (engineParameters.getParameter(GRANULATOR)->getValueAsInt() == ButtonParameter::DOWN)
-            output = effects[Effect::GRANULATOR]->process(output);
-
-        if (engineParameters.getParameter(DELAY)->getValueAsInt() == ButtonParameter::DOWN)
-            output = effects[Effect::DELAY]->process(output);
-    }
+//    if (getParameter(AudioParameterGroup::ENGINE, BYPASS)->getValueAsInt() == ButtonParameter::UP)
+//    {
+//        if (engineParameters.getParameter(BEATREPEAT)->getValueAsInt() == ButtonParameter::DOWN)
+//            output = effects[Effect::BEATREPEAT]->process(output);
+//
+//        if (engineParameters.getParameter(GRANULATOR)->getValueAsInt() == ButtonParameter::DOWN)
+//            output = effects[Effect::GRANULATOR]->process(output);
+//
+//        if (engineParameters.getParameter(DELAY)->getValueAsInt() == ButtonParameter::DOWN)
+//            output = effects[Effect::DELAY]->process(output);
+//    }
     
     return output;
     
@@ -93,19 +87,18 @@ StereoFloat AudioEngine::processAudioSamples(const StereoFloat input_)
 
 void AudioEngine::updateAudioBlock()
 {
-    if (getParameter(AudioParameterGroup::ENGINE, BYPASS)->getValueAsInt() == ButtonParameter::UP)
-    {
-        if (engineParameters.getParameter(BEATREPEAT)->getValueAsInt() == ButtonParameter::DOWN)
-            effects[Effect::BEATREPEAT]->processBlock();
-
-        if (engineParameters.getParameter(GRANULATOR)->getValueAsInt() == ButtonParameter::DOWN)
-            effects[Effect::GRANULATOR]->processBlock();
-
-        if (engineParameters.getParameter(DELAY)->getValueAsInt() == ButtonParameter::DOWN)
-            effects[Effect::DELAY]->processBlock();
-    }
+//    if (getParameter(AudioParameterGroup::ENGINE, BYPASS)->getValueAsInt() == ButtonParameter::UP)
+//    {
+//        if (engineParameters.getParameter(BEATREPEAT)->getValueAsInt() == ButtonParameter::DOWN)
+//            effects[Effect::BEATREPEAT]->processBlock();
+//
+//        if (engineParameters.getParameter(GRANULATOR)->getValueAsInt() == ButtonParameter::DOWN)
+//            effects[Effect::GRANULATOR]->processBlock();
+//
+//        if (engineParameters.getParameter(DELAY)->getValueAsInt() == ButtonParameter::DOWN)
+//            effects[Effect::DELAY]->processBlock();
+//    }
 }
-
 
 AudioParameter* AudioEngine::getParameter(const String parameterID_)
 {
@@ -113,7 +106,7 @@ AudioParameter* AudioEngine::getParameter(const String parameterID_)
     
     for (auto i : programParameters)
     {
-        parameter = i->getParameter(parameterID_, false);
+        parameter = i->getParameter(parameterID_);
         if (parameter) break;
     }
     
@@ -135,7 +128,7 @@ AudioParameter* AudioEngine::getParameter(const unsigned int paramgroup_, const 
 
 Effect* AudioEngine::getEffect(const unsigned int index_)
 {
-    if (index_ > effects.size()-1 || index_ < 0)
+    if (index_ > effects.size()-1)
         engine_rt_error("Audio Engine holds no Effect with Index " + TOSTRING(index_), __FILE__, __LINE__, true);
     
     if (effects.size() == 0)
@@ -186,10 +179,10 @@ void UserInterface::setup(AudioEngine *_engine)
     // helper functions for initialization
     initializeJSON();
     initializeGlobalParameters();
-//    initializeListeners();
+    initializeListeners();
     
     // load last used Preset
-    loadPresetFromJSON(globals.lastUsedPreset);
+//    loadPresetFromJSON(globals.lastUsedPreset);
 }
 
 UserInterface::~UserInterface()
@@ -254,63 +247,63 @@ inline void UserInterface::initializeGlobalParameters()
 
 inline void UserInterface::initializeListeners()
 {
-    // Buttons -> Parameters
-    button[ButtonID::FX1].addListener(engine->getParameter("beatrepeat"));
-    button[ButtonID::FX2].addListener(engine->getParameter("granulator"));
-    button[ButtonID::FX3].addListener(engine->getParameter("delay"));
-    button[ButtonID::BYPASS].addListener(engine->getParameter("globalbypass"));
-    
-    // Buttons -> Menu
-    button[ButtonID::UP].addListener(&menu);
-    button[ButtonID::UP].onClick.push_back([this] { nudgeTempo(+1); });
-    button[ButtonID::DOWN].addListener(&menu);
-    button[ButtonID::DOWN].onClick.push_back([this] { nudgeTempo(-1); });
-    button[ButtonID::EXIT].addListener(&menu);
-    button[ButtonID::ENTER].addListener(&menu);
-    button[ButtonID::TEMPO].onClick.push_back([this] { engine->getTempoTapper()->tapTempo(); });
-    
-    // Buttons -> Effect Edit Focus
-    button[ButtonID::FX1].onPress.push_back([this] {  engine->getParameter("effecteditfocus")->setValue(0); });
-    button[ButtonID::FX2].onPress.push_back([this] {  engine->getParameter("effecteditfocus")->setValue(1); });
-    button[ButtonID::FX3].onPress.push_back([this] {  engine->getParameter("effecteditfocus")->setValue(2); });
-    engine->getParameter("effecteditfocus")->onChange.push_back([this] { setEffectEditFocus(); });
-    
-    // ! DISPLAY MUST BE FIRST LISTENER OF EACH PARAMETER !
-    // Parameters -> Display
-    engine->getParameter("tempo")->addListener(&display);
-    engine->getParameter("globalbypass")->addListener(nullptr);
-    engine->getParameter("beatrepeat")->addListener(nullptr);
-    engine->getParameter("granulator")->addListener(nullptr);
-    engine->getParameter("delay")->addListener(nullptr);
-    engine->getParameter("effecteditfocus")->addListener(nullptr);
-    for (unsigned int n = 0; n < 9; n++) engine->getParameter(AudioParameterGroup::BEATREPEAT, n)->addListener(&display);
-    for (unsigned int n = 0; n < 9; n++) engine->getParameter(AudioParameterGroup::GRANULATOR, n)->addListener(&display);
-    //TODO: add Resonator
-    
-    // Parameters -> LEDs
-    engine->getParameter("globalbypass")->addListener(&led[LED::BYPASS]);
-    engine->getParameter("beatrepeat")->addListener(&led[LED::FX1]);
-    engine->getParameter("granulator")->addListener(&led[LED::FX2]);
-    engine->getParameter("delay")->addListener(&led[LED::FX3]);
-    engine->getParameter(AudioParameterGroup::BEATREPEAT, NUM_POTENTIOMETERS)->addListener(&led[LED::ACTION]);
-    engine->getParameter(AudioParameterGroup::GRANULATOR, NUM_POTENTIOMETERS)->addListener(&led[LED::ACTION]);
-    //TODO: add Resonator
-    engine->getParameter("effecteditfocus")->addListener(&led[LED::FX1]);
-    engine->getParameter("effecteditfocus")->addListener(&led[LED::FX2]);
-    engine->getParameter("effecteditfocus")->addListener(&led[LED::FX3]);
-    
-    // Parameter -> Metronome
-    engine->getParameter("tempo")->addListener(engine->getMetronome());
-    
-    // Metronome -> LED
-    engine->getMetronome()->onTic.push_back([this] { led[LED::TEMPO].setBlinkOnce(); });
-    
-    // Menu -> Display
-    menu.addListener(&display);
-    
-    // Menu -> JSON
-    menu.onSaveMessage.push_back( [this] { savePresetToJSON(); } );
-    menu.onLoadMessage.push_back( [this] { loadPresetFromJSON(); } );
+//    // Buttons -> Parameters
+//    button[ButtonID::FX1].addListener(engine->getParameter("beatrepeat"));
+//    button[ButtonID::FX2].addListener(engine->getParameter("granulator"));
+//    button[ButtonID::FX3].addListener(engine->getParameter("delay"));
+//    button[ButtonID::BYPASS].addListener(engine->getParameter("globalbypass"));
+//    
+//    // Buttons -> Menu
+//    button[ButtonID::UP].addListener(&menu);
+//    button[ButtonID::UP].onClick.push_back([this] { nudgeTempo(+1); });
+//    button[ButtonID::DOWN].addListener(&menu);
+//    button[ButtonID::DOWN].onClick.push_back([this] { nudgeTempo(-1); });
+//    button[ButtonID::EXIT].addListener(&menu);
+//    button[ButtonID::ENTER].addListener(&menu);
+//    button[ButtonID::TEMPO].onClick.push_back([this] { engine->getTempoTapper()->tapTempo(); });
+//    
+//    // Buttons -> Effect Edit Focus
+//    button[ButtonID::FX1].onPress.push_back([this] {  engine->getParameter("effecteditfocus")->setValue(0); });
+//    button[ButtonID::FX2].onPress.push_back([this] {  engine->getParameter("effecteditfocus")->setValue(1); });
+//    button[ButtonID::FX3].onPress.push_back([this] {  engine->getParameter("effecteditfocus")->setValue(2); });
+//    engine->getParameter("effecteditfocus")->onChange.push_back([this] { setEffectEditFocus(); });
+//    
+//    // ! DISPLAY MUST BE FIRST LISTENER OF EACH PARAMETER !
+//    // Parameters -> Display
+//    engine->getParameter("tempo")->addListener(&display);
+//    engine->getParameter("globalbypass")->addListener(nullptr);
+//    engine->getParameter("beatrepeat")->addListener(nullptr);
+//    engine->getParameter("granulator")->addListener(nullptr);
+//    engine->getParameter("delay")->addListener(nullptr);
+//    engine->getParameter("effecteditfocus")->addListener(nullptr);
+//    for (unsigned int n = 0; n < 9; n++) engine->getParameter(AudioParameterGroup::BEATREPEAT, n)->addListener(&display);
+//    for (unsigned int n = 0; n < 9; n++) engine->getParameter(AudioParameterGroup::GRANULATOR, n)->addListener(&display);
+//    //TODO: add Resonator
+//    
+//    // Parameters -> LEDs
+//    engine->getParameter("globalbypass")->addListener(&led[LED::BYPASS]);
+//    engine->getParameter("beatrepeat")->addListener(&led[LED::FX1]);
+//    engine->getParameter("granulator")->addListener(&led[LED::FX2]);
+//    engine->getParameter("delay")->addListener(&led[LED::FX3]);
+//    engine->getParameter(AudioParameterGroup::BEATREPEAT, NUM_POTENTIOMETERS)->addListener(&led[LED::ACTION]);
+//    engine->getParameter(AudioParameterGroup::GRANULATOR, NUM_POTENTIOMETERS)->addListener(&led[LED::ACTION]);
+//    //TODO: add Resonator
+//    engine->getParameter("effecteditfocus")->addListener(&led[LED::FX1]);
+//    engine->getParameter("effecteditfocus")->addListener(&led[LED::FX2]);
+//    engine->getParameter("effecteditfocus")->addListener(&led[LED::FX3]);
+//    
+//    // Parameter -> Metronome
+//    engine->getParameter("tempo")->addListener(engine->getMetronome());
+//    
+//    // Metronome -> LED
+//    engine->getMetronome()->onTic.push_back([this] { led[LED::TEMPO].setBlinkOnce(); });
+//    
+//    // Menu -> Display
+//    menu.addListener(&display);
+//    
+//    // Menu -> JSON
+//    menu.onSaveMessage.push_back( [this] { savePresetToJSON(); } );
+//    menu.onLoadMessage.push_back( [this] { loadPresetFromJSON(); } );
 }
 
 void UserInterface::setEffectEditFocus (const bool _withNotification)
@@ -381,10 +374,10 @@ void UserInterface::loadPresetFromJSON (const int _index)
 {
     // parameters
     auto parameters = engine->getProgramParameters();
-    auto engineP = parameters[AudioParameterGroup::ENGINE];
+//    auto engineP = parameters[AudioParameterGroup::ENGINE];
     auto beatrepeatP = parameters[AudioParameterGroup::BEATREPEAT];
-    auto granulatorP = parameters[AudioParameterGroup::GRANULATOR];
-    auto delayP = parameters[AudioParameterGroup::DELAY];
+//    auto granulatorP = parameters[AudioParameterGroup::GRANULATOR];
+//    auto delayP = parameters[AudioParameterGroup::DELAY];
     
     // console print yes or no?
     bool withPrint = false;

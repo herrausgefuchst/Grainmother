@@ -8,6 +8,13 @@
 // MARK: - AUDIO PARAMETER
 // =======================================================================================
 
+enum class ParameterTypes {
+    CHOICE,
+    SLIDE,
+    BUTTON,
+    TOGGLE
+};
+
 /**
  * @class AudioParameter
  * @brief A class representing an audio parameter that can be observed by listeners.
@@ -356,6 +363,8 @@ private:
 // MARK: - BUTTON PARAMETER
 // =======================================================================================
 
+// TODO: clean this up, the type parameter splitted into different parameter type classes!
+
 /**
  * @class ButtonParameter
  * @brief A class representing a button-based parameter with different interaction types.
@@ -429,6 +438,39 @@ private:
 
 
 // =======================================================================================
+// MARK: - TOGGLE PARAMETER
+// =======================================================================================
+
+
+class ToggleParameter : public AudioParameter
+{
+public:
+    enum ToggleState { INACTIVE, ACTIVE };
+    
+    ToggleParameter(const String id_, const String name_, const String* toggleStateNames_ = nullptr);
+    
+    ~ToggleParameter() {}
+        
+    void buttonClicked(UIElement* uielement_) override;
+        
+    void setValue(const float value_, const bool withPrint_ = true) override;
+    void setValue(const int value_, const bool withPrint_ = true) override;
+
+    float getValueAsFloat() const override { return static_cast<float>(getValueAsInt()); }
+    float getPrintValueAsFloat() const override { return getValueAsFloat(); }
+    
+    int getValueAsInt() const override { return value; }
+    int getPrintValueAsInt() const override { return getValueAsInt(); }
+    
+    String getPrintValueAsString() const override;
+    
+private:
+    ToggleState value = INACTIVE;
+    std::unique_ptr<String[]> toggleStateNames;
+};
+
+
+// =======================================================================================
 // MARK: - AUDIO PARAMETER GROUP
 // =======================================================================================
 
@@ -440,7 +482,6 @@ private:
  * by grouping them together. This class supports different types of parameters,
  * such as sliders, buttons, and choices, and enables easy retrieval and management.
  */
-template<size_t N>
 class AudioParameterGroup
 {
 public:
@@ -454,6 +495,7 @@ public:
      * @enum Type
      * @brief Types of parameter groups, indicating their purpose.
      */
+    // TODO: do we really neeed this?
     enum class Type { ENGINE, EFFECT };
     
     /**
@@ -466,12 +508,12 @@ public:
      * @param name_ The name of the parameter group.
      * @param type_ The type of the parameter group (ENGINE or EFFECT).
      */
-    AudioParameterGroup(const String name_, const Type type_);
+    AudioParameterGroup(const String name_, const Type type_, const size_t size_);
 
     /**
      * @brief Destructor for AudioParameterGroup.
      */
-    ~AudioParameterGroup() {}
+    ~AudioParameterGroup();
         
     /**
      * @brief Adds a slider parameter to the group.
@@ -503,6 +545,9 @@ public:
     void addParameter(const String id_, const String name_,
                       const ButtonParameter::Type type_, const String* toggleStateNames_ = nullptr);
 
+    void addParameter(const String id_, const String name_,
+                      const ButtonParameter::Type type_, std::initializer_list<String> toggleStateNames_);
+    
     /**
      * @brief Adds a choice parameter to the group.
      * @param id_ The ID of the parameter.
@@ -516,9 +561,9 @@ public:
      * @brief Adds a choice parameter to the group using an initializer list.
      * @param id_ The ID of the parameter.
      * @param name_ The name of the parameter.
-     * @param choices A list of choices for the parameter.
+     * @param choices_ A list of choices for the parameter.
      */
-    void addParameter(const String id_, const String name_, std::initializer_list<String> choices);
+    void addParameter(const String id_, const String name_, std::initializer_list<String> choices_, ParameterTypes type_);
     
     /**
      * @brief Retrieves a parameter by its index within the group.
@@ -530,7 +575,6 @@ public:
     /**
      * @brief Retrieves a parameter by its ID.
      * @param id_ The ID of the parameter.
-     * @param withErrorMessage_ Whether to print an error message if the parameter is not found.
      * @return A pointer to the requested AudioParameter.
      */
     AudioParameter* getParameter(const String id_);
@@ -545,14 +589,14 @@ public:
      * @brief Gets the number of parameters in the group.
      * @return The number of parameters in the group.
      */
-    size_t getNumParametersInGroup() const { return N; }
+    size_t getNumParametersInGroup() const { return parameterGroup.size(); }
     
 private:
     int getNextFreeGroupIndex();
     
-    std::array<std::unique_ptr<AudioParameter>, N> parameterGroup; /**< array containing the parameters in the group */
     const String name; /**< Name of the parameter group */
     const Type type; /**< Type of the parameter group (ENGINE or EFFECT) */
+    std::vector<AudioParameter*> parameterGroup; /**< array containing the parameters in the group */
 };
 
 #endif /* parameters_hpp */

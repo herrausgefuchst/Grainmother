@@ -211,7 +211,7 @@ void Display::displaySlideParameter (AudioParameter* _param)
     oscTransmitter.add(parameter->getUnit());
     oscTransmitter.add(parameter->getMin());
     oscTransmitter.add(parameter->getMax());
-    oscTransmitter.add(parameter->getPrintValueF());
+    oscTransmitter.add(parameter->getPrintValueAsFloat());
 #endif
     
     // parameter is bipolar
@@ -235,7 +235,7 @@ void Display::displayChoiceParameter (AudioParameter *_param)
  
 #ifdef BELA_CONNECTED
     oscTransmitter.newMessage("/parameterChange_choice");
-    int index = parameter->getValueI();
+    int index = parameter->getValueAsInt();
     int scrollable = 2;
     if (index == 0) scrollable = 1;
     if (index == parameter->getNumChoices() - 1) scrollable = -1;
@@ -248,7 +248,7 @@ void Display::displayChoiceParameter (AudioParameter *_param)
     displaycatch.newMessage("/parameterChange_choice");
     displaycatch.add(parameter->getName());
     displaycatch.add(choices, parameter->getNumChoices());
-    displaycatch.add(parameter->getNumChoices());
+//    displaycatch.add(parameter->getNumChoices());
     displaycatch.add(parameter->getValueAsInt());
     displaycatch.createRows();
 }
@@ -260,7 +260,7 @@ void Display::displayButtonParameter (AudioParameter *_param)
 #ifdef BELA_CONNECTED
     oscTransmitter.newMessage("/parameterChange_button");
     oscTransmitter.add(parameter->getName());
-    oscTransmitter.add(parameter->getValueI());
+    oscTransmitter.add(parameter->getValueAsInt());
 #endif
     
     displaycatch.newMessage("/parameterChange_button");

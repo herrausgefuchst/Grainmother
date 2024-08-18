@@ -7,50 +7,91 @@
 // MARK: - EFFECT
 // ********************************************************************************
 
+//    enum Types { BEATREPEAT, GRANULATOR, DELAY };
+
+/**
+ * @class Effect
+ * @brief A base class representing an audio effect, with setup and processing capabilities.
+ */
 class Effect
 {
 public:
-    enum Types { BEATREPEAT, GRANULATOR, DELAY };
-    
+    /**
+     * @brief Deleted default constructor to enforce parameterized construction.
+     */
     Effect() = delete;
-    Effect (AudioParameterGroup* _engineparameters, const String _name);
-    virtual ~Effect() {}
-    
-    virtual void setup (const float _fs = 44100.f, const int _blocksize = 128);
-    virtual StereoFloat process (const StereoFloat _input) = 0;
-    virtual void processBlock() = 0;
-            
-    AudioParameterGroup* getParameterGroup() { return &parameters; }
-    AudioParameter* getParameter (int _index) { return parameters.getParameter(_index); }
-    AudioParameter* getParameter (String _id) { return parameters.getParameter(_id); }
-        
-protected:
-    float fs = 44100.f;
-    int blocksize = 128;
-    AudioParameterGroup parameters;
-    AudioParameterGroup* engineparameters = nullptr;
-};
 
+    /**
+     * @brief Constructs an Effect with specified engine parameters and name.
+     * @param engineParameters_ Pointer to the AudioParameterGroup containing engine parameters.
+     * @param numParameters_ the number of parameters for this effect
+     * @param parameterGroupName_ The name of the effect parameter group.
+     * @param sampleRate_ The sample rate
+     * @param blockSize_ The audio block size
+     */
+    Effect(AudioParameterGroup* engineParameters_, 
+           const unsigned int numParameters_, const String parameterGroupName_,
+           const float sampleRate_, const unsigned int blockSize_);
+
+    /**
+     * @brief Virtual destructor for Effect.
+     */
+    virtual ~Effect() {}
+
+    /**
+     * @brief Processes audio samples and returns the processed stereo output.
+     * @param input_ The stereo input to process.
+     * @return The processed stereo output.
+     */
+    virtual StereoFloat processAudioSamples(const StereoFloat input_) = 0;
+
+    /**
+     * @brief Updates the audio block for the effect.
+     */
+    virtual void updateAudioBlock() = 0;
+
+    /**
+     * @brief Gets the parameter group associated with the effect.
+     * @return A pointer to the AudioParameterGroup for the effect.
+     */
+    AudioParameterGroup* getEffectParameterGroup() { return &parameters; }
+
+    /**
+     * @brief Retrieves a parameter by index from the effect's parameter group.
+     * @param index_ The index of the parameter.
+     * @return A pointer to the AudioParameter.
+     */
+    AudioParameter* getParameter(unsigned int index_) { return parameters.getParameter(index_); }
+
+    /**
+     * @brief Retrieves a parameter by ID from the effect's parameter group.
+     * @param id_ The ID of the parameter.
+     * @return A pointer to the AudioParameter.
+     */
+    AudioParameter* getParameter(String id_) { return parameters.getParameter(id_); }
+
+protected:
+    float sampleRate = 44100.f; /**< The sample rate for the effect */
+    unsigned int blockSize = 128; /**< The block size for the effect */
+    AudioParameterGroup parameters; /**< The group of parameters specific to this effect */
+    AudioParameterGroup* engineParameters = nullptr; /**< Pointer to engine-wide parameters */
+};
 
 // MARK: - BEATREPEAT
 // ********************************************************************************
 
-static const float triggerlength[12] = { 0.03125f, 0.0625f, 0.125f, 0.25f, 0.5f, 1.f, 1.25f, 1.5f, 1.75f, 2.f, 3.f, 4.f };
-static const float slicelength[16] = { 0.00390625f, 0.0078125f, 0.010416666666667f, 0.015625f, 0.020833333333333f, 0.03125f, 0.041666666666667f, 0.0625f, 0.083333333333333f, 0.125f, 0.166666666666667f, 0.25f, 0.333333333333333f, 0.5f, 0.75f, 1.f };
-static const float gatelength[22] = { 0.0625f, 0.125f, 0.1875f, 0.25f, 0.3125f, 0.375f, 0.4375f, 0.5f, 0.5625f, 0.625f, 0.6875f, 0.75f, 0.8125f, 0.875f, 0.9375f, 1.f, 1.25f, 1.5f, 1.75f, 2.f, 3.f, 4.f };
-
-class Beatrepeat : public Effect
+class Reverb : public Effect
 {
 public:
     enum Parameters { SLICELENGTH, GATE, TRIGGER, CHANCE, VARIATION, PITCH, PITCHDECAY, MIX, FREEZE };
     
-    Beatrepeat (AudioParameterGroup* _engineparameters, const String _name = "Beatrepeat")
-        : Effect(_engineparameters, _name) {}
-    ~Beatrepeat() {}
+    using Effect::Effect;
     
-    void setup (const float _fs = 44100.f, const int _blocksize = 128) override;
-    StereoFloat process (const StereoFloat _input) override;
-    void processBlock() override;
+    ~Reverb() {}
+    
+    StereoFloat processAudioSamples(const StereoFloat input_) override;
+    
+    void updateAudioBlock() override;
     
 private:
     void initializeParameters();
@@ -66,13 +107,13 @@ class Granulator : public Effect
 public:
     enum Parameters { GRAN1, GRAN2, GRAN3, GRAN4, GRAN5, GRAN6, GRAN7, GRAN8, GRAN9 };
     
-    Granulator (AudioParameterGroup* _engineparameters, const String _name = "Granulator")
-        : Effect(_engineparameters, _name) {}
+    using Effect::Effect;
+    
     ~Granulator() {}
     
-    void setup (const float _fs = 44100.f, const int _blocksize = 128) override;
-    StereoFloat process (const StereoFloat _input) override;
-    void processBlock() override;
+    StereoFloat processAudioSamples(const StereoFloat input_) override;
+    
+    void updateAudioBlock() override;
     
 private:
     void initializeParameters();
@@ -83,18 +124,18 @@ private:
 // MARK: - DELAY
 // ********************************************************************************
 
-class Delay : public Effect
+class Resonator : public Effect
 {
 public:
     enum Parameters { GRAN1, GRAN2, GRAN3, GRAN4, GRAN5, GRAN6, GRAN7, GRAN8, GRAN9 };
     
-    Delay (AudioParameterGroup* _engineparameters, const String _name = "Delay")
-        : Effect(_engineparameters, _name) {}
-    ~Delay() {}
+    using Effect::Effect;
     
-    void setup (const float _fs = 44100.f, const int _blocksize = 128) override;
-    StereoFloat process (const StereoFloat _input) override;
-    void processBlock() override;
+    ~Resonator() {}
+    
+    StereoFloat processAudioSamples(const StereoFloat input_) override;
+    
+    void updateAudioBlock() override;
 
 private:
     void initializeParameters();
