@@ -11,7 +11,8 @@
 #define SCOPE_ACTIVE
 
 //void updateGUIdisplay (void* _arg);
-void updateLEDs (void* _arg);
+void updateLEDs(void* arg_);
+void updateUserInterface(void* arg_);
 
 namespace BelaVariables
 {
@@ -66,6 +67,7 @@ namespace BelaVariables
     // threads
     //AuxiliaryTask taskUpdateGUIDisplay;
     AuxiliaryTask THREAD_updateLEDs;
+    AuxiliaryTask THREAD_updateUserInterface;
 };
 
 

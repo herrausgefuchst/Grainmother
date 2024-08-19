@@ -311,18 +311,31 @@ inline void UserInterface::initializeListeners()
 
 void UserInterface::setEffectEditFocus (const bool _withNotification)
 {
+    // get a pointer to the effect-edit-focus-parameter
     auto focus = engine->getParameter("effect_edit_focus");
+    
+    // retrieve the index of the focused effect from parameter
     auto effect = engine->getEffect(focus->getValueAsInt());
     
+    // for all potentiometers:
     for (unsigned int n = 0; n < NUM_POTENTIOMETERS; n++)
     {
-        potentiometer[n].focusListener( effect->getParameter(n) );
-        float noramlizedValue = effect->getParameter(n)->getNormalizedValue();
-        potentiometer[n].decouple(noramlizedValue);
+        // focus the corresponding effect parameter
+        potentiometer[n].focusListener(effect->getParameter(n));
+        
+        // retrieve the current normalized value of the parameter
+        float normalizedValue = effect->getParameter(n)->getNormalizedValue();
+        
+        // assign the normalized value to the potentiometers cache
+        // decouple any input source from potentiometer
+        potentiometer[n].decouple(normalizedValue);
     }
     
-    button[ButtonID::ACTION].focusListener( effect->getParameter(NUM_POTENTIOMETERS) );
+    // for the effect button: 
+    // focus corresponding effect parameter
+    button[ButtonID::ACTION].focusListener(effect->getParameter(NUM_POTENTIOMETERS));
     
+    // notify button-led that the parameter changed
     led[LED::ACTION].parameterChanged(effect->getParameter(NUM_POTENTIOMETERS));
 }
 

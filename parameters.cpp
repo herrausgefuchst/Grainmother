@@ -620,8 +620,6 @@ AudioParameterGroup::AudioParameterGroup(const String name_, const Type type_, c
     , parameterGroup(size_)
 {
     parameterGroup.reserve(size_);
-    
-//    std::cout << "ParameterGroup " << name << " with size: " << parameterGroup.size() << std::endl;
 }
 
 
@@ -638,13 +636,6 @@ void AudioParameterGroup::addParameter(const String id_, const String name_, con
                                        const SlideParameter::Scaling scaling_, 
                                        const float ramptimeMs_)
 {
-    // TODO: parameter groups should be of free size, so we need to check if this is working outwards
-//    engine_error(type == Type::EFFECT && parameterGroup.size() > 8,
-//                 "AudioParameterGroup '" + name 
-//                 + "' doesn't accept AudioParameter of type SlideParameter at slot "
-//                 + TOSTRING(parameterGroup.size()),
-//                 __FILE__, __LINE__, true);
-    
     int nextFreeIndex = getNextFreeGroupIndex();
     
     if (nextFreeIndex >= 0)
@@ -657,12 +648,6 @@ void AudioParameterGroup::addParameter(const String id_, const String name_,
                                        const ButtonParameter::Type type_,
                                        const String* toggleStateNames_)
 {
-//    engine_error(type == Type::EFFECT && parameterGroup.size() != 8,
-//                 "AudioParameterGroup '" + name 
-//                 + "' shouldn't have an AudioParameter of type ButtonParameter at slot "
-//                 + TOSTRING(parameterGroup.size()),
-//                 __FILE__, __LINE__, true);
-    
     int nextFreeIndex = getNextFreeGroupIndex();
     
     if (nextFreeIndex >= 0)
@@ -686,12 +671,6 @@ void AudioParameterGroup::addParameter(const String id_, const String name_,
 void AudioParameterGroup::addParameter(const String id_, const String name_,
                                        const String* array_, const int numChoices_)
 {
-//    engine_error(type == Type::EFFECT && parameterGroup.size() > 8,
-//                 "AudioParameterGroup '" + name 
-//                 + "' doesn't accept AudioParameter of type ChoiceParameter at slot "
-//                 + TOSTRING(parameterGroup.size()),
-//                 __FILE__, __LINE__, true);
-    
     int nextFreeIndex = getNextFreeGroupIndex();
     
     if (nextFreeIndex >= 0)
@@ -703,12 +682,6 @@ void AudioParameterGroup::addParameter(const String id_, const String name_,
 void AudioParameterGroup::addParameter(const String id_, const String name_,
                                        std::initializer_list<String> choices, ParameterTypes type_)
 {
-    //    engine_error(type == Type::EFFECT && parameterGroup.size() > 8,
-    //                 "AudioParameterGroup '" + name
-    //                 + "' doesn't accept AudioParameter of type ChoiceParameter at slot "
-    //                 + TOSTRING(parameterGroup.size()),
-    //                 __FILE__, __LINE__, true);
-    
     int nextFreeIndex = getNextFreeGroupIndex();
     
     if (nextFreeIndex >= 0)

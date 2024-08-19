@@ -40,6 +40,7 @@ bool setup (BelaContext *context, void *userData)
     
     // aux tasks
     if((THREAD_updateLEDs = Bela_createAuxiliaryTask(&updateLEDs, 89, "updateLEDs", context)) == 0) return false;
+    if((THREAD_updateUserInterface = Bela_createAuxiliaryTask(&updateUserInterface, 88, "updateUserInterface", context)) == 0) return false;
 //    if((taskUpdateGUIDisplay = Bela_createAuxiliaryTask(&updateGUIdisplay, 88, "update-GUI-display", nullptr)) == 0) return false;
     
     // digital pinmodes
@@ -55,67 +56,6 @@ bool setup (BelaContext *context, void *userData)
     return true;
 }
 
-
-void updateUserInterface(BelaContext *context)
-{
-
-// update BLOCKWISE +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    // Initializing UI
-    if (guiIsInitializing)
-    {
-        // counter for awaiting the GUI page to reload
-        if (--guiInitializationCtr <= 0) guiIsInitializing = false;
-    }
-    
-    else
-    {
-        // buttons & potentiometer
-        if (--uiBlockCtr <= 0)
-        {
-            // reset counter
-            uiBlockCtr = UI_BLOCKS_PER_FRAME;
-            
-            // get GUI buffers
-            float* guibuttons = gui.getDataBuffer(guiBufferIdx[BUTTONS]).getAsFloat();
-            float* guipots = gui.getDataBuffer(guiBufferIdx[POTS]).getAsFloat();
-            float* guictrls = gui.getDataBuffer(guiBufferIdx[GUICTRLS]).getAsFloat();
-            
-            // update buttons and potentiometers
-            for (unsigned int n = 0; n < NUM_BUTTONS; ++n) 
-                userinterface.button[n].update(guibuttons[n], digitalRead(context, 0, HARDWARE_PIN_BUTTON[n]));
-            for (unsigned int n = 0; n < NUM_POTENTIOMETERS; ++n) 
-                userinterface.potentiometer[n].update(guipots[n], analogRead(context, 0, HARDWARE_PIN_POTENTIOMETER[n]));
-            
-            // get GUI input controls
-            InputHandler::Input input = INT2ENUM((int)guictrls[0], InputHandler::Input);
-            Track track = INT2ENUM((int)guictrls[1], Track);
-            float freq = guictrls[2];
-            float volume = 0.01f * guictrls[3];
-                        
-            // set GUI input paramters if changed
-            if (input != inputHandler.getInput()) inputHandler.setInput(input);
-            if (track != inputHandler.player.getTrack()) inputHandler.player.setTrack(track);
-            if (freq != inputHandler.oscillator.getFrequency()) inputHandler.oscillator.setFrequency(freq);
-            if (volume != inputHandler.getVolume()) 
-            {
-                inputHandler.setVolume(volume);
-                consoleprint("volume is: " + TOSTRING(volume), __FILE__, __LINE__);
-                consoleprint("setted volume is" + TOSTRING(inputHandler.getVolume()), __FILE__, __LINE__);
-            }
-        }
-    }
-//    
-//    // display
-//    if (--displayBlockCtr <= 0)
-//    {
-//        displayBlockCtr = DISPLAY_BLOCKS_PER_FRAME;
-//        if(userinterface.display.update(false))
-//            Bela_scheduleAuxiliaryTask(taskUpdateGUIDisplay);
-//    }
-}
-
-
 // MARK: - RENDER
 // ********************************************************************************
 
@@ -124,18 +64,17 @@ void render (BelaContext *context, void *userData)
 
 // update BLOCKWISE +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    updateUserInterface(context);
-
-    // leds
-    if (--ledBlockCtr <= 0)
-    {
-        ledBlockCtr = LED_BLOCKS_PER_FRAME;
-        Bela_scheduleAuxiliaryTask(THREAD_updateLEDs);
-    }
+    // update user interface
+    Bela_scheduleAuxiliaryTask(THREAD_updateUserInterface);
     
+    // update leds
+    Bela_scheduleAuxiliaryTask(THREAD_updateLEDs);
+        
+    // write led analog output
+    // this has to live here, running it in the thread doesnt seem to work
     for (unsigned int n = 0; n < NUM_LEDS; ++n)
         analogWrite(context, 0, HARDWARE_PIN_LED[n], ledCache[n]);
-        
+    
 //    // display
 //    if (--displayBlockCtr <= 0)
 //    {
@@ -196,12 +135,68 @@ void cleanup (BelaContext *context, void *userData)
 //        gui.sendBuffer(n+guiBufferIdx[DSP1], rows[n]);
 //}
 //
-void updateLEDs (void* _arg)
+
+
+void updateUserInterface(void* arg_)
 {
-    for (unsigned int n = 0; n < NUM_LEDS; ++n)
-        ledCache[n] = userinterface.led[n].get();
+    BelaContext* context = static_cast<BelaContext*>(arg_);
     
-//    gui.sendBuffer(guiBufferIdx[LEDS], ledCache);
+    // Initializing UI
+    if (guiIsInitializing)
+    {
+        // counter for awaiting the GUI page to reload
+        if (--guiInitializationCtr <= 0) guiIsInitializing = false;
+    }
+    
+    else
+    {
+        // buttons & potentiometer
+        if (--uiBlockCtr <= 0)
+        {
+            // reset counter
+            uiBlockCtr = UI_BLOCKS_PER_FRAME;
+            
+            // get GUI buffers
+            float* guibuttons = gui.getDataBuffer(guiBufferIdx[BUTTONS]).getAsFloat();
+            float* guipots = gui.getDataBuffer(guiBufferIdx[POTS]).getAsFloat();
+            float* guictrls = gui.getDataBuffer(guiBufferIdx[GUICTRLS]).getAsFloat();
+            
+            // update buttons and potentiometers
+            for (unsigned int n = 0; n < NUM_BUTTONS; ++n)
+                userinterface.button[n].update(guibuttons[n], digitalRead(context, 0, HARDWARE_PIN_BUTTON[n]));
+            for (unsigned int n = 0; n < NUM_POTENTIOMETERS; ++n)
+                userinterface.potentiometer[n].update(guipots[n], analogRead(context, 0, HARDWARE_PIN_POTENTIOMETER[n]));
+            
+            // get GUI input controls
+            InputHandler::Input input = INT2ENUM((int)guictrls[0], InputHandler::Input);
+            Track track = INT2ENUM((int)guictrls[1], Track);
+            float freq = guictrls[2];
+            float volume = 0.01f * guictrls[3];
+                        
+            // set GUI input paramters if changed
+            if (input != inputHandler.getInput()) inputHandler.setInput(input);
+            if (track != inputHandler.player.getTrack()) inputHandler.player.setTrack(track);
+            if (freq != inputHandler.oscillator.getFrequency()) inputHandler.oscillator.setFrequency(freq);
+            if (volume != inputHandler.getVolume()) inputHandler.setVolume(volume);
+        }
+    }
 }
+
+
+void updateLEDs(void* arg_)
+{
+    BelaContext* context = static_cast<BelaContext*>(arg_);
+    
+    if (--ledBlockCtr <= 0)
+    {
+        ledBlockCtr = LED_BLOCKS_PER_FRAME;
+        
+        for (unsigned int n = 0; n < NUM_LEDS; ++n)
+            ledCache[n] = userinterface.led[n].get();
+        
+    //    gui.sendBuffer(guiBufferIdx[LEDS], ledCache);
+    }
+}
+
 
 #endif // BELA_CONNECTED
