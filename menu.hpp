@@ -30,6 +30,8 @@ public:
         Page (const String _id, const String _name, Menu& _menu, const int _currentChoice = 0);
         virtual ~Page();
         
+        void addParent(Page* parent_) { parent = parent_; }
+        
         std::function<void()> onUp, onDown, onEnter, onExit;
         
         void addItem (const int _id, const String _name);
@@ -55,6 +57,8 @@ public:
         
         int numChoices = 0;
         int currentChoice = 0;
+        
+        Page* parent = nullptr;
         
         std::vector<Item*> items;
     };
@@ -107,10 +111,53 @@ public:
     class NavigationPage : public Page
     {
     public:
-        NavigationPage(const String id_, std::initializer_list<Page*> options_, Menu& menu_) : Page(menu_) {}
+        NavigationPage(const String id_, const String name_, std::initializer_list<Page*> options_, Menu& menu_)
+            : Page(menu_)
+            , options(options_)
+        {
+            id = id_;
+            name = name_;
+        }
+        
+        ~NavigationPage() {}
+        
+        void up() override
+        {
+            choiceIndex = (choiceIndex >= options.size() - 1) ? 0 : choiceIndex + 1;
+            
+            #ifdef CONSOLE_PRINT
+            consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
+            #endif
+            
+            if (onUp) onUp();
+        }
+        
+        void down() override
+        {
+            choiceIndex = (choiceIndex == 0) ? options.size() - 1 : choiceIndex - 1;
+            
+            #ifdef CONSOLE_PRINT
+            consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
+            #endif
+            
+            if (onDown) onDown();
+        }
+        
+        void enter() override
+        {
+            menu.setCurrentPage(options[choiceIndex]);
+            
+            if (onEnter) onEnter();
+        }
+        
+        String getCurrentPrintValue() const override
+        {
+            return options[choiceIndex]->getName();
+        }
         
     private:
         std::vector<Page*> options;
+        size_t choiceIndex = 0;
     };
     
     class GlobalSettingPage : public Page
@@ -150,8 +197,13 @@ public:
     std::vector<std::function<void()>> onLoadMessage;
     
     void addPage(const String id_, AudioParameter* param_);
+    void addPage(const String id_, const String name_, std::initializer_list<Page*> options_);
     
-    void setPage (const int _index, const bool _withCopyChoice = false);
+    Page* getPage(const String id_);
+    
+    void setCurrentPage (const int _index, const bool _withCopyChoice = false);
+    void setCurrentPage(Page* page_);
+    void setCurrentPage(const String id_);
     void setNewPresetName (const String _name);
     void setBypass (const bool _bypass) { bypass = _bypass; }
     

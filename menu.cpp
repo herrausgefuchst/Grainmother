@@ -47,6 +47,8 @@ void Menu::Page::enter()
 
 void Menu::Page::exit()
 {
+    if (parent) menu.setCurrentPage(parent);
+    
     if (onExit) onExit();
 }
 
@@ -99,11 +101,12 @@ void Menu::setup(GlobalParameters* _globals)
 //    pages[Page::SETPOTBEHAVIOUR]->onEnter = [this] { saveSetting(); };
     
 //    currentPage = pages[Page::HOME];
-    currentPage = pages[0];
     
-//    currentPage->setCurrentChoice(globals->lastUsedPreset);
+    getPage("reverb_lowcut")->addParent(getPage("reverb_additionalParameters"));
+    getPage("reverb_multfreq")->addParent(getPage("reverb_additionalParameters"));
+    getPage("reverb_multgain")->addParent(getPage("reverb_additionalParameters"));
     
-    print();
+    setCurrentPage("reverb_additionalParameters");
 }
 
 Menu::~Menu()
@@ -115,6 +118,31 @@ Menu::~Menu()
 void Menu::addPage(const String id_, AudioParameter* param_)
 {
     pages.push_back(new ParameterPage(id_, param_, *this));
+}
+
+void Menu::addPage(const String id_, const String name_, std::initializer_list<Page*> options_)
+{
+    pages.push_back(new NavigationPage(id_, name_, options_, *this));
+}
+
+Menu::Page* Menu::getPage(const String id_)
+{
+    Menu::Page* page = nullptr;
+    
+    for (size_t n = 0; n < pages.size(); ++n)
+    {
+        if (pages[n]->getID() == id_)
+        {
+            page = pages[n];
+            break;
+        }
+    }
+    
+    if (!page)
+        engine_rt_error("Menu couldn't find Page with ID: " + id_, 
+                        __FILE__, __LINE__, true);
+    
+    return page;
 }
 
 inline void Menu::print()
@@ -131,7 +159,7 @@ void Menu::savePreset()
 {
     for (auto i : onSaveMessage) i();
     
-    setPage(Page::HOME, true);
+    setCurrentPage(Page::HOME, true);
 }
 
 void Menu::saveSetting()
@@ -140,7 +168,7 @@ void Menu::saveSetting()
     else if (currentPage->getID() == "midiout") globals->midiOutChannel = currentPage->getCurrentChoice()+1;
     else if (currentPage->getID() == "potbehaviour") globals->potBehaviour = currentPage->getCurrentChoice();
         
-    setPage(Page::SETTINGS);
+    setCurrentPage(Page::SETTINGS);
 }
 
 void Menu::buttonClicked (UIElement* _uielement)
@@ -229,13 +257,27 @@ void Menu::scroll (const int _direction)
     else currentPage->down();
 }
 
-void Menu::setPage (const int _index, const bool _withCopyChoice)
+void Menu::setCurrentPage (const int _index, const bool _withCopyChoice)
 {
     if (_withCopyChoice) pages[_index]->setCurrentChoice(currentPage->getCurrentChoice());
     
     currentPage = pages[_index];
     
     for (auto i : listeners) i->menupageSelected(currentPage);
+    
+    print();
+}
+
+void Menu::setCurrentPage(Menu::Page* page_)
+{
+    currentPage = page_;
+    
+    print();
+}
+
+void Menu::setCurrentPage(const String id_)
+{
+    currentPage = getPage(id_);
     
     print();
 }
