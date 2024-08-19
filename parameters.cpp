@@ -419,7 +419,8 @@ void ButtonParameter::setValue(const int value_, const bool withPrint_)
     #ifdef CONSOLE_PRINT
     if (withPrint_)
         consoleprint("AudioParameter(Button) '" + name + "' received new value, toggle: " 
-                     + TOSTRING(value), __FILE__, __LINE__);
+                     + TOSTRING(value) 
+                     + ", name: " + toggleStateNames[value], __FILE__, __LINE__);
     #endif
 }
 
