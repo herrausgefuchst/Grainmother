@@ -1,7 +1,6 @@
 #ifndef uielements_hpp
 #define uielements_hpp
 
-#include "globals.h"
 #include "functions.h"
 #include "helpers.hpp"
 

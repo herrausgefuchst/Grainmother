@@ -57,10 +57,8 @@ void Menu::Page::exit()
 // MARK: - MENU
 // ********************************************************************************
 
-void Menu::setup(GlobalParameters* _globals)
+void Menu::setup()
 {
-    globals = _globals;
-    
     // -- Additional Reverb Parameters
     getPage("reverb_lowcut")->addParent(getPage("reverb_additionalParameters"));
     getPage("reverb_multfreq")->addParent(getPage("reverb_additionalParameters"));
@@ -185,9 +183,9 @@ void Menu::savePreset()
 
 void Menu::saveSetting()
 {
-    if (currentPage->getID() == "midiin") globals->midiInChannel = currentPage->getCurrentChoice()+1;
-    else if (currentPage->getID() == "midiout") globals->midiOutChannel = currentPage->getCurrentChoice()+1;
-    else if (currentPage->getID() == "potbehaviour") globals->potBehaviour = currentPage->getCurrentChoice();
+//    if (currentPage->getID() == "midiin") globals->midiInChannel = currentPage->getCurrentChoice()+1;
+//    else if (currentPage->getID() == "midiout") globals->midiOutChannel = currentPage->getCurrentChoice()+1;
+//    else if (currentPage->getID() == "potbehaviour") globals->potBehaviour = currentPage->getCurrentChoice();
 }
 
 void Menu::buttonClicked (UIElement* _uielement)

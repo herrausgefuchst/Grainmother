@@ -4,7 +4,6 @@
 #include <fstream>
 
 #include "functions.h"
-#include "globals.h"
 #include "uielements.hpp"
 #include "effects.hpp"
 #include "parameters.hpp"
@@ -136,7 +135,6 @@ private:
     inline void initializeListeners();
     
     AudioEngine* engine = nullptr;
-    GlobalParameters globals;
     Menu menu;
     
 #ifdef JSON_USED

@@ -4,7 +4,6 @@
 #include "functions.h"
 #include "uielements.hpp"
 #include "parameters.hpp"
-#include "globals.h"
 
 class Menu : public UIElement::Listener
 {
@@ -214,7 +213,7 @@ public:
 // ********************************************************************************
     
     Menu() {}
-    void setup(GlobalParameters* _globals);
+    void setup();
     ~Menu ();
         
     void buttonClicked (UIElement* _uielement) override;
@@ -264,8 +263,6 @@ protected:
     Page* currentPage = nullptr;
     
 private:
-    GlobalParameters* globals;
-    
     std::vector<Page*> pages;
     std::vector<Listener*> listeners;
     

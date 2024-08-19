@@ -31,6 +31,11 @@ static String presetNames[NUM_PRESETS] = {
     "Preset 3"
 };
 
+enum class PotBehaviour {
+    JUMP,
+    CATCH
+};
+
 static const size_t NUM_EFFECTS = 3;
 
 static const size_t NUM_PARAMETERGROUPS = 4;
