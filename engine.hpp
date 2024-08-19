@@ -103,7 +103,6 @@ private:
     std::array<std::unique_ptr<Effect>, NUM_EFFECTS> effects; /**< Array of unique pointers to effects */
     std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programParameters; /**< Array of program parameter groups */
     AudioParameterGroup engineParameters; /**< Parameters specific to the audio engine */
-    AudioParameterGroup globalSettings;
     
     TempoTapper tempoTapper; /**< The tempo tapper instance */
     Metronome metronome; /**< The metronome instance */

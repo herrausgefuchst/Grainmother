@@ -42,6 +42,8 @@ void Menu::Page::down()
 
 void Menu::Page::enter()
 {
+    if (parent) menu.setCurrentPage(parent);
+    
     if (onEnter) onEnter();
 }
 
@@ -59,59 +61,63 @@ void Menu::setup(GlobalParameters* _globals)
 {
     globals = _globals;
     
-//    // Home Page
-//    pages.push_back(new Page("home", "Home", *this));
-//    for (unsigned int n = 0; n < NUM_PRESETS; n++) pages[Page::HOME]->addItem(n, globals->presetNames[n]);
-//    pages[Page::HOME]->onUp = [this] { loadPreset(); };
-//    pages[Page::HOME]->onDown = [this] { loadPreset(); };
-//    pages[Page::HOME]->onExit = [this] { setPage(Page::SETTINGS); };
-//    pages[Page::HOME]->onEnter = [this] { setPage(Page::SAVE, true); };
-//    
-//    // Save Page
-//    pages.push_back(new Page("save", "Save Preset To?", *this));
-//    for (unsigned int n = 0; n < NUM_PRESETS; n++) pages[Page::SAVE]->addItem(n, globals->presetNames[n]);
-//    pages[Page::SAVE]->onExit = [this] { setPage(Page::HOME); };
-//    pages[Page::SAVE]->onEnter = [this] { savePreset(); };
-//    
-//    // Settings Page
-//    pages.push_back(new Page("settings", "Global Settings", *this));
-//    pages[Page::SETTINGS]->addItem(0, "Midi In Channel");
-//    pages[Page::SETTINGS]->addItem(1, "Midi Out Channel");
-//    pages[Page::SETTINGS]->addItem(2, "Pot Behaviour");
-//    pages[Page::SETTINGS]->onExit = [this] { setPage(Page::HOME); };
-//    pages[Page::SETTINGS]->onEnter = [this] { setPage(Page::SETTINGS+1+pages[Page::SETTINGS]->getCurrentChoice()); };
-//    
-//    // Setting - Midi In Channel
-//    pages.push_back(new Page("midiin", "Midi In Channel", *this, globals->midiInChannel-1));
-//    for (unsigned int n = 1; n < 17; n++) pages[Page::SETMIDIIN]->addItem(n, std::to_string(n));
-//    pages[Page::SETMIDIIN]->onExit = [this] { setPage(Page::SETTINGS); };
-//    pages[Page::SETMIDIIN]->onEnter = [this] { saveSetting(); };
-//
-//    // Setting - Midi Out Channel
-//    pages.push_back(new Page("midiout", "Midi Out Channel", *this, globals->midiOutChannel-1));
-//    for (unsigned int n = 1; n < 17; n++) pages[Page::SETMIDIOUT]->addItem(n, std::to_string(n));
-//    pages[Page::SETMIDIOUT]->onExit = [this] { setPage(Page::SETTINGS); };
-//    pages[Page::SETMIDIOUT]->onEnter = [this] { saveSetting(); };
-//    
-//    // Setting - PotBehaviour
-//    pages.push_back(new Page("potbehaviour", "Pot Behaviour", *this, globals->potBehaviour));
-//    pages[Page::SETPOTBEHAVIOUR]->addItem(0, "Jump");
-//    pages[Page::SETPOTBEHAVIOUR]->addItem(1, "Catch");
-//    pages[Page::SETPOTBEHAVIOUR]->onExit = [this] { setPage(Page::SETTINGS); };
-//    pages[Page::SETPOTBEHAVIOUR]->onEnter = [this] { saveSetting(); };
-    
-//    currentPage = pages[Page::HOME];
-    
+    // -- Additional Reverb Parameters
     getPage("reverb_lowcut")->addParent(getPage("reverb_additionalParameters"));
     getPage("reverb_multfreq")->addParent(getPage("reverb_additionalParameters"));
     getPage("reverb_multgain")->addParent(getPage("reverb_additionalParameters"));
     
-    getPage("settings_midi_in_channel")->addParent(getPage("global_settings"));
-    getPage("settings_midi_out_channel")->addParent(getPage("global_settings"));
-    getPage("settings_last_used_preset")->addParent(getPage("global_settings"));
-    getPage("settings_pot_behaviour")->addParent(getPage("global_settings"));
+    // -- Global Settings
+    // pages for the different settings
+    addPage("midi_in_channel", "MIDI Input Channel", 1, 16, nullptr);
+    addPage("midi_out_channel", "MIDI Output Channel", 1, 16, nullptr);
+    addPage("pot_behaviour", "Potentiometer Behaviour", 0, 1, { "Jump", "Catch" });
     
-    setCurrentPage("global_settings");
+    // page for navigating through the settings
+    addPage("global_settings", "Global Settings", {
+        getPage("midi_in_channel"),
+        getPage("midi_out_channel"),
+        getPage("pot_behaviour")
+    });
+    
+    // define navigator as parent for the settings pages
+    getPage("midi_in_channel")->addParent(getPage("global_settings"));
+    getPage("midi_out_channel")->addParent(getPage("global_settings"));
+    getPage("pot_behaviour")->addParent(getPage("global_settings"));
+    
+    // -- ActionMenu
+    addPage("menu", "Menu", {
+        getPage("global_settings"),
+        getPage("reverb_additionalParameters"),
+    });
+    
+    getPage("global_settings")->addParent(getPage("menu"));
+    getPage("reverb_additionalParameters")->addParent(getPage("menu"));
+    
+    // -- Home
+    addPage("load_preset", "Home", 0, NUM_PRESETS-1, presetNames);
+    
+    // -- Save Preset To?
+    addPage("save_preset", "Save Preset to Slot: ", 0, NUM_PRESETS-1, presetNames);
+    // TODO: add naming of preset
+    getPage("save_preset")->addParent(getPage("load_preset"));
+    getPage("menu")->addParent(getPage("load_preset"));
+    
+    // -- set start page
+    setCurrentPage("load_preset");
+    
+    Page* homePage = getPage("load_preset");
+    homePage->onUp = [this] { loadPreset(); };
+    homePage->onDown = [this] { loadPreset(); };
+    homePage->onExit = [this] { setCurrentPage("menu"); };
+    homePage->onEnter = [this] { setCurrentPage("save_preset"); };
+    
+    Page* savePage = getPage("save_preset");
+    savePage->onEnter = [this] { savePreset(); };
+    
+    getPage("midi_in_channel")->onEnter = [this] { saveSetting(); };
+    
+    
+    
 }
 
 Menu::~Menu()
@@ -128,6 +134,18 @@ void Menu::addPage(const String id_, AudioParameter* param_)
 void Menu::addPage(const String id_, const String name_, std::initializer_list<Page*> options_)
 {
     pages.push_back(new NavigationPage(id_, name_, options_, *this));
+}
+
+void Menu::addPage(const String id_, const String name_, const size_t min_, const size_t max_, String* choiceNames_)
+{
+    pages.push_back(new GlobalSettingPage(id_, name_, min_, max_, *this, choiceNames_));
+}
+
+void Menu::addPage(const String id_, const String name_, const size_t min_, const size_t max_, std::initializer_list<String> choiceNames_)
+{
+    String* choiceNamesPtr = choiceNames_.size() > 0 ? const_cast<String*>(&*choiceNames_.begin()) : nullptr;
+    
+    pages.push_back(new GlobalSettingPage(id_, name_, min_, max_, *this, choiceNamesPtr));
 }
 
 Menu::Page* Menu::getPage(const String id_)
@@ -163,8 +181,6 @@ void Menu::loadPreset()
 void Menu::savePreset()
 {
     for (auto i : onSaveMessage) i();
-    
-    setCurrentPage(Page::HOME, true);
 }
 
 void Menu::saveSetting()
@@ -172,8 +188,6 @@ void Menu::saveSetting()
     if (currentPage->getID() == "midiin") globals->midiInChannel = currentPage->getCurrentChoice()+1;
     else if (currentPage->getID() == "midiout") globals->midiOutChannel = currentPage->getCurrentChoice()+1;
     else if (currentPage->getID() == "potbehaviour") globals->potBehaviour = currentPage->getCurrentChoice();
-        
-    setCurrentPage(Page::SETTINGS);
 }
 
 void Menu::buttonClicked (UIElement* _uielement)
