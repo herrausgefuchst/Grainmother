@@ -503,10 +503,10 @@ public:
 
     /**
      * @brief Constructs an AudioParameterGroup with a specified name and type.
-     * @param name_ The name of the parameter group.
+     * @param id_ The name of the parameter group.
      * @param type_ The type of the parameter group (ENGINE or EFFECT).
      */
-    AudioParameterGroup(const String name_, const Type type_, const size_t size_);
+    AudioParameterGroup(const String id_, const Type type_, const size_t size_);
 
     /**
      * @brief Destructor for AudioParameterGroup.
@@ -581,7 +581,7 @@ public:
      * @brief Gets the name of the parameter group.
      * @return The name of the parameter group.
      */
-    String getName() const { return name; }
+    String getID() const { return id; }
 
     /**
      * @brief Gets the number of parameters in the group.
@@ -592,7 +592,7 @@ public:
 private:
     int getNextFreeGroupIndex();
     
-    const String name; /**< Name of the parameter group */
+    const String id; /**< Name of the parameter group */
     const Type type; /**< Type of the parameter group (ENGINE or EFFECT) */
     std::vector<AudioParameter*> parameterGroup; /**< array containing the parameters in the group */
 };

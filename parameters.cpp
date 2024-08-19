@@ -614,8 +614,8 @@ String ToggleParameter::getPrintValueAsString() const
 // =======================================================================================
 
 
-AudioParameterGroup::AudioParameterGroup(const String name_, const Type type_, const size_t size_)
-    : name(name_)
+AudioParameterGroup::AudioParameterGroup(const String id_, const Type type_, const size_t size_)
+    : id(id_)
     , type(type_)
     , parameterGroup(size_)
 {
@@ -704,13 +704,13 @@ void AudioParameterGroup::addParameter(const String id_, const String name_,
 AudioParameter* AudioParameterGroup::getParameter(const unsigned int index_)
 {
     if (index_ >= parameterGroup.size())
-        engine_rt_error("AudioParameterGroup " + name
+        engine_rt_error("AudioParameterGroup " + id
                         + " couldn't find Parameter with Index " + TOSTRING(index_),
                         __FILE__, __LINE__, true);
     
     AudioParameter* parameter = parameterGroup[index_];
     
-    if (!parameter) engine_rt_error("Parameter in Group " + name
+    if (!parameter) engine_rt_error("Parameter in Group " + id
                                     + " with index " + TOSTRING(index_)
                                     + " is nullptr", __FILE__, __LINE__, true);
     

@@ -3,6 +3,7 @@
 
 #include "functions.h"
 #include "uielements.hpp"
+#include "parameters.hpp"
 #include "globals.h"
 
 class Menu : public UIElement::Listener
@@ -25,36 +26,101 @@ public:
             String name;
         };
         
+        Page(Menu& menu_) : menu(menu_) {};
         Page (const String _id, const String _name, Menu& _menu, const int _currentChoice = 0);
-        ~Page();
+        virtual ~Page();
         
         std::function<void()> onUp, onDown, onEnter, onExit;
         
         void addItem (const int _id, const String _name);
         
-        void up();
-        void down();
-        void enter();
-        void exit();
+        virtual void up();
+        virtual void down();
+        virtual void enter();
+        virtual void exit();
         
         void setCurrentChoice (const int _index) { currentChoice = _index; }
         void setItemName (const String _name, const int _index) { items[_index]->name = _name; }
         
         String getName() const { return name; }
         String getID() const { return id; }
-        String getCurrentItemName() const { return items[currentChoice]->name; }
+        virtual String getCurrentPrintValue() const { return items[currentChoice]->name; }
         int getCurrentChoice() const { return currentChoice; }
         int getNumChoices() const { return numChoices;}
         std::vector<Item*> getItems() { return items; }
         
-    private:
+    protected:
         Menu& menu;
-        const String id, name;
+        String id, name;
         
         int numChoices = 0;
         int currentChoice = 0;
         
         std::vector<Item*> items;
+    };
+    
+    class ParameterPage : public Page
+    {
+    public:
+        ParameterPage(const String id_, AudioParameter* param_, Menu& menu_) 
+            : Page(menu_)
+        {
+            id = id_;
+            name = param_->getName();
+            
+            parameter = param_;
+        }
+        
+        ~ParameterPage() {}
+        
+        void up() override
+        {
+            parameter->nudgeValue(1);
+            
+            #ifdef CONSOLE_PRINT
+            consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
+            #endif
+            
+            if (onUp) onUp();
+        }
+        
+        void down() override
+        {
+            parameter->nudgeValue(-1);
+            
+            #ifdef CONSOLE_PRINT
+            consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
+            #endif
+            
+            if (onDown) onDown();
+        }
+        
+        String getCurrentPrintValue() const override
+        {
+            return TOSTRING(parameter->getPrintValueAsFloat());
+        }
+        
+    private:
+        AudioParameter* parameter = nullptr;
+    };
+    
+    class NavigationPage : public Page
+    {
+    public:
+        NavigationPage(const String id_, std::initializer_list<Page*> options_, Menu& menu_) : Page(menu_) {}
+        
+    private:
+        std::vector<Page*> options;
+    };
+    
+    class GlobalSettingPage : public Page
+    {
+        
+    };
+    
+    class PresetPage : public Page
+    {
+        
     };
 
     
@@ -82,6 +148,8 @@ public:
     void addListener (Listener* _listener);
     std::vector<std::function<void()>> onSaveMessage;
     std::vector<std::function<void()>> onLoadMessage;
+    
+    void addPage(const String id_, AudioParameter* param_);
     
     void setPage (const int _index, const bool _withCopyChoice = false);
     void setNewPresetName (const String _name);

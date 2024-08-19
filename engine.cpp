@@ -44,9 +44,9 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     
     // Effects
     // TODO: change setup
-    effects.at(0) = std::make_unique<Reverb>(&engineParameters, GrainmotherReverb::NUM_PARAMETERS, "ReverbParameters", sampleRate, blockSize);
-    effects.at(1) = std::make_unique<Granulator>(&engineParameters, GrainmotherGranulator::NUM_PARAMETERS, "GranulatorParameters", sampleRate, blockSize);
-    effects.at(2) = std::make_unique<Resonator>(&engineParameters, 8, "ResonatorParameters", sampleRate, blockSize);
+    effects.at(0) = std::make_unique<Reverb>(&engineParameters, GrainmotherReverb::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
+    effects.at(1) = std::make_unique<Granulator>(&engineParameters, GrainmotherGranulator::NUM_PARAMETERS, "granulator", sampleRate, blockSize);
+    effects.at(2) = std::make_unique<Resonator>(&engineParameters, 8, "resonator", sampleRate, blockSize);
     
     effects.at(0)->setup();
     effects.at(1)->setup();
@@ -129,6 +129,28 @@ AudioParameter* AudioEngine::getParameter(const unsigned int paramgroup_, const 
     return parameter;
 }
 
+
+AudioParameter* AudioEngine::getParameter(const String paramGroup_, const String paramID_)
+{
+    AudioParameterGroup* parametergroup = nullptr;
+    
+    for (unsigned int n = 0; n < programParameters.size(); ++n)
+    {
+        if (programParameters[n]->getID() == paramGroup_)
+        {
+            parametergroup = programParameters[n];
+            break;
+        }
+    }
+    
+    if (!parametergroup)
+
+        engine_rt_error("AudioEngine couldnt find ParameterGroup with index " + paramGroup_, __FILE__, __LINE__, true);
+    
+    return parametergroup->getParameter(paramID_);
+}
+
+
 Effect* AudioEngine::getEffect(const unsigned int index_)
 {
     if (index_ > effects.size()-1)
@@ -183,6 +205,7 @@ void UserInterface::setup(AudioEngine *_engine)
     initializeJSON();
     initializeGlobalParameters();
     
+    menu.addPage("reverb_lowcut", engine->getParameter("reverb", "reverb_lowcut"));
     menu.setup(&globals);
     
     initializeListeners();

@@ -272,7 +272,7 @@ void Display::displayButtonParameter (AudioParameter *_param)
 void Display::menupageSelected (Menu::Page* _page)
 {
     if (_page->getID() == "home")
-        displayPreset(_page->getCurrentChoice(), _page->getCurrentItemName());
+        displayPreset(_page->getCurrentChoice(), _page->getCurrentPrintValue());
     
     else
         displayMenuPage(_page);
