@@ -30,16 +30,44 @@ void Menu::Page::exit()
 // MARK: - MENU
 // ********************************************************************************
 
-void Menu::setup()
+void Menu::setup(std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programParameters_)
 {
+    programParameters = programParameters_;
+    
+    initializeJSON();
+    
     initializePages();
     
     initializePageHierarchy();
     
     initializePageActions();
     
+    loadPreset();
+    
     // -- set start page
     setCurrentPage("load_preset");
+}
+
+inline void Menu::initializeJSON()
+{
+//#ifdef JSON_USED
+    std::ifstream readfilePresets;
+    std::ifstream readfileGlobals;
+    
+#ifndef BELA_CONNECTED
+    readfilePresets.open("/Users/julianfuchs/Dropbox/BelaProjects/GrainMother/GrainMother/presets.json");
+    readfileGlobals.open("/Users/julianfuchs/Dropbox/BelaProjects/GrainMother/GrainMother/globals.json");
+#else
+    readfilePresets.open("presets.json");
+    readfileGlobals.open("globals.json");
+#endif
+    
+    engine_error(!readfilePresets.is_open(), "presets.json not found, therefore not able to open", __FILE__, __LINE__, true);
+    engine_error(!readfileGlobals.is_open(), "globals.json not found, therefore not able to open", __FILE__, __LINE__, true);
+    
+    JSONpresets = json::parse(readfilePresets);
+    JSONglobals = json::parse(readfileGlobals);
+//#endif
 }
 
 void Menu::initializePages()
@@ -51,9 +79,9 @@ void Menu::initializePages()
     
     // -- Global Settings
     // pages for the different settings
-    addPage("midi_in_channel", "MIDI Input Channel", 1, 16, nullptr);
-    addPage("midi_out_channel", "MIDI Output Channel", 1, 16, nullptr);
-    addPage("pot_behaviour", "Potentiometer Behaviour", 0, 1, { "Jump", "Catch" });
+    addPage("midi_in_channel", "MIDI Input Channel", 1, 16, (size_t)JSONglobals["midiInChannel"] - 1, nullptr);
+    addPage("midi_out_channel", "MIDI Output Channel", 1, 16, (size_t)JSONglobals["midiOutChannel"] - 1, nullptr);
+    addPage("pot_behaviour", "Potentiometer Behaviour", 0, 1, (size_t)JSONglobals["potBehaviour"], { "Jump", "Catch" });
     
     // -- Global Settings
     // page for navigating through the settings
@@ -69,11 +97,16 @@ void Menu::initializePages()
         getPage("reverb_additionalParameters"),
     });
     
+    // retrieve preset names from JSON
+    String presetName[NUM_PRESETS];
+    for (unsigned int n = 0; n < NUM_PRESETS; ++n)
+        presetName[n] = JSONpresets[n]["name"];
+    
     // -- Home / Load and Show Preset
-    addPage("load_preset", "Home", 0, NUM_PRESETS-1, presetNames);
+    addPage("load_preset", "Home", 0, NUM_PRESETS-1, (size_t)JSONglobals["lastUsedPreset"], presetName);
     
     // -- Save Preset To?
-    addPage("save_preset", "Save Preset to Slot: ", 0, NUM_PRESETS-1, presetNames);
+    addPage("save_preset", "Save Preset to Slot: ", 0, NUM_PRESETS-1, (size_t)JSONglobals["lastUsedPreset"], presetName);
 }
 
 void Menu::initializePageHierarchy()
@@ -130,16 +163,16 @@ void Menu::addPage(const String id_, const String name_, std::initializer_list<P
     pages.push_back(new NavigationPage(id_, name_, options_, *this));
 }
 
-void Menu::addPage(const String id_, const String name_, const size_t min_, const size_t max_, String* choiceNames_)
+void Menu::addPage(const String id_, const String name_, const size_t min_, const size_t max_, const size_t default_, String* choiceNames_)
 {
-    pages.push_back(new GlobalSettingPage(id_, name_, min_, max_, *this, choiceNames_));
+    pages.push_back(new GlobalSettingPage(id_, name_, min_, max_, *this, default_, choiceNames_));
 }
 
-void Menu::addPage(const String id_, const String name_, const size_t min_, const size_t max_, std::initializer_list<String> choiceNames_)
+void Menu::addPage(const String id_, const String name_, const size_t min_, const size_t max_, const size_t default_, std::initializer_list<String> choiceNames_)
 {
     String* choiceNamesPtr = choiceNames_.size() > 0 ? const_cast<String*>(&*choiceNames_.begin()) : nullptr;
     
-    pages.push_back(new GlobalSettingPage(id_, name_, min_, max_, *this, choiceNamesPtr));
+    pages.push_back(new GlobalSettingPage(id_, name_, min_, max_, *this, default_, choiceNamesPtr));
 }
 
 Menu::Page* Menu::getPage(const String id_)
@@ -169,6 +202,41 @@ inline void Menu::print()
 
 void Menu::loadPreset()
 {
+    // parameters
+    auto engine = programParameters[0];
+    auto effect1= programParameters[1];
+    auto effect2 = programParameters[2];
+//    auto effect3 = programParameters[3];
+    
+    // console print yes or no?
+    bool withPrint = true;
+
+    // index
+    size_t index = getPage("load_preset")->getCurrentChoice();
+    
+    // load from JSON file
+    for (unsigned int n = 0; n < engine->getNumParametersInGroup(); n++)
+        engine->getParameter(n)->setValue((float)JSONpresets[index]["engine"][n], withPrint);
+    
+    for (unsigned int n = 0; n < effect1->getNumParametersInGroup(); n++)
+        effect1->getParameter(n)->setValue((float)JSONpresets[index]["effect1"][n], withPrint);
+    
+    for (unsigned int n = 0; n < effect2->getNumParametersInGroup(); n++)
+        effect2->getParameter(n)->setValue((float)JSONpresets[index]["effect2"][n], withPrint);
+    
+//    for (unsigned int n = 0; n < effect3->getNumParametersInGroup(); n++)
+//        effect3->getParameter(n)->setValue((float)JSONpresets[index]["effect3"][n], withPrint);
+    
+    // last used preset is now the current one
+    lastUsedPresetIndex = index;
+    
+    // update Display Catch
+//    display.setPresetCatch(index, JSONpresets[index]["name"]);
+
+    #ifdef CONSOLE_PRINT
+    consoleprint("Loaded preset with name " + getPage("load_preset")->getCurrentPrintValue() + " from JSON!", __FILE__, __LINE__);
+    #endif
+    
     for (auto i : onLoadMessage) i();
 }
 

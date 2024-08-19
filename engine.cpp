@@ -213,7 +213,7 @@ void UserInterface::setup(AudioEngine *_engine)
     menu.addPage("reverb_additionalParameters", "Reverb - Additional Parameters",
                  { menu.getPage("reverb_lowcut"), menu.getPage("reverb_multfreq"), menu.getPage("reverb_multgain") });
     
-    menu.setup();
+    menu.setup(engine->getProgramParameters());
     
     initializeListeners();
     

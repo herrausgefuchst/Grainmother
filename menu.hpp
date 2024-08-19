@@ -1,9 +1,14 @@
 #ifndef menu_hpp
 #define menu_hpp
 
+#include <fstream>
+
 #include "functions.h"
 #include "uielements.hpp"
 #include "parameters.hpp"
+
+#include "json.h"
+using json = nlohmann::json;
 
 class Menu : public UIElement::Listener
 {
@@ -137,7 +142,7 @@ public:
     class GlobalSettingPage : public Page
     {
     public:
-        GlobalSettingPage(const String id_, const String name_, const size_t min_, const size_t max_, Menu& menu_, String* choiceNames_ = nullptr)
+        GlobalSettingPage(const String id_, const String name_, const size_t min_, const size_t max_, Menu& menu_, size_t defaultIndex_ = 0, String* choiceNames_ = nullptr)
             : Page(menu_)
             , min(min_), max(max_)
         {
@@ -146,6 +151,8 @@ public:
             
             if (choiceNames_) choiceNames.assign(choiceNames_, choiceNames_+ (max-min+1));
             else for(unsigned int n = 0; n < (max-min+1); ++n) choiceNames.push_back(TOSTRING(min+n));
+            
+            choiceIndex = defaultIndex_;
         }
         
         void up() override
@@ -191,7 +198,7 @@ public:
 // ********************************************************************************
     
     Menu() {}
-    void setup();
+    void setup(std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programParameters_);
     ~Menu ();
         
     void buttonClicked (UIElement* _uielement) override;
@@ -216,8 +223,8 @@ public:
     
     void addPage(const String id_, AudioParameter* param_);
     void addPage(const String id_, const String name_, std::initializer_list<Page*> options_);
-    void addPage(const String id_, const String name_, const size_t min_, const size_t max_, String* choiceNames_);
-    void addPage(const String id_, const String name_, const size_t min_, const size_t max_, std::initializer_list<String> choiceNames_);
+    void addPage(const String id_, const String name_, const size_t min_, const size_t max_, const size_t default_, String* choiceNames_);
+    void addPage(const String id_, const String name_, const size_t min_, const size_t max_, const size_t default_, std::initializer_list<String> choiceNames_);
     
     Page* getPage(const String id_);
     
@@ -239,6 +246,7 @@ private:
     void initializePages();
     void initializePageHierarchy();
     void initializePageActions();
+    void initializeJSON();
 
 protected:
     Page* currentPage = nullptr;
@@ -250,6 +258,12 @@ private:
     bool isScrolling = false;
     bool bypass = false; // TODO: why is this here?
 
+    json JSONpresets;
+    json JSONglobals;
+    
+    std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programParameters;
+    size_t lastUsedPresetIndex = 0;
+    
     //TODO: scrolling function?
 };
 
