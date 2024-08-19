@@ -272,7 +272,7 @@ void Display::displayButtonParameter (AudioParameter *_param)
 void Display::menupageSelected (Menu::Page* _page)
 {
     if (_page->getID() == "home")
-        displayPreset(_page->getCurrentChoice(), _page->getCurrentPrintValue());
+        displayPreset((int)_page->getCurrentChoice(), _page->getCurrentPrintValue());
     
     else
         displayMenuPage(_page);
@@ -306,7 +306,7 @@ void Display::displayMenuPage (Menu::Page* _page)
     displaycatch.add(_page->getName());
     displaycatch.add(choices, _page->getNumChoices());
     displaycatch.add(_page->getNumChoices());
-    displaycatch.add(_page->getCurrentChoice());
+//    displaycatch.add(_page->getCurrentChoice());
     displaycatch.createRows();
 }
 

@@ -114,8 +114,12 @@ void Menu::setup()
     
     getPage("midi_in_channel")->onEnter = [this] { saveSetting(); };
     
-    
-    
+    getPage("midi_in_channel")->onUp = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
+    getPage("midi_in_channel")->onDown = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
+    getPage("midi_out_channel")->onUp = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
+    getPage("midi_out_channel")->onDown = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
+    getPage("pot_behaviour")->onUp = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
+    getPage("pot_behaviour")->onDown = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
 }
 
 Menu::~Menu()
@@ -274,17 +278,6 @@ void Menu::scroll (const int _direction)
     else currentPage->down();
 }
 
-void Menu::setCurrentPage (const int _index, const bool _withCopyChoice)
-{
-    if (_withCopyChoice) pages[_index]->setCurrentChoice(currentPage->getCurrentChoice());
-    
-    currentPage = pages[_index];
-    
-    for (auto i : listeners) i->menupageSelected(currentPage);
-    
-    print();
-}
-
 void Menu::setCurrentPage(Menu::Page* page_)
 {
     currentPage = page_;
@@ -301,8 +294,8 @@ void Menu::setCurrentPage(const String id_)
 
 void Menu::setNewPresetName (const String _name)
 {
-    pages[Page::HOME]->setItemName(_name, currentPage->getCurrentChoice());
-    pages[Page::SAVE]->setItemName(_name, currentPage->getCurrentChoice());
+//    pages[Page::HOME]->setItemName(_name, currentPage->getCurrentChoice());
+//    pages[Page::SAVE]->setItemName(_name, currentPage->getCurrentChoice());
 }
 
 void Menu::addListener (Listener* _listener)

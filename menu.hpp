@@ -46,7 +46,7 @@ public:
         String getName() const { return name; }
         String getID() const { return id; }
         virtual String getCurrentPrintValue() const { return items[currentChoice]->name; }
-        int getCurrentChoice() const { return currentChoice; }
+        virtual size_t getCurrentChoice() const { return currentChoice; }
         int getNumChoices() const { return numChoices;}
         std::vector<Item*> getItems() { return items; }
         
@@ -201,6 +201,11 @@ public:
         {
             return choiceNames[choiceIndex];
         }
+        
+        size_t getCurrentChoice() const override
+        {
+            return choiceIndex;
+        }
     
     private:
         size_t min, max;
@@ -227,7 +232,9 @@ public:
     public:
         virtual ~Listener() {}
         
-        virtual void menupageSelected (Page* _page) = 0;
+        virtual void menupageSelected (Page* page_) {}
+        
+        virtual void globalSettingChanged(Page* page_) {}
     };
 
     void addListener (Listener* _listener);
@@ -241,16 +248,15 @@ public:
     
     Page* getPage(const String id_);
     
-    void setCurrentPage (const int _index, const bool _withCopyChoice = false);
     void setCurrentPage(Page* page_);
     void setCurrentPage(const String id_);
     void setNewPresetName (const String _name);
     void setBypass (const bool _bypass) { bypass = _bypass; }
     
-    int getCurrentChoice() const{ return currentPage->getCurrentChoice(); }
+    size_t getCurrentChoice() const{ return currentPage->getCurrentChoice(); }
     String getCurrentPageID() const { return currentPage->getID(); }
     String getCurrentPageName() const { return currentPage->getName(); }
-    int getCurrentPreset() const { return pages[Page::HOME]->getCurrentChoice(); }
+    size_t getCurrentPreset() const { return pages[Page::HOME]->getCurrentChoice(); }
     
 private:
     inline void print();

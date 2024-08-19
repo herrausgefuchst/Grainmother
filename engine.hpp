@@ -114,7 +114,7 @@ private:
 // MARK: - USER INTERFACE
 // =======================================================================================
 
-class UserInterface
+class UserInterface : public Menu::Listener
 {
 public:
     UserInterface() {}
@@ -127,6 +127,9 @@ public:
     void loadPresetFromJSON (const int _index = -1);
     
     void setEffectEditFocus (const bool _withNotification = true);
+    
+    void globalSettingChanged(Menu::Page* page_) override;
+    
     void nudgeTempo (const int _direction);
         
 private:

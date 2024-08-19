@@ -337,6 +337,9 @@ inline void UserInterface::initializeListeners()
 //    // Menu -> Display
 //    menu.addListener(&display);
 //    
+    // UserInterface -> Menu
+    menu.addListener(this);
+    
     // Menu -> JSON
     menu.onSaveMessage.push_back( [this] { savePresetToJSON(); } );
     menu.onLoadMessage.push_back( [this] { loadPresetFromJSON(); } );
@@ -379,6 +382,18 @@ void UserInterface::nudgeTempo(const int _direction)
         menu.setBypass(true);
         engine->getParameter("tempo")->nudgeValue(_direction);
     }
+}
+
+void UserInterface::globalSettingChanged(Menu::Page* page_)
+{
+    if (page_->getID() == "pot_behaviour")
+    {
+        rt_printf("Pot Behaviour will be changed!\n");
+        Potentiometer::setPotBevaviour(INT2ENUM(page_->getCurrentChoice(), PotBehaviour));
+    }
+    
+    //TODO: midi in
+    //TODO: midi out
 }
 
 void UserInterface::savePresetToJSON (const int _index)
