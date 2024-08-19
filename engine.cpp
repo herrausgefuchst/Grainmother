@@ -4,7 +4,9 @@
 // MARK: - AUDIO ENGINE
 // =======================================================================================
 
-AudioEngine::AudioEngine() : engineParameters("EngineParameters", AudioParameterGroup::Type::ENGINE, NUM_ENGINEPARAMETERS)
+AudioEngine::AudioEngine() 
+    : engineParameters("engine", AudioParameterGroup::Type::ENGINE, NUM_ENGINEPARAMETERS)
+    , globalSettings("settings", AudioParameterGroup::Type::ENGINE, NUM_GLOBALSETTINGS)
 {}
 
 void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
@@ -42,6 +44,20 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
                                       { "Reverb", "Granulator", "Resonator" }, ParameterTypes::CHOICE);
     }
     
+    // global settings
+    {
+        String midiChannelNames[16];
+        for (size_t n = 0; n < 16; ++n) midiChannelNames[n] = TOSTRING(n+1);
+        
+        globalSettings.addParameter("midi_in_channel", "MIDI Input Channel", midiChannelNames, 16);
+        
+        globalSettings.addParameter("midi_out_channel", "MIDI Output Channel", midiChannelNames, 16);
+        
+        globalSettings.addParameter("last_used_preset", "Last Used Preset", presetNames, NUM_PRESETS);
+        
+        globalSettings.addParameter("pot_behaviour", "Potentiometer Behaviour", { "Jump", "Catch" }, ParameterTypes::CHOICE);
+    }
+    
     // Effects
     // TODO: change setup
     effects.at(0) = std::make_unique<Reverb>(&engineParameters, GrainmotherReverb::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
@@ -55,6 +71,7 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     programParameters.at(0) = (&engineParameters);
     for (unsigned int n = 1; n < NUM_EFFECTS+1; ++n)
         programParameters.at(n) = effects.at(n-1)->getEffectParameterGroup();
+    programParameters.at(NUM_PARAMETERGROUPS-1) = (&globalSettings);
     
     // Tempo & Metronome
     tempoTapper.setup(engineParameters.getParameter("tempo")->getMin(), engineParameters.getParameter("tempo")->getMax(), sampleRate);
@@ -208,8 +225,22 @@ void UserInterface::setup(AudioEngine *_engine)
     menu.addPage("reverb_lowcut", engine->getParameter("reverb", "reverb_lowcut"));
     menu.addPage("reverb_multfreq", engine->getParameter("reverb", "reverb_multfreq"));
     menu.addPage("reverb_multgain", engine->getParameter("reverb", "reverb_multgain"));
+    
     menu.addPage("reverb_additionalParameters", "Reverb - Additional Parameters",
                  { menu.getPage("reverb_lowcut"), menu.getPage("reverb_multfreq"), menu.getPage("reverb_multgain") });
+    
+    menu.addPage("settings_midi_in_channel", engine->getParameter("settings", "midi_in_channel"));
+    menu.addPage("settings_midi_out_channel", engine->getParameter("settings", "midi_out_channel"));
+    menu.addPage("settings_last_used_preset", engine->getParameter("settings", "last_used_preset"));
+    menu.addPage("settings_pot_behaviour", engine->getParameter("settings", "pot_behaviour"));
+    
+    menu.addPage("global_settings", "Global Settings", {
+        menu.getPage("settings_midi_in_channel"),
+        menu.getPage("settings_midi_out_channel"),
+        menu.getPage("settings_last_used_preset"),
+        menu.getPage("settings_pot_behaviour"),
+    });
+    
     menu.setup(&globals);
     
     initializeListeners();

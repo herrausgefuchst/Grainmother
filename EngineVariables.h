@@ -22,7 +22,20 @@ enum ButtonID {
     ENTER
 };
 
+static const size_t NUM_PRESETS = 4;
+
+static const String presetNames[NUM_PRESETS] = {
+    "Default",
+    "Preset 1",
+    "Preset 2",
+    "Preset 3"
+};
+
 static const size_t NUM_EFFECTS = 3;
+
+static const size_t NUM_GLOBALSETTINGS = 4;
+
+static const size_t NUM_PARAMETERGROUPS = 5;
 
 static const size_t NUM_ENGINEPARAMETERS = 6;
 

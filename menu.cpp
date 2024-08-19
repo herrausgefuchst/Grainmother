@@ -106,7 +106,12 @@ void Menu::setup(GlobalParameters* _globals)
     getPage("reverb_multfreq")->addParent(getPage("reverb_additionalParameters"));
     getPage("reverb_multgain")->addParent(getPage("reverb_additionalParameters"));
     
-    setCurrentPage("reverb_additionalParameters");
+    getPage("settings_midi_in_channel")->addParent(getPage("global_settings"));
+    getPage("settings_midi_out_channel")->addParent(getPage("global_settings"));
+    getPage("settings_last_used_preset")->addParent(getPage("global_settings"));
+    getPage("settings_pot_behaviour")->addParent(getPage("global_settings"));
+    
+    setCurrentPage("global_settings");
 }
 
 Menu::~Menu()

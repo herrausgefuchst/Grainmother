@@ -86,7 +86,7 @@ public:
      * @brief Gets the program parameters.
      * @return An array of pointers to the program parameter groups.
      */
-    std::array<AudioParameterGroup*, 4> getProgramParameters() { return programParameters; }
+    std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> getProgramParameters() { return programParameters; }
     
     /**
      * @brief Gets an effect by its index.
@@ -100,9 +100,10 @@ public:
     Metronome* getMetronome() { return &metronome; }
         
 private:
-    std::array<std::unique_ptr<Effect>, 3> effects; /**< Array of unique pointers to effects */
-    std::array<AudioParameterGroup*, 4> programParameters; /**< Array of program parameter groups */
+    std::array<std::unique_ptr<Effect>, NUM_EFFECTS> effects; /**< Array of unique pointers to effects */
+    std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programParameters; /**< Array of program parameter groups */
     AudioParameterGroup engineParameters; /**< Parameters specific to the audio engine */
+    AudioParameterGroup globalSettings;
     
     TempoTapper tempoTapper; /**< The tempo tapper instance */
     Metronome metronome; /**< The metronome instance */

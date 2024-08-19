@@ -101,7 +101,7 @@ public:
         
         String getCurrentPrintValue() const override
         {
-            return TOSTRING(parameter->getPrintValueAsFloat());
+            return parameter->getPrintValueAsString();
         }
         
     private:
