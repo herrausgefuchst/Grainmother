@@ -205,7 +205,7 @@ public:
     public:
         virtual ~Listener() {}
         
-        virtual void menupageSelected (Page* page_) {}
+        virtual void menupageSelected(Page* page_) {}
         
         virtual void globalSettingChanged(Page* page_) {}
     };
@@ -235,7 +235,10 @@ private:
 
     void loadPreset();
     void savePreset();
-    void saveSetting();
+    
+    void initializePages();
+    void initializePageHierarchy();
+    void initializePageActions();
 
 protected:
     Page* currentPage = nullptr;

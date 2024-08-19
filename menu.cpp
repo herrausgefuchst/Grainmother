@@ -32,6 +32,18 @@ void Menu::Page::exit()
 
 void Menu::setup()
 {
+    initializePages();
+    
+    initializePageHierarchy();
+    
+    initializePageActions();
+    
+    // -- set start page
+    setCurrentPage("load_preset");
+}
+
+void Menu::initializePages()
+{
     // -- Additional Reverb Parameters
     getPage("reverb_lowcut")->addParent(getPage("reverb_additionalParameters"));
     getPage("reverb_multfreq")->addParent(getPage("reverb_additionalParameters"));
@@ -43,6 +55,7 @@ void Menu::setup()
     addPage("midi_out_channel", "MIDI Output Channel", 1, 16, nullptr);
     addPage("pot_behaviour", "Potentiometer Behaviour", 0, 1, { "Jump", "Catch" });
     
+    // -- Global Settings
     // page for navigating through the settings
     addPage("global_settings", "Global Settings", {
         getPage("midi_in_channel"),
@@ -50,43 +63,49 @@ void Menu::setup()
         getPage("pot_behaviour")
     });
     
-    // define navigator as parent for the settings pages
-    getPage("midi_in_channel")->addParent(getPage("global_settings"));
-    getPage("midi_out_channel")->addParent(getPage("global_settings"));
-    getPage("pot_behaviour")->addParent(getPage("global_settings"));
-    
-    // -- ActionMenu
+    // -- Overall Menu
     addPage("menu", "Menu", {
         getPage("global_settings"),
         getPage("reverb_additionalParameters"),
     });
     
-    getPage("global_settings")->addParent(getPage("menu"));
-    getPage("reverb_additionalParameters")->addParent(getPage("menu"));
-    
-    // -- Home
+    // -- Home / Load and Show Preset
     addPage("load_preset", "Home", 0, NUM_PRESETS-1, presetNames);
     
     // -- Save Preset To?
     addPage("save_preset", "Save Preset to Slot: ", 0, NUM_PRESETS-1, presetNames);
-    // TODO: add naming of preset
+}
+
+void Menu::initializePageHierarchy()
+{
+    // -- Global Settings
+    getPage("midi_in_channel")->addParent(getPage("global_settings"));
+    getPage("midi_out_channel")->addParent(getPage("global_settings"));
+    getPage("pot_behaviour")->addParent(getPage("global_settings"));
+    
+    // -- Overall Menu
+    getPage("global_settings")->addParent(getPage("menu"));
+    getPage("reverb_additionalParameters")->addParent(getPage("menu"));
+
+    // -- Home screen
     getPage("save_preset")->addParent(getPage("load_preset"));
     getPage("menu")->addParent(getPage("load_preset"));
-    
-    // -- set start page
-    setCurrentPage("load_preset");
-    
+}
+
+void Menu::initializePageActions()
+{
+    // Home Page
     Page* homePage = getPage("load_preset");
     homePage->onUp = [this] { loadPreset(); };
     homePage->onDown = [this] { loadPreset(); };
     homePage->onExit = [this] { setCurrentPage("menu"); };
     homePage->onEnter = [this] { setCurrentPage("save_preset"); };
     
+    // Save Page
     Page* savePage = getPage("save_preset");
     savePage->onEnter = [this] { savePreset(); };
     
-    getPage("midi_in_channel")->onEnter = [this] { saveSetting(); };
-    
+    // Global Settings
     getPage("midi_in_channel")->onUp = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
     getPage("midi_in_channel")->onDown = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
     getPage("midi_out_channel")->onUp = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
@@ -156,13 +175,6 @@ void Menu::loadPreset()
 void Menu::savePreset()
 {
     for (auto i : onSaveMessage) i();
-}
-
-void Menu::saveSetting()
-{
-//    if (currentPage->getID() == "midiin") globals->midiInChannel = currentPage->getCurrentChoice()+1;
-//    else if (currentPage->getID() == "midiout") globals->midiOutChannel = currentPage->getCurrentChoice()+1;
-//    else if (currentPage->getID() == "potbehaviour") globals->potBehaviour = currentPage->getCurrentChoice();
 }
 
 void Menu::buttonClicked (UIElement* _uielement)
