@@ -62,7 +62,7 @@ public:
 // ********************************************************************************
     
     Menu() {}
-    Menu (GlobalParameters* _globals);
+    void setup(GlobalParameters* _globals);
     ~Menu ();
         
     void buttonClicked (UIElement* _uielement) override;

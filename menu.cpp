@@ -53,9 +53,10 @@ void Menu::Page::exit()
 // MARK: - MENU
 // ********************************************************************************
 
-Menu::Menu (GlobalParameters* _globals)
-    : globals(_globals)
+void Menu::setup(GlobalParameters* _globals)
 {
+    globals = _globals;
+    
     // Home Page
     pages.push_back(new Page("home", "Home", *this));
     for (unsigned int n = 0; n < NUM_PRESETS; n++) pages[Page::HOME]->addItem(n, globals->presetNames[n]);

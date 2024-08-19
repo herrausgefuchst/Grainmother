@@ -182,6 +182,9 @@ void UserInterface::setup(AudioEngine *_engine)
     // helper functions for initialization
     initializeJSON();
     initializeGlobalParameters();
+    
+    menu.setup(&globals);
+    
     initializeListeners();
     
     // load last used Preset
@@ -255,17 +258,17 @@ inline void UserInterface::initializeListeners()
     button[ButtonID::FX2].addListener(engine->getParameter("effect2_bypass"));
     button[ButtonID::FX3].addListener(engine->getParameter("effect3_bypass"));
     button[ButtonID::BYPASS].addListener(engine->getParameter("global_bypass"));
-//
-//    // Buttons -> Menu
-//    button[ButtonID::UP].addListener(&menu);
+
+    // Buttons -> Menu
+    button[ButtonID::UP].addListener(&menu);
 //    button[ButtonID::UP].onClick.push_back([this] { nudgeTempo(+1); });
-//    button[ButtonID::DOWN].addListener(&menu);
+    button[ButtonID::DOWN].addListener(&menu);
 //    button[ButtonID::DOWN].onClick.push_back([this] { nudgeTempo(-1); });
-//    button[ButtonID::EXIT].addListener(&menu);
-//    button[ButtonID::ENTER].addListener(&menu);
+    button[ButtonID::EXIT].addListener(&menu);
+    button[ButtonID::ENTER].addListener(&menu);
 //    button[ButtonID::TEMPO].onClick.push_back([this] { engine->getTempoTapper()->tapTempo(); });
-//    
-//    // Buttons -> Effect Edit Focus
+    
+    // Buttons -> Effect Edit Focus
     button[ButtonID::FX1].onPress.push_back([this] {  engine->getParameter("effect_edit_focus")->setValue(0); });
     button[ButtonID::FX2].onPress.push_back([this] {  engine->getParameter("effect_edit_focus")->setValue(1); });
     button[ButtonID::FX3].onPress.push_back([this] {  engine->getParameter("effect_edit_focus")->setValue(2); });
@@ -276,7 +279,7 @@ inline void UserInterface::initializeListeners()
 //    engine->getParameter("tempo")->addListener(&display);
 //    engine->getParameter("globalbypass")->addListener(nullptr);
 //    engine->getParameter("beatrepeat")->addListener(nullptr);
-//    engine->getParameter("granulator")->addListener(nullptr);
+//    engine->getParame–ter("granulator")->addListener(nullptr);
 //    engine->getParameter("delay")->addListener(nullptr);
 //    engine->getParameter("effecteditfocus")->addListener(nullptr);
 //    for (unsigned int n = 0; n < 9; n++) engine->getParameter(AudioParameterGroup::BEATREPEAT, n)->addListener(&display);
@@ -304,9 +307,9 @@ inline void UserInterface::initializeListeners()
 //    // Menu -> Display
 //    menu.addListener(&display);
 //    
-//    // Menu -> JSON
-//    menu.onSaveMessage.push_back( [this] { savePresetToJSON(); } );
-//    menu.onLoadMessage.push_back( [this] { loadPresetFromJSON(); } );
+    // Menu -> JSON
+    menu.onSaveMessage.push_back( [this] { savePresetToJSON(); } );
+    menu.onLoadMessage.push_back( [this] { loadPresetFromJSON(); } );
 }
 
 void UserInterface::setEffectEditFocus (const bool _withNotification)
@@ -381,20 +384,24 @@ void UserInterface::savePresetToJSON (const int _index)
     
     for (unsigned int n = 0; n < delayP->getNumParametersInGroup(); n++)
         JSONpresets[index]["delay"][n] = delayP->getParameter(n)->getPrintValueF();
+#else
+#ifdef CONSOLE_PRINT
+    consoleprint("Saving preset to JSON!", __FILE__, __LINE__);
+#endif
 #endif
 }
 
 void UserInterface::loadPresetFromJSON (const int _index)
 {
     // parameters
-    auto parameters = engine->getProgramParameters();
+//    auto parameters = engine->getProgramParameters();
 //    auto engineP = parameters[AudioParameterGroup::ENGINE];
 //    auto beatrepeatP = parameters[AudioParameterGroup::BEATREPEAT];
 //    auto granulatorP = parameters[AudioParameterGroup::GRANULATOR];
 //    auto delayP = parameters[AudioParameterGroup::DELAY];
     
     // console print yes or no?
-    bool withPrint = false;
+//    bool withPrint = false;
     
 #ifdef JSON_USED
     // index
@@ -424,6 +431,9 @@ void UserInterface::loadPresetFromJSON (const int _index)
     display.setPresetCatch(index, JSONpresets[index]["name"]);
 
 #else
+#ifdef CONSOLE_PRINT
+    consoleprint("Loading preset from JSON!", __FILE__, __LINE__);
+#endif
 //    float defaultresonator[] = { 200.f, 80.f, 0.f, 0.f, 0.f, 2.f, 80.f, 100.f, 1.f };
 //    for (unsigned int n = 0; n < resonatorP->getNumParametersInGroup(); n++)
 //        resonatorP->getParameter(n)->setValue(defaultresonator[n], withPrint);
