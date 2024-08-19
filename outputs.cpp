@@ -284,30 +284,30 @@ void Display::menupageSelected (Menu::Page* _page)
 void Display::displayMenuPage (Menu::Page* _page)
 {
     // convert vecotr of strings to array of strings
-    std::vector<Menu::Page::Item*> items = _page->getItems();
-    String choices[_page->getNumChoices()];
-    for (unsigned int n = 0; n < _page->getNumChoices(); n++) choices[n] = items[n]->name;
-    
-#ifdef BELA_CONNECTED
-    oscTransmitter.newMessage("/menupage");
-    
-    int currentChoice = _page->getCurrentChoice();
-    String current = items[currentChoice]->name;
-    String upper = currentChoice == 0 ? "" : items[currentChoice - 1]->name;
-    String lower = currentChoice == (_page->getNumChoices() - 1) ? "" : items[currentChoice + 1]->name;
-    
-    oscTransmitter.add(_page->getName());
-    oscTransmitter.add(current);
-    oscTransmitter.add(upper);
-    oscTransmitter.add(lower);
-#endif
-    
-    displaycatch.newMessage("/menupage");
-    displaycatch.add(_page->getName());
-    displaycatch.add(choices, _page->getNumChoices());
-    displaycatch.add(_page->getNumChoices());
-//    displaycatch.add(_page->getCurrentChoice());
-    displaycatch.createRows();
+//    std::vector<Menu::Page::Item*> items = _page->getItems();
+//    String choices[_page->getNumChoices()];
+//    for (unsigned int n = 0; n < _page->getNumChoices(); n++) choices[n] = items[n]->name;
+//    
+//#ifdef BELA_CONNECTED
+//    oscTransmitter.newMessage("/menupage");
+//    
+//    int currentChoice = _page->getCurrentChoice();
+//    String current = items[currentChoice]->name;
+//    String upper = currentChoice == 0 ? "" : items[currentChoice - 1]->name;
+//    String lower = currentChoice == (_page->getNumChoices() - 1) ? "" : items[currentChoice + 1]->name;
+//    
+//    oscTransmitter.add(_page->getName());
+//    oscTransmitter.add(current);
+//    oscTransmitter.add(upper);
+//    oscTransmitter.add(lower);
+//#endif
+//    
+//    displaycatch.newMessage("/menupage");
+//    displaycatch.add(_page->getName());
+//    displaycatch.add(choices, _page->getNumChoices());
+//    displaycatch.add(_page->getNumChoices());
+////    displaycatch.add(_page->getCurrentChoice());
+//    displaycatch.createRows();
 }
 
 void Display::displayPreset (const int _index, const String _name)

@@ -1,42 +1,15 @@
 #include "menu.hpp"
 
 // MARK: - MENU::PAGE
-// ********************************************************************************
-
-Menu::Page::Page (const String _id, const String _name, Menu& _menu, const int _currentChoice)
-    : menu(_menu)
-    , id(_id)
-    , name(_name)
-    , currentChoice(_currentChoice)
-{}
-
-Menu::Page::~Page()
-{
-    for (auto i : items) delete i;
-    items.clear();
-}
-
-void Menu::Page::addItem (const int _id, const String _name)
-{
-    items.push_back(new Item(_id, _name));
-    ++numChoices;
-}
+// *******************************************************************************
 
 void Menu::Page::up()
 {
-    if (--currentChoice < 0) currentChoice += numChoices;
-    
-    consoleprint("Menu Page: '" + name + "', Choice: '" + items[currentChoice]->name + "'", __FILE__, __LINE__);
-    
     if (onUp) onUp();
 }
 
 void Menu::Page::down()
 {
-    if (++currentChoice >= numChoices) currentChoice -= numChoices;
-    
-    consoleprint("Menu Page: '" + name + "', Choice: '" + items[currentChoice]->name + "'", __FILE__, __LINE__);
-    
     if (onDown) onDown();
 }
 
@@ -247,7 +220,7 @@ void Menu::buttonPressed (UIElement* _uielement)
         }
         case ButtonID::EXIT:
         {
-            if (currentPage == pages[Page::HOME]) loadPreset();
+            if (currentPage->getID() == "load_preset") loadPreset();
             break;
         }
         case ButtonID::ENTER:

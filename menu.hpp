@@ -15,52 +15,31 @@ public:
     class Page
     {
     public:
-        enum ID { HOME, SAVE, SETTINGS, SETMIDIIN, SETMIDIOUT, SETPOTBEHAVIOUR };
-        
-        struct Item
-        {
-            Item (const int _id, const String _name) : id(_id), name(_name) {}
-            
-            const int id;
-            String name;
-        };
-        
         Page(Menu& menu_) : menu(menu_) {};
-        Page (const String _id, const String _name, Menu& _menu, const int _currentChoice = 0);
-        virtual ~Page();
+        virtual ~Page() {}
         
         void addParent(Page* parent_) { parent = parent_; }
         
         std::function<void()> onUp, onDown, onEnter, onExit;
-        
-        void addItem (const int _id, const String _name);
         
         virtual void up();
         virtual void down();
         virtual void enter();
         virtual void exit();
         
-        void setCurrentChoice (const int _index) { currentChoice = _index; }
-        void setItemName (const String _name, const int _index) { items[_index]->name = _name; }
+        void setCurrentChoice (const size_t index_) {}
         
         String getName() const { return name; }
         String getID() const { return id; }
-        virtual String getCurrentPrintValue() const { return items[currentChoice]->name; }
-        virtual size_t getCurrentChoice() const { return currentChoice; }
-        int getNumChoices() const { return numChoices;}
-        std::vector<Item*> getItems() { return items; }
+        virtual String getCurrentPrintValue() const { return ""; }
+        virtual size_t getCurrentChoice() const { return 0; }
         
     protected:
         Menu& menu;
         String id, name;
-        
-        int numChoices = 0;
-        int currentChoice = 0;
-        
         Page* parent = nullptr;
-        
-        std::vector<Item*> items;
     };
+    
     
     class ParameterPage : public Page
     {
@@ -73,8 +52,6 @@ public:
             
             parameter = param_;
         }
-        
-        ~ParameterPage() {}
         
         void up() override
         {
@@ -117,8 +94,6 @@ public:
             id = id_;
             name = name_;
         }
-        
-        ~NavigationPage() {}
         
         void up() override
         {
@@ -172,8 +147,6 @@ public:
             if (choiceNames_) choiceNames.assign(choiceNames_, choiceNames_+ (max-min+1));
             else for(unsigned int n = 0; n < (max-min+1); ++n) choiceNames.push_back(TOSTRING(min+n));
         }
-        
-        ~GlobalSettingPage() {}
         
         void up() override
         {
@@ -256,7 +229,6 @@ public:
     size_t getCurrentChoice() const{ return currentPage->getCurrentChoice(); }
     String getCurrentPageID() const { return currentPage->getID(); }
     String getCurrentPageName() const { return currentPage->getName(); }
-    size_t getCurrentPreset() const { return pages[Page::HOME]->getCurrentChoice(); }
     
 private:
     inline void print();
