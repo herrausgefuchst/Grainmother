@@ -230,7 +230,14 @@ void UserInterface::setup(AudioEngine *_engine)
     initializeListeners();
     
     // load last used Preset
-    loadPresetFromJSON(0);
+    loadPresetFromJSON();
+    
+    // need to tell the effect LEDs which effect is currently focused
+    AudioParameter* effecteditfocus = engine->getParameter("effect_edit_focus");
+    int focus = effecteditfocus->getValueAsInt();
+    if (focus == 0) led[LED_FX1].parameterChanged(effecteditfocus);
+    else if (focus == 1) led[LED_FX2].parameterChanged(effecteditfocus);
+    else if (focus == 2) led[LED_FX3].parameterChanged(effecteditfocus);
 }
 
 
@@ -262,7 +269,15 @@ void UserInterface::initializeListeners()
     button[ButtonID::FX2].onPress.push_back([this] {  engine->getParameter("effect_edit_focus")->setValue(1); });
     button[ButtonID::FX3].onPress.push_back([this] {  engine->getParameter("effect_edit_focus")->setValue(2); });
     engine->getParameter("effect_edit_focus")->onChange.push_back([this] { setEffectEditFocus(); });
-//
+    
+    // set the current effect edit focus
+    // Potentiometers -> Current Effect-parameters
+    // needs to live here, because the parameter must be made first listener of potentiometer!
+    setEffectEditFocus();
+    
+    // Potentiometers -> LED
+    for (uint n = 0; n < NUM_POTENTIOMETERS; ++n) potentiometer[n].addListener(&led[LED_ACTION]);
+    
 //    // ! DISPLAY MUST BE FIRST LISTENER OF EACH PARAMETER !
 //    // Parameters -> Display
 //    engine->getParameter("tempo")->addListener(&display);
@@ -363,7 +378,7 @@ void UserInterface::effectOrderChanged()
 }
 
 
-void UserInterface::loadPresetFromJSON (const int _index)
+void UserInterface::loadPresetFromJSON()
 {
     // LED-notification
     for (unsigned int n = 0; n < NUM_LEDS; ++n)

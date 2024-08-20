@@ -342,8 +342,6 @@ void LED::setup(const String& id_)
     numBlinksCounter = NUM_BLINKS * 2;
 }
 
-// TODO: add a listen caller for potentiometer catched
-
 void LED::parameterChanged(AudioParameter* param_)
 {
     if (instanceof<ButtonParameter>(param_) || instanceof<ToggleParameter>(param_))
@@ -374,6 +372,11 @@ void LED::parameterChanged(AudioParameter* param_)
     }
 }
 
+void LED::potCatchedValue()
+{
+    blinkOnce();
+}
+
 
 void LED::alert()
 {
@@ -391,11 +394,11 @@ void LED::blinkOnce()
 {
     if (state != ALERT)
     {
-        value = 1.f;
+        blinkValue = value > 0.f ? 1.f : 0.f;
         
         blinkRateCounter = BLINKING_RATE;
         
-        lastState = VALUE;
+        lastState = state;
         
         state = BLINKONCE;
     }
@@ -456,14 +459,14 @@ float LED::get()
         {
             if (--blinkRateCounter == 0)
             {
-                value = 0.f;
+                blinkValue = !blinkValue;
                 
-                state = VALUE;
+                state = lastState;
                 
                 blinkRateCounter = BLINKING_RATE;
             }
             
-            output = value;
+            output = blinkValue;
             
             break;
         }

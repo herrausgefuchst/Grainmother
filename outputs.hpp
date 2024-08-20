@@ -100,7 +100,7 @@ private:
 // ALARM: LED blinks LED_NUM_BLINK times and sets back to previous state afterwards (i.e. preset change)
 // BLINKONCE: LED blinks once ands returns to previous state afterwards
 
-class LED : public AudioParameter::Listener
+class LED : public UIElement::Listener , public AudioParameter::Listener
 {
 public:
     String states[4] = {"value", "valuefocus", "alarm", "blinkonce"};
@@ -118,10 +118,11 @@ public:
     
     float get();
     
-    void parameterChanged(AudioParameter* param_);
+    void parameterChanged(AudioParameter* param_) override;
+    
+    void potCatchedValue() override;
     
 private:
-    size_t index;
     String id;
     
     float value = 0.f;

@@ -16,8 +16,12 @@ void UIElement::addListener (Listener* listener_)
 
 void UIElement::focusListener (Listener* listener_)
 {
-    listeners.clear();
-    listeners.push_back(listener_);
+    // ! connected parameter must always be first listener !
+    if (listeners.size() == 0)
+        listeners.push_back(listener_);
+    
+    else
+        listeners[0] = listener_;
 }
 
 
@@ -100,17 +104,28 @@ void Potentiometer::update(const float guivalue_, const float analogvalue_)
         
         // Set value if:
         // 1. inputFocus is set to ANALOG.
-        // 2. Pot behavior is JUMP (only if inputFocus is already set).
-        // 3. Pot behavior is CATCH, and the new value is within tolerance of the current value.
-        if (inputFocus == InputSource::ANALOG ||
-            (potBehaviour == PotBehaviour::JUMP && inputFocus != InputSource::NONE) ||
-            isClose(value, current, POT_CATCHING_TOLERANCE))
+        if (inputFocus == InputSource::ANALOG) 
         {
-            // update inputFocus
+            setValue(value);
+        }
+        // 2. Pot behavior is JUMP (only if inputFocus is already set).
+        else if (potBehaviour == PotBehaviour::JUMP && inputFocus != InputSource::NONE)
+        {
+            setValue(value);
+            
+            // set input source to analog
+            inputFocus = InputSource::ANALOG;
+        }
+        // 3. Pot behavior is CATCH, and the new value is within tolerance of the current value.
+        else if (isClose(value, current, POT_CATCHING_TOLERANCE))
+        {
+            setValue(value);
+            
+            // set input source to analog
             inputFocus = InputSource::ANALOG;
             
-            // set the new value
-            setValue(value);
+            // notify listeners (i.e. LEDs)
+            for (auto i : listeners) i->potCatchedValue();
         }
     }
     #endif // USING_ANALOG_INS

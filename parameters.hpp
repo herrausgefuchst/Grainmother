@@ -179,7 +179,7 @@ public:
      * @return The range.
      */
     virtual float getRange() const { return -1.f; }
-
+    
 protected:
     std::vector<Listener*> listeners; /**< List of listeners observing this parameter */
     const String id, name; /**< The ID and name of the parameter */

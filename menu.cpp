@@ -580,7 +580,7 @@ void Menu::loadPreset()
 //    auto effect3 = programParameters[3];
     
     // console print yes or no? (developping)
-    bool withPrint = true;
+    bool withPrint = false;
 
     // get the index of the currently selected preset
     size_t index = getPage("load_preset")->getCurrentChoice();

@@ -40,6 +40,8 @@ public:
          * @param uielement_ Pointer to the UIElement that triggered the event.
          */
         virtual void potChanged(UIElement* uielement_) {}
+        
+        virtual void potCatchedValue() {};
 
         /**
          * @brief Called when a button is clicked.

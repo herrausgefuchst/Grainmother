@@ -114,7 +114,7 @@ public:
     
     void processNonAudioTasks();
     
-    void loadPresetFromJSON (const int _index = -1);
+    void loadPresetFromJSON();
     
     void setEffectEditFocus (const bool _withNotification = true);
     
