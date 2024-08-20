@@ -7,28 +7,34 @@
 
 void Menu::Page::up()
 {
+    // call notify-function if connected
     if (onUp) onUp();
 }
 
 
 void Menu::Page::down()
 {
+    // call notify-function if connected
     if (onDown) onDown();
 }
 
 
 void Menu::Page::enter()
 {
+    // default behaviour: return to parent page if connected
     if (parent) menu.setCurrentPage(parent);
     
+    // call notify-function if connected
     if (onEnter) onEnter();
 }
 
 
 void Menu::Page::exit()
 {
+    // default behaviour: return to parent page if connected
     if (parent) menu.setCurrentPage(parent);
     
+    // call notify-function if connected
     if (onExit) onExit();
 }
 
@@ -39,42 +45,40 @@ void Menu::Page::exit()
 
 
 Menu::ParameterPage::ParameterPage(const String& id_, AudioParameter* param_, Menu& menu_)
-    : Page(menu_)
+    : Page(menu_, id_, param_->getName())
 {
-    id = id_;
-    name = param_->getName();
-    
+    // initialize parameter pointer
     parameter = param_;
 }
 
 
 void Menu::ParameterPage::up()
 {
+    // tell parameter to nudge upwards
     parameter->nudgeValue(1);
     
+    // console print
     #ifdef CONSOLE_PRINT
     consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
     #endif
     
+    // call notify-function if connected
     if (onUp) onUp();
 }
 
 
 void Menu::ParameterPage::down()
 {
+    // tell parameter to nudge downwards
     parameter->nudgeValue(-1);
     
+    // console print
     #ifdef CONSOLE_PRINT
     consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
     #endif
     
+    // call notify-function if connected
     if (onDown) onDown();
-}
-
-
-String Menu::ParameterPage::getCurrentPrintValue() const
-{
-    return parameter->getPrintValueAsString();
 }
 
 
@@ -84,55 +88,48 @@ String Menu::ParameterPage::getCurrentPrintValue() const
 
 
 Menu::NavigationPage::NavigationPage(const String& id_, const String& name_, std::initializer_list<Page*> options_, Menu& menu_)
-    : Page(menu_)
+    : Page(menu_, id_, name_)
     , options(options_)
-{
-    id = id_;
-    name = name_;
-}
+{}
 
 
 void Menu::NavigationPage::up()
 {
+    // decrement the current index (array index is vice versa user control)
     choiceIndex = (choiceIndex == 0) ? options.size() - 1 : choiceIndex - 1;
     
+    // console print
     #ifdef CONSOLE_PRINT
     consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
     #endif
     
+    // call notify-function if connected
     if (onUp) onUp();
 }
 
 
 void Menu::NavigationPage::down()
 {
+    // increment the current index (array index is vice versa user control)
     choiceIndex = (choiceIndex >= options.size() - 1) ? 0 : choiceIndex + 1;
     
+    // console print
     #ifdef CONSOLE_PRINT
     consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
     #endif
     
+    // call notify-function if connected
     if (onDown) onDown();
 }
 
 
 void Menu::NavigationPage::enter()
 {
+    // set the currently indexed page
     menu.setCurrentPage(options[choiceIndex]);
     
+    // call notify-function if connected
     if (onEnter) onEnter();
-}
-
-
-String Menu::NavigationPage::getCurrentPrintValue() const
-{
-    return options[choiceIndex]->getName();
-}
-
-
-void Menu::NavigationPage::setCurrentChoice(const size_t index_)
-{
-    choiceIndex = index_;
 }
 
 
@@ -141,75 +138,76 @@ void Menu::NavigationPage::setCurrentChoice(const size_t index_)
 // =======================================================================================
 
 
-Menu::SettingPage::SettingPage(const String& id_, const String& name_, size_t min_, size_t max_, size_t defaultIndex_, String* choiceNames_, Menu& menu_)
-    : Page(menu_)
-    , min(min_), max(max_)
+Menu::SettingPage::SettingPage(const String& id_, const String& name_,
+                               String* choiceNames_, const size_t numChoices_,
+                               const size_t defaultIndex_, const size_t minIndex_, 
+                               Menu& menu_)
+    : Page(menu_, id_, name_)
 {
-    id = id_;
-    name = name_;
+    // insert the names of choices into member vector
+    // if an array is passed, use it
+    if (choiceNames_)
+        choiceNames.assign(choiceNames_, choiceNames_+ numChoices_);
+    // if not use the minIndex_ integer as first name, and name the rest by incrementing the index
+    else
+        for(unsigned int n = 0; n < numChoices_; ++n)
+            choiceNames.push_back(TOSTRING(minIndex_+n));
     
-    if (choiceNames_) choiceNames.assign(choiceNames_, choiceNames_+ (max-min+1));
-    else for(unsigned int n = 0; n < (max-min+1); ++n) choiceNames.push_back(TOSTRING(min+n));
-    
+    // set start index
     choiceIndex = defaultIndex_;
 }
 
 
-Menu::SettingPage::SettingPage(const String& id_, const String& name_, size_t min_, size_t max_, size_t defaultIndex_, std::initializer_list<String> choiceNames_, Menu& menu)
-    : Page(menu)
-    , min(min_), max(max_)
+Menu::SettingPage::SettingPage(const String& id_, const String& name_,
+                               std::initializer_list<String> choiceNames_, const size_t numChoices_,
+                               const size_t defaultIndex_, const size_t minIndex_,
+                               Menu& menu_)
+    : Page(menu_, id_, name_)
 {
+    // turn initializer list into string array if valid
     String* choiceNamesPtr = choiceNames_.size() > 0 ? const_cast<String*>(&*choiceNames_.begin()) : nullptr;
     
-    id = id_;
-    name = name_;
+    // insert the names of choices into member vector
+    // if an array is passed, use it
+    if (choiceNamesPtr)
+        choiceNames.assign(choiceNamesPtr, choiceNamesPtr + numChoices_);
+    // if not use the minIndex_ integer as first name, and name the rest by incrementing the index
+    else
+        for(unsigned int n = 0; n < numChoices_; ++n)
+            choiceNames.push_back(TOSTRING(minIndex_+n));
     
-    if (choiceNamesPtr) choiceNames.assign(choiceNamesPtr, choiceNamesPtr + (max-min+1));
-    else for(unsigned int n = 0; n < (max-min+1); ++n) choiceNames.push_back(TOSTRING(min+n));
-    
+    // set start index
     choiceIndex = defaultIndex_;
 }
 
 
 void Menu::SettingPage::up()
 {
+    // increment the current index
     choiceIndex = (choiceIndex >= choiceNames.size() - 1) ? 0 : choiceIndex + 1;
     
+    // console print
     #ifdef CONSOLE_PRINT
     consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
     #endif
     
+    // call notify-function if connected
     if (onUp) onUp();
 }
 
 
 void Menu::SettingPage::down()
 {
+    // decrement the current index
     choiceIndex = (choiceIndex == 0) ? choiceNames.size() - 1 : choiceIndex - 1;
     
+    // console print
     #ifdef CONSOLE_PRINT
     consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
     #endif
     
+    // call notify-function if connected
     if (onDown) onDown();
-}
-
-
-String Menu::SettingPage::getCurrentPrintValue() const
-{
-    return choiceNames[choiceIndex];
-}
-
-
-size_t Menu::SettingPage::getCurrentChoice() const
-{
-    return choiceIndex;
-}
-
-
-void Menu::SettingPage::setCurrentChoice(const size_t index_)
-{
-    choiceIndex = index_;
 }
 
 
@@ -271,20 +269,24 @@ inline void Menu::initializeJSON()
 
 void Menu::initializePages()
 {
-    // -- Reverb Additional Parameters
+    // Reverb Additional Parameters
     addPage<NavigationPage>("reverb_additionalParameters", "Reverb - Additional Parameters", std::initializer_list<Page*>{
         getPage("reverb_lowcut"),
         getPage("reverb_multfreq"),
         getPage("reverb_multgain")
     });
     
-    // -- Global Settings
+    // Global Settings
     // pages for the different settings
-    addPage<SettingPage>("midi_in_channel", "MIDI Input Channel", 1, 16, (size_t)JSONglobals["midiInChannel"] - 1, nullptr);
-    addPage<SettingPage>("midi_out_channel", "MIDI Output Channel", 1, 16, (size_t)JSONglobals["midiOutChannel"] - 1, nullptr);
-    addPage<SettingPage>("pot_behaviour", "Potentiometer Behaviour", 0, 1, (size_t)JSONglobals["potBehaviour"], std::initializer_list<String>{ "Jump", "Catch" });
+    addPage<SettingPage>("midi_in_channel", "MIDI Input Channel", nullptr, 16,
+                         (size_t)JSONglobals["midiInChannel"] - 1, 1);
+    addPage<SettingPage>("midi_out_channel", "MIDI Output Channel", nullptr, 16,
+                         (size_t)JSONglobals["midiOutChannel"] - 1, 1);
+    addPage<SettingPage>("pot_behaviour", "Potentiometer Behaviour",
+                         std::initializer_list<String>{ "Jump", "Catch" },
+                         2, (size_t)JSONglobals["potBehaviour"], 0);
     
-    // -- Global Settings
+    // Global Settings
     // page for navigating through the settings
     addPage<NavigationPage>("global_settings", "Global Settings", std::initializer_list<Page*>{
         getPage("midi_in_channel"),
@@ -292,7 +294,7 @@ void Menu::initializePages()
         getPage("pot_behaviour")
     });
     
-    // -- Overall Menu
+    // Overall Menu
     addPage<NavigationPage>("menu", "Menu", std::initializer_list<Page*>{
         getPage("effect_order"),
         getPage("reverb_additionalParameters"),
@@ -310,11 +312,13 @@ void Menu::initializePages()
     for (unsigned int n = 1; n < NUM_PRESETS; ++n)
         presetSaveNames[n-1] = presetLoadNames[n];
     
-    // -- Home / Load and Show Preset
-    addPage<SettingPage>("load_preset", "Home", 0, NUM_PRESETS-1, (size_t)JSONglobals["lastUsedPreset"], presetLoadNames);
+    // Home / Load and Show Preset
+    addPage<SettingPage>("load_preset", "Home", presetLoadNames,
+                         NUM_PRESETS, (size_t)JSONglobals["lastUsedPreset"], 0);
     
-    // -- Save Preset To? (one element smaller than load page)
-    addPage<SettingPage>("save_preset", "Save Preset to Slot: ", 0, NUM_PRESETS-2, 0, presetSaveNames);
+    // Save Preset To? (one element smaller than load page)
+    addPage<SettingPage>("save_preset", "Save Preset to Slot: ", presetSaveNames,
+                         NUM_PRESETS-1, 0, 0);
 }
 
 
@@ -323,22 +327,22 @@ void Menu::initializePageHierarchy()
     // add parents to certain pages
     // defines where to jump back on click of exit button
     
-    // -- Reverb - Additional Parameters
+    // Reverb - Additional Parameters
     getPage("reverb_lowcut")->addParent(getPage("reverb_additionalParameters"));
     getPage("reverb_multfreq")->addParent(getPage("reverb_additionalParameters"));
     getPage("reverb_multgain")->addParent(getPage("reverb_additionalParameters"));
-    
-    // -- Global Settings
+
+    // Global Settings
     getPage("midi_in_channel")->addParent(getPage("global_settings"));
     getPage("midi_out_channel")->addParent(getPage("global_settings"));
     getPage("pot_behaviour")->addParent(getPage("global_settings"));
     
-    // -- Overall Menu
+    // Overall Menu
     getPage("global_settings")->addParent(getPage("menu"));
     getPage("reverb_additionalParameters")->addParent(getPage("menu"));
     getPage("effect_order")->addParent(getPage("menu"));
 
-    // -- Home screen
+    // Home screen
     getPage("save_preset")->addParent(getPage("load_preset"));
     getPage("menu")->addParent(getPage("load_preset"));
 }
@@ -349,9 +353,9 @@ void Menu::initializePageActions()
     // define special actions for certain pages
 
     // Load/Home Page
-    // - loading preset if up/down
-    // - go the menu if exit
-    // - go to save-page and copy the current choice index to it if enter
+    // - up/down: loading preset
+    // - exit: go the menu
+    // - enter: go to save-page and copy the current choice index to it
     Page* homePage = getPage("load_preset");
     homePage->onUp = [this] { loadPreset(); };
     homePage->onDown = [this] { loadPreset(); };
@@ -360,25 +364,31 @@ void Menu::initializePageActions()
         size_t currentLoadIndex = getPage("load_preset")->getCurrentChoice();
         // since save page is one element smaller than load page 
         // (default preset not overwriteable)
-        // we need to make the following change to the index
+        // we need to make the following adjustement to the index
         size_t currentSaveIndex = (currentLoadIndex == 0) ? 0 : currentLoadIndex-1;
         getPage("save_preset")->setCurrentChoice(currentSaveIndex);
         setCurrentPage("save_preset");
     };
     
     // Save Page
-    // - save preset if enter
+    // - enter: save preset
     Page* savePage = getPage("save_preset");
     savePage->onEnter = [this] { savePreset(); };
     
     // Global Settings
-    // - notify listeners if enter
-    getPage("midi_in_channel")->onEnter = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
-    getPage("midi_out_channel")->onEnter = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
-    getPage("pot_behaviour")->onEnter = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
+    // - enter: notify listeners
+    getPage("midi_in_channel")->onEnter = [this] {
+        for (auto i : listeners) i->globalSettingChanged(currentPage);
+    };
+    getPage("midi_out_channel")->onEnter = [this] {
+        for (auto i : listeners) i->globalSettingChanged(currentPage);
+    };
+    getPage("pot_behaviour")->onEnter = [this] {
+        for (auto i : listeners) i->globalSettingChanged(currentPage);
+    };
     
     // Menu
-    // - reset choice index of menu if exit
+    // - exit: reset choice index of menu
     getPage("menu")->onExit = [this] { getPage("menu")->setCurrentChoice(0); };
     
     // Effect Order
@@ -401,8 +411,10 @@ Menu::~Menu()
     #endif
     
     // error if files couldnt be found
-    engine_error(!writefilePresets.is_open(), "presets.json not found, not able to save presets", __FILE__, __LINE__, true);
-    engine_error(!writefileGlobals.is_open(), "globals.json not found, not able to save globals", __FILE__, __LINE__, true);
+    engine_error(!writefilePresets.is_open(), "presets.json not found, not able to save presets", 
+                 __FILE__, __LINE__, true);
+    engine_error(!writefileGlobals.is_open(), "globals.json not found, not able to save globals", 
+                 __FILE__, __LINE__, true);
     
     // get and save the global settings
     JSONglobals["midiInChannel"] = getPage("midi_in_channel")->getCurrentChoice() + 1;
@@ -424,6 +436,7 @@ Menu::Page* Menu::getPage(const String& id_)
 {
     Menu::Page* page = nullptr;
     
+    // find the corresponding page comparing the given id to all inherited pages
     for (size_t n = 0; n < pages.size(); ++n)
     {
         if (pages[n]->getID() == id_)
@@ -433,6 +446,7 @@ Menu::Page* Menu::getPage(const String& id_)
         }
     }
     
+    // if this page isn't existing, stop running
     if (!page)
         engine_rt_error("Menu couldn't find Page with ID: " + id_, 
                         __FILE__, __LINE__, true);
@@ -443,8 +457,10 @@ Menu::Page* Menu::getPage(const String& id_)
 
 void Menu::setCurrentPage(Menu::Page* page_)
 {
+    // set new page
     currentPage = page_;
     
+    // console print
     #ifdef CONSOLE_PRINT
     print();
     #endif
@@ -453,8 +469,10 @@ void Menu::setCurrentPage(Menu::Page* page_)
 
 void Menu::setCurrentPage(const String& id_)
 {
+    // get and set page with given id
     currentPage = getPage(id_);
     
+    // console print
     #ifdef CONSOLE_PRINT
     print();
     #endif
@@ -463,6 +481,7 @@ void Menu::setCurrentPage(const String& id_)
 
 void Menu::scroll()
 {
+    // call the current page to move up or downwards
     if (scrollDirection == UP) currentPage->up();
     else currentPage->down();
 }
@@ -472,7 +491,7 @@ void Menu::buttonClicked (UIElement* _uielement)
 {
     Button* button = static_cast<Button*>(_uielement);
          
-    // TODO: index/id could be more understandable and clrea
+    // TODO: index/id could be more understandable and clear
     switch (button->getIndex())
     {
         case ButtonID::UP:
@@ -549,12 +568,6 @@ void Menu::buttonReleased (UIElement* _uielement)
         default:
             break;
     }
-}
-
-
-void Menu::addListener (Listener* _listener)
-{
-    listeners.push_back(_listener);
 }
 
 
