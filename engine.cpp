@@ -365,6 +365,7 @@ void UserInterface::effectOrderChanged()
 
 void UserInterface::loadPresetFromJSON (const int _index)
 {
+    // TODO: if fast pressed, LED get stuck in Alarm mode :(
     // LED-notification
     for (unsigned int n = 0; n < NUM_LEDS; ++n)
         led[n].setAlarm();

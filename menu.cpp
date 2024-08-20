@@ -372,17 +372,18 @@ void Menu::initializePageActions()
     savePage->onEnter = [this] { savePreset(); };
     
     // Global Settings
-    // - notify listeners if up/down
-    getPage("midi_in_channel")->onUp = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
-    getPage("midi_in_channel")->onDown = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
-    getPage("midi_out_channel")->onUp = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
-    getPage("midi_out_channel")->onDown = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
-    getPage("pot_behaviour")->onUp = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
-    getPage("pot_behaviour")->onDown = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
+    // - notify listeners if enter
+    getPage("midi_in_channel")->onEnter = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
+    getPage("midi_out_channel")->onEnter = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
+    getPage("pot_behaviour")->onEnter = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
     
     // Menu
     // - reset choice index of menu if exit
     getPage("menu")->onExit = [this] { getPage("menu")->setCurrentChoice(0); };
+    
+    // Effect Order
+    // - notify engine to change algorithm if enter
+    getPage("effect_order")->onEnter = [this] { for (auto i : listeners) i->effectOrderChanged(); };
 }
 
 
