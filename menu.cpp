@@ -379,6 +379,10 @@ void Menu::initializePageActions()
     getPage("midi_out_channel")->onDown = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
     getPage("pot_behaviour")->onUp = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
     getPage("pot_behaviour")->onDown = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
+    
+    // Menu
+    // - reset choice index of menu if exit
+    getPage("menu")->onExit = [this] { getPage("menu")->setCurrentChoice(0); };
 }
 
 
