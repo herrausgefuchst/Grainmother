@@ -22,6 +22,16 @@ enum ButtonID {
     ENTER
 };
 
+enum LedIndex {
+    LED_FX1,
+    LED_FX2,
+    LED_FX3,
+    LED_ACTION,
+    LED_BYPASS,
+    LED_TEMPO
+};
+
+
 static const size_t NUM_PRESETS = 4;
 
 static String presetNames[NUM_PRESETS] = {

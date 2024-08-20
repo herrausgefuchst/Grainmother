@@ -46,7 +46,7 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
         engineParameters.addParameter(engineParameterID[ENUM2INT(EngineParameters::EFFECTORDER)],
                                       engineParameterName[ENUM2INT(EngineParameters::EFFECTORDER)], {
             "1->2->3",
-            "2|3->1"
+            "2|3->1",
             "1|3->2",
             "1|2->3",
             "3->1|2",
@@ -57,7 +57,7 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
             "3->1->2",
             "2->3->1",
             "2->1->3",
-            "1->3->2",
+            "1->3->2"
         }, ParameterTypes::CHOICE);
     }
     
@@ -212,12 +212,12 @@ void UserInterface::setup(AudioEngine *_engine)
     potentiometer[6].setup(6, "Potentiometer 6");
     potentiometer[7].setup(7, "Potentiometer 7");
     
-    led[LED::FX1].setup(LED::FX1, "Effect 1");
-    led[LED::FX2].setup(LED::FX2, "Effect 2");
-    led[LED::FX3].setup(LED::FX3, "Effect 3");
-    led[LED::ACTION].setup(LED::ACTION, "Action");
-    led[LED::TEMPO].setup(LED::TEMPO, "Tempo");
-    led[LED::BYPASS].setup(LED::BYPASS, "Bypass");
+    led[LED_FX1].setup("effect1");
+    led[LED_FX2].setup("effect2");
+    led[LED_FX3].setup("effect3");
+    led[LED_ACTION].setup("action");
+    led[LED_TEMPO].setup("tempo");
+    led[LED_BYPASS].setup("bypass");
     
     menu.addPage<Menu::ParameterPage>("effect_order", engine->getParameter("effect_order"));
     
@@ -276,16 +276,16 @@ void UserInterface::initializeListeners()
 //    //TODO: add Resonator
 //    
 //    // Parameters -> LEDs
-    engine->getParameter("global_bypass")->addListener(&led[LED::BYPASS]);
-    engine->getParameter("effect1_bypass")->addListener(&led[LED::FX1]);
-    engine->getParameter("effect2_bypass")->addListener(&led[LED::FX2]);
-    engine->getParameter("effect3_bypass")->addListener(&led[LED::FX3]);
-    engine->getParameter((uint)ParameterGroupID::REVERB, NUM_POTENTIOMETERS)->addListener(&led[LED::ACTION]);
-    engine->getParameter((uint)ParameterGroupID::GRANULATOR, NUM_POTENTIOMETERS)->addListener(&led[LED::ACTION]);
+    engine->getParameter("global_bypass")->addListener(&led[LED_BYPASS]);
+    engine->getParameter("effect1_bypass")->addListener(&led[LED_FX1]);
+    engine->getParameter("effect2_bypass")->addListener(&led[LED_FX2]);
+    engine->getParameter("effect3_bypass")->addListener(&led[LED_FX3]);
+    engine->getParameter((uint)ParameterGroupID::REVERB, NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
+    engine->getParameter((uint)ParameterGroupID::GRANULATOR, NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
 //    //TODO: add Resonator
-    engine->getParameter("effect_edit_focus")->addListener(&led[LED::FX1]);
-    engine->getParameter("effect_edit_focus")->addListener(&led[LED::FX2]);
-    engine->getParameter("effect_edit_focus")->addListener(&led[LED::FX3]);
+    engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX1]);
+    engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX2]);
+    engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX3]);
 //
 //    // Parameter -> Metronome
 //    engine->getParameter("tempo")->addListener(engine->getMetronome());
@@ -331,7 +331,7 @@ void UserInterface::setEffectEditFocus (const bool _withNotification)
     button[ButtonID::ACTION].focusListener(effect->getParameter(NUM_POTENTIOMETERS));
     
     // notify button-led that the parameter changed
-    led[LED::ACTION].parameterChanged(effect->getParameter(NUM_POTENTIOMETERS));
+    led[LED_ACTION].parameterChanged(effect->getParameter(NUM_POTENTIOMETERS));
 }
 
 void UserInterface::nudgeTempo(const int _direction)
@@ -365,8 +365,7 @@ void UserInterface::effectOrderChanged()
 
 void UserInterface::loadPresetFromJSON (const int _index)
 {
-    // TODO: if fast pressed, LED get stuck in Alarm mode :(
     // LED-notification
     for (unsigned int n = 0; n < NUM_LEDS; ++n)
-        led[n].setAlarm();
+        led[n].alert();
 }

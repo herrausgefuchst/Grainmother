@@ -103,37 +103,39 @@ private:
 class LED : public AudioParameter::Listener
 {
 public:
-    enum ID { FX1, FX2, FX3, ACTION, BYPASS, TEMPO };
-    enum State { VALUE, VALUEFOCUS, ALARM, BLINKONCE };
     String states[4] = {"value", "valuefocus", "alarm", "blinkonce"};
     
     LED() {}
     ~LED() {}
     
-    void setup(const int _id, const String _name);
+    void setup(const String& id_);
 
-    void setValue (const float _value) { value = _value; }
-    void setAlarm();
-    void setBlinkOnce();
+    void setValue(const float value_) { value = value_; }
+    
+    void alert();
+    
+    void blinkOnce();
     
     float get();
     
-    void parameterChanged (AudioParameter* _param);
+    void parameterChanged(AudioParameter* param_);
     
 private:
-    unsigned int id;
-    String name;
+    size_t index;
+    String id;
     
     float value = 0.f;
-    float blinker = 0.f;
+    float blinkValue = 0.f;
     
+    enum State { VALUE, VALUEFOCUS, ALERT, BLINKONCE };
     State state = VALUE;
     State lastState = state;
     
-    int blinking_ctr, numblinks_ctr;
+    unsigned int blinkRateCounter;
+    unsigned int numBlinksCounter;
     
-    static const int BLINKING_RATE; // x * frames (as defined in main.cpp / render.cpp)
-    static const int NUM_BLINKS;
+    static const uint BLINKING_RATE; // x * frames (as defined in main.cpp / render.cpp)
+    static const uint NUM_BLINKS;
 };
 
 

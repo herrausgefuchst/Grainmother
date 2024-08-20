@@ -329,58 +329,78 @@ void Display::displayPreset (const int _index, const String _name)
 // MARK: - LED
 // ********************************************************************************
 
-const int LED::BLINKING_RATE = 1;
-const int LED::NUM_BLINKS = 5;
 
-void LED::setup(const int _id, const String _name)
+const uint LED::BLINKING_RATE = 1;
+const uint LED::NUM_BLINKS = 5;
+
+
+void LED::setup(const String& id_)
 {
-    id = _id;
-    name = _name;
+    id = id_;
     
-    blinking_ctr = BLINKING_RATE;
-    numblinks_ctr = NUM_BLINKS * 2;
+    blinkRateCounter = BLINKING_RATE;
+    numBlinksCounter = NUM_BLINKS * 2;
 }
 
-void LED::parameterChanged (AudioParameter *_param)
+// TODO: add a listen caller for potentiometer catched
+
+void LED::parameterChanged(AudioParameter* param_)
 {
-    if (instanceof<ButtonParameter>(_param) || instanceof<ToggleParameter>(_param))
+    if (instanceof<ButtonParameter>(param_) || instanceof<ToggleParameter>(param_))
     {
-        value = _param->getValueAsFloat();
+        value = param_->getValueAsFloat();
     }
-    else if (instanceof<ChoiceParameter>(_param) && _param->getParameterID() != "effect_edit_focus")
+    
+    else if (instanceof<ChoiceParameter>(param_) 
+             && param_->getParameterID() != "effect_edit_focus")
     {
-        ChoiceParameter* param = static_cast<ChoiceParameter*>(_param);
+        ChoiceParameter* param = static_cast<ChoiceParameter*>(param_);
+        
         value = 0.3f + 0.7f * ((param->getValueAsFloat() + 1.f) / (float)param->getNumChoices());
     }
-    else if (_param->getParameterID() == "effect_edit_focus")
+    
+    else if (param_->getParameterID() == "effect_edit_focus")
     {
-        if (_param->getValueAsInt() == id)
+        if ((param_->getValueAsInt() == 0 && id == "effect1")
+            || (param_->getValueAsInt() == 1 && id == "effect2")
+            || (param_->getValueAsInt() == 2 && id == "effect3"))
         {
-            if (state == ALARM) lastState = VALUEFOCUS;
+            if (state == ALERT) lastState = VALUEFOCUS;
+            
             else state = VALUEFOCUS;
         }
+        
         else state = VALUE;
     }
 }
 
-void LED::setAlarm()
+
+void LED::alert()
 {
-    blinker = 0.f;
-    blinking_ctr = BLINKING_RATE;
-    lastState = state;
-    state = ALARM;
+    blinkValue = 0.f;
+    
+    blinkRateCounter = BLINKING_RATE;
+    
+    if (state != ALERT) lastState = state;
+    
+    state = ALERT;
 }
 
-void LED::setBlinkOnce()
+
+void LED::blinkOnce()
 {
-    if (state != ALARM)
+    if (state != ALERT)
     {
         value = 1.f;
-        blinking_ctr = BLINKING_RATE;
+        
+        blinkRateCounter = BLINKING_RATE;
+        
         lastState = VALUE;
+        
         state = BLINKONCE;
     }
 }
+
 
 float LED::get()
 {
@@ -391,51 +411,64 @@ float LED::get()
         case VALUE:
         {
             output = value;
+            
             break;
         }
 
         case VALUEFOCUS:
         {
-            if (--blinking_ctr <= 0)
+            if (--blinkRateCounter == 0)
             {
-                blinking_ctr = BLINKING_RATE;
-                blinker = !blinker;
+                blinkRateCounter = BLINKING_RATE;
+                
+                blinkValue = !blinkValue;
             }
-            if (value > 0.5f) output = 0.68f * value + 0.32f * blinker;
-            else output = 0.08f * blinker + 0.42f;
+            
+            if (value > 0.5f) output = 0.68f * value + 0.32f * blinkValue;
+            
+            else output = 0.08f * blinkValue + 0.42f;
+            
             break;
         }
             
-        case ALARM:
+        case ALERT:
         {
-            if (--blinking_ctr <= 0)
+            if (--blinkRateCounter == 0)
             {
-                if (--numblinks_ctr <= 0)
+                if (--numBlinksCounter == 0)
                 {
-                    numblinks_ctr = NUM_BLINKS * 2;
+                    numBlinksCounter = NUM_BLINKS * 2;
+                    
                     state = lastState;
                 }
-                blinker = !blinker;
-                blinking_ctr = BLINKING_RATE;
-                output = blinker;
+                
+                blinkValue = !blinkValue;
+                
+                blinkRateCounter = BLINKING_RATE;
+                
+                output = blinkValue;
             }
+            
             break;
         }
             
         case BLINKONCE:
         {
-            if (--blinking_ctr <= 0)
+            if (--blinkRateCounter == 0)
             {
                 value = 0.f;
+                
                 state = VALUE;
-                blinking_ctr = BLINKING_RATE;
+                
+                blinkRateCounter = BLINKING_RATE;
             }
+            
             output = value;
+            
             break;
         }
 
-        default:
-            break;
+        default: break;
     }
     
     return output;
