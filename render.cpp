@@ -38,9 +38,14 @@ bool setup (BelaContext *context, void *userData)
     uiBlockCtr = UI_BLOCKS_PER_FRAME;
     guiInitializationCtr = GUI_INITIALIZATION_TIME_SEC * context->audioFrames;
     
+    // scrolling
+    SCROLLING_BLOCKS_PER_FRAME = context->audioSampleRate / ( SCROLLING_FRAMERATE * context->audioFrames );
+    scrollingBlockCtr = SCROLLING_BLOCKS_PER_FRAME;
+    
     // aux tasks
-    if((THREAD_updateLEDs = Bela_createAuxiliaryTask(&updateLEDs, 89, "updateLEDs", context)) == 0) return false;
+    if((THREAD_updateLEDs = Bela_createAuxiliaryTask(&updateLEDs, 89, "updateLEDs", nullptr)) == 0) return false;
     if((THREAD_updateUserInterface = Bela_createAuxiliaryTask(&updateUserInterface, 88, "updateUserInterface", context)) == 0) return false;
+    if((THREAD_processNonAudioTasks = Bela_createAuxiliaryTask(&processNonAudioTasks, 87, "processNonAudioTasks", &sampleIndex)) == 0) return false;
 //    if((taskUpdateGUIDisplay = Bela_createAuxiliaryTask(&updateGUIdisplay, 88, "update-GUI-display", nullptr)) == 0) return false;
     
     // digital pinmodes
@@ -75,6 +80,8 @@ void render (BelaContext *context, void *userData)
     for (unsigned int n = 0; n < NUM_LEDS; ++n)
         analogWrite(context, 0, HARDWARE_PIN_LED[n], ledCache[n]);
     
+    Bela_scheduleAuxiliaryTask(THREAD_processNonAudioTasks);
+    
 //    // display
 //    if (--displayBlockCtr <= 0)
 //    {
@@ -88,14 +95,15 @@ void render (BelaContext *context, void *userData)
 
 // process SAMPLEWISE ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     
-    for(unsigned int n = 0; n < context->audioFrames; n++)
+    sampleIndex = 0;
+    for(; sampleIndex < context->audioFrames; ++sampleIndex)
     {
         // process effects
-        StereoFloat output = inputHandler.process(context, n);
+        StereoFloat output = inputHandler.process(context, sampleIndex);
         
         // write output buffer
-        audioWrite(context, n, 0, output.leftSample);
-        audioWrite(context, n, 1, output.rightSample);
+        audioWrite(context, sampleIndex, 0, output.leftSample);
+        audioWrite(context, sampleIndex, 1, output.rightSample);
         
 #ifdef SCOPE_ACTIVE
         // scope output
@@ -185,8 +193,6 @@ void updateUserInterface(void* arg_)
 
 void updateLEDs(void* arg_)
 {
-    BelaContext* context = static_cast<BelaContext*>(arg_);
-    
     if (--ledBlockCtr <= 0)
     {
         ledBlockCtr = LED_BLOCKS_PER_FRAME;
@@ -198,5 +204,17 @@ void updateLEDs(void* arg_)
     }
 }
 
+
+void processNonAudioTasks(void* arg_)
+{
+    unsigned int sampleIndex = *static_cast<unsigned int*>(arg_);
+    
+    if (--scrollingBlockCtr == 0)
+    {
+        scrollingBlockCtr = SCROLLING_BLOCKS_PER_FRAME;
+        
+        userinterface.processNonAudioTasks();
+    }
+}
 
 #endif // BELA_CONNECTED

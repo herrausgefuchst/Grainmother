@@ -1,19 +1,12 @@
 #ifndef engine_hpp
 #define engine_hpp
 
-#include <fstream>
-
 #include "functions.h"
 #include "uielements.hpp"
 #include "effects.hpp"
 #include "parameters.hpp"
 #include "menu.hpp"
 #include "outputs.hpp"
-
-#ifdef JSON_USED
-#include "json.h"
-using json = nlohmann::json;
-#endif
 
 // =======================================================================================
 // MARK: - AUDIO ENGINE
@@ -117,12 +110,9 @@ private:
 class UserInterface : public Menu::Listener
 {
 public:
-    UserInterface() {}
-    ~UserInterface();
-    
     void setup(AudioEngine* _engine);
     
-    void savePresetToJSON (const int _index = -1);
+    void processNonAudioTasks();
     
     void loadPresetFromJSON (const int _index = -1);
     
@@ -133,17 +123,10 @@ public:
     void nudgeTempo (const int _direction);
         
 private:
-    inline void initializeJSON();
-    inline void initializeGlobalParameters();
-    inline void initializeListeners();
+    void initializeListeners();
     
     AudioEngine* engine = nullptr;
     Menu menu;
-    
-#ifdef JSON_USED
-    json JSONpresets;
-    json JSONglobals;
-#endif
 
 public:
     Button button[NUM_BUTTONS];

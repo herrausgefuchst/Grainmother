@@ -205,7 +205,7 @@ public:
     void buttonPressed (UIElement* _uielement) override;
     void buttonReleased (UIElement* _uielement) override;
     
-    void scroll (const int _direction);
+    void scroll();
         
     class Listener
     {
@@ -255,7 +255,6 @@ private:
     std::vector<Page*> pages;
     std::vector<Listener*> listeners;
     
-    bool isScrolling = false;
     bool bypass = false; // TODO: why is this here?
 
     json JSONpresets;
@@ -264,7 +263,11 @@ private:
     std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programParameters;
     size_t lastUsedPresetIndex = 0;
     
-    //TODO: scrolling function?
+    enum ScrollDirection { DOWN, UP };
+    ScrollDirection scrollDirection;
+    
+public:
+    bool isScrolling = false;
 };
 
 

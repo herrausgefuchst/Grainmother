@@ -44,7 +44,6 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     }
     
     // Effects
-    // TODO: change setup
     effects.at(0) = std::make_unique<Reverb>(&engineParameters, GrainmotherReverb::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
     effects.at(1) = std::make_unique<Granulator>(&engineParameters, GrainmotherGranulator::NUM_PARAMETERS, "granulator", sampleRate, blockSize);
     effects.at(2) = std::make_unique<Resonator>(&engineParameters, 8, "resonator", sampleRate, blockSize);
@@ -202,10 +201,6 @@ void UserInterface::setup(AudioEngine *_engine)
     led[LED::TEMPO].setup(LED::TEMPO, "Tempo");
     led[LED::BYPASS].setup(LED::BYPASS, "Bypass");
     
-    // helper functions for initialization
-    initializeJSON();
-    initializeGlobalParameters();
-    
     menu.addPage("reverb_lowcut", engine->getParameter("reverb", "reverb_lowcut"));
     menu.addPage("reverb_multfreq", engine->getParameter("reverb", "reverb_multfreq"));
     menu.addPage("reverb_multgain", engine->getParameter("reverb", "reverb_multgain"));
@@ -221,67 +216,14 @@ void UserInterface::setup(AudioEngine *_engine)
     loadPresetFromJSON(0);
 }
 
-UserInterface::~UserInterface()
+
+void UserInterface::processNonAudioTasks()
 {
-#ifdef JSON_USED
-#ifndef BELA_CONNECTED
-    // consoleprint - directory
-    std::ofstream writefilePresets("/Users/julianfuchs/Desktop/MULTIEFFECT/Multieffect_V0.02_231023/ConsoleCode/presets.json");
-    std::ofstream writefileGlobals("/Users/julianfuchs/Desktop/MULTIEFFECT/Multieffect_V0.02_231023/ConsoleCode/globals.json");
-#else
-    // bela - directory
-    std::ofstream writefilePresets("presets.json");
-    std::ofstream writefileGlobals("globals.json");
-#endif
-    
-    engine_error(!writefilePresets.is_open(), "presets.json not found, therefore not able to save", __FILE__, __LINE__, true);
-    engine_error(!writefileGlobals.is_open(), "globals.json not found, therefore not able to save", __FILE__, __LINE__, true);
-    
-    JSONglobals["midiInChannel"] = globals.midiInChannel;
-    JSONglobals["midiOutChannel"] = globals.midiOutChannel;
-    JSONglobals["potBehaviour"] = globals.potBehaviour;
-    JSONglobals["lastUsedPreset"] = globals.lastUsedPreset;
-    
-    writefilePresets << JSONpresets.dump(4);
-    writefileGlobals << JSONglobals.dump(4);
-#endif
+    if (menu.isScrolling) menu.scroll();
 }
 
-inline void UserInterface::initializeJSON()
-{
-#ifdef JSON_USED
-    std::ifstream readfilePresets;
-    std::ifstream readfileGlobals;
-    
-#ifndef BELA_CONNECTED
-    readfilePresets.open("/Users/julianfuchs/Desktop/MULTIEFFECT/Multieffect_V0.02_231023/ConsoleCode/presets.json");
-    readfileGlobals.open("/Users/julianfuchs/Desktop/MULTIEFFECT/Multieffect_V0.02_231023/ConsoleCode/globals.json");
-#else
-    readfilePresets.open("presets.json");
-    readfileGlobals.open("globals.json");
-#endif
-    
-    engine_error(!readfilePresets.is_open(), "presets.json not found, therefore not able to open", __FILE__, __LINE__, true);
-    engine_error(!readfileGlobals.is_open(), "globals.json not found, therefore not able to open", __FILE__, __LINE__, true);
-    
-    JSONpresets = json::parse(readfilePresets);
-    JSONglobals = json::parse(readfileGlobals);
-#endif
-}
 
-inline void UserInterface::initializeGlobalParameters()
-{
-#ifdef JSON_USED
-    globals.midiInChannel = JSONglobals["midiInChannel"];
-    globals.midiOutChannel = JSONglobals["midiOutChannel"];
-    globals.lastUsedPreset = JSONglobals["lastUsedPreset"];
-    globals.potBehaviour = JSONglobals["potBehaviour"];
-    
-    for (unsigned int n = 0; n < NUM_PRESETS; n++) globals.presetNames[n] = JSONpresets[n]["name"];
-#endif
-}
-
-inline void UserInterface::initializeListeners()
+void UserInterface::initializeListeners()
 {
 //    // Buttons -> Parameters
     button[ButtonID::FX1].addListener(engine->getParameter("effect1_bypass"));
@@ -341,9 +283,9 @@ inline void UserInterface::initializeListeners()
     menu.addListener(this);
     
     // Menu -> JSON
-    menu.onSaveMessage.push_back( [this] { savePresetToJSON(); } );
     menu.onLoadMessage.push_back( [this] { loadPresetFromJSON(); } );
 }
+
 
 void UserInterface::setEffectEditFocus (const bool _withNotification)
 {
@@ -396,103 +338,9 @@ void UserInterface::globalSettingChanged(Menu::Page* page_)
     //TODO: midi out
 }
 
-void UserInterface::savePresetToJSON (const int _index)
-{
-#ifdef JSON_USED
-    // -- id
-    int index = _index == -1 ? menu.getCurrentChoice() : _index;
-    
-    if (index >= NUM_PRESETS)
-        engine_rt_error("the chosen preset index (" + TOSTRING(index) + ") exceeds the max number of presets (" + TOSTRING(NUM_PRESETS) + ")",
-                        __FILE__, __LINE__, true);
-    
-    // -- name
-    JSONpresets[index]["name"] = getDateAsString() + " Preset No. " + TOSTRING(index);
-    menu.setNewPresetName(JSONpresets[index]["name"]);
-    
-    // -- engine parameters
-    auto parameters = engine->getProgramParameters();
-    auto engineP = parameters[AudioParameterGroup::ENGINE];
-    auto beatrepeatP = parameters[AudioParameterGroup::BEATREPEAT];
-    auto granulatorP = parameters[AudioParameterGroup::GRANULATOR];
-    auto delayP = parameters[AudioParameterGroup::DELAY];
-    
-    // - save Data to JSON
-    for (unsigned int n = 0; n < engineP->getNumParametersInGroup(); n++)
-        JSONpresets[index]["engine"][n] = engineP->getParameter(n)->getPrintValueF();
-    
-    for (unsigned int n = 0; n < beatrepeatP->getNumParametersInGroup(); n++)
-        JSONpresets[index]["beatrepeat"][n] = beatrepeatP->getParameter(n)->getPrintValueF();
-    
-    for (unsigned int n = 0; n < granulatorP->getNumParametersInGroup(); n++)
-        JSONpresets[index]["granulator"][n] = granulatorP->getParameter(n)->getPrintValueF();
-    
-    for (unsigned int n = 0; n < delayP->getNumParametersInGroup(); n++)
-        JSONpresets[index]["delay"][n] = delayP->getParameter(n)->getPrintValueF();
-#else
-#ifdef CONSOLE_PRINT
-    consoleprint("Saving preset to JSON!", __FILE__, __LINE__);
-#endif
-#endif
-}
 
 void UserInterface::loadPresetFromJSON (const int _index)
 {
-    // parameters
-//    auto parameters = engine->getProgramParameters();
-//    auto engineP = parameters[AudioParameterGroup::ENGINE];
-//    auto beatrepeatP = parameters[AudioParameterGroup::BEATREPEAT];
-//    auto granulatorP = parameters[AudioParameterGroup::GRANULATOR];
-//    auto delayP = parameters[AudioParameterGroup::DELAY];
-    
-    // console print yes or no?
-//    bool withPrint = false;
-    
-#ifdef JSON_USED
-    // index
-    int index = _index == -1 ? menu.getCurrentChoice() : _index;
-    
-    if (index >= NUM_PRESETS || index == -1)
-        engine_rt_error("the chosen preset index (" + TOSTRING(_index) + ") exceeds the max number of presets (" + TOSTRING(NUM_PRESETS) + ")",
-                     __FILE__, __LINE__, true);
-    
-    // load from JSON file
-    for (unsigned int n = 0; n < engineP->getNumParametersInGroup(); n++)
-        engineP->getParameter(n)->setValue((float)JSONpresets[index]["engine"][n], withPrint);
-    
-    for (unsigned int n = 0; n < beatrepeatP->getNumParametersInGroup(); n++)
-        beatrepeatP->getParameter(n)->setValue((float)JSONpresets[index]["beatrepeat"][n], withPrint);
-    
-    for (unsigned int n = 0; n < granulatorP->getNumParametersInGroup(); n++)
-        granulatorP->getParameter(n)->setValue((float)JSONpresets[index]["granulator"][n], withPrint);
-    
-    for (unsigned int n = 0; n < delayP->getNumParametersInGroup(); n++)
-        delayP->getParameter(n)->setValue((float)JSONpresets[index]["delay"][n], withPrint);
-    
-    // last used preset is now the current one
-    globals.lastUsedPreset = index;
-    
-    // update Display Catch
-    display.setPresetCatch(index, JSONpresets[index]["name"]);
-
-#else
-#ifdef CONSOLE_PRINT
-    consoleprint("Loading preset from JSON!", __FILE__, __LINE__);
-#endif
-//    float defaultresonator[] = { 200.f, 80.f, 0.f, 0.f, 0.f, 2.f, 80.f, 100.f, 1.f };
-//    for (unsigned int n = 0; n < resonatorP->getNumParametersInGroup(); n++)
-//        resonatorP->getParameter(n)->setValue(defaultresonator[n], withPrint);
-    
-//    float defaultgranulator[] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f};
-//    for (unsigned int n = 0; n < granulatorP->getNumParametersInGroup(); n++)
-//        granulatorP->getParameter(n)->setValue(defaultgranulator[n], withPrint);
-
-//    float defaultbeatrepeat[] = { 0.f, 10.f, 3.f, 100.f, 100.f, 0.f, 0.f, 100.f, ButtonParameter::UP };
-//    for (unsigned int n = 0; n < beatrepeatP->getNumParametersInGroup(); n++)
-//        beatrepeatP->getParameter(n)->setValue(defaultbeatrepeat[n], withPrint);
-    
-#endif
-    
     // LED-notification
     for (unsigned int n = 0; n < NUM_LEDS; ++n)
         led[n].setAlarm();

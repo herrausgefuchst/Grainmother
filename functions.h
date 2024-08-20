@@ -155,6 +155,23 @@ inline bool instanceof(const T *ptr)
 }
 
 /**
+ * @brief Checks if a pointer to a base class object is of a specific derived class type.
+ *
+ * This function uses `dynamic_cast` to determine whether a given pointer to a base class
+ * object actually points to an object of a specified derived class.
+ *
+ * @tparam Derived The derived class type to check against.
+ * @tparam Base The base class type from which the object is derived.
+ * @param ptr A pointer to a base class object.
+ * @return `true` if `ptr` is actually pointing to an object of type `Derived`, otherwise `false`.
+ */
+template<typename Derived, typename Base>
+inline bool isoftype(const Base* ptr)
+{
+    return dynamic_cast<const Derived*>(ptr) != nullptr;
+}
+
+/**
  * @brief Calculates the logarithm of a number with a specified base.
  *
  * This function computes the logarithm of a given number `x` with respect to an arbitrary `base`.

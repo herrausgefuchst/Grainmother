@@ -147,25 +147,25 @@ void Menu::initializePageActions()
 
 Menu::~Menu()
 {
-//    #ifndef BELA_CONNECTED
-//    std::ofstream writefilePresets("/Users/julianfuchs/Dropbox/BelaProjects/GrainMother/GrainMother/presets.json");
-//    std::ofstream writefileGlobals("/Users/julianfuchs/Dropbox/BelaProjects/GrainMother/GrainMother/globals.json");
-//    #else
-//    std::ofstream writefilePresets("presets.json");
-//    std::ofstream writefileGlobals("globals.json");
-//    #endif
-//    
-//    engine_error(!writefilePresets.is_open(), "presets.json not found, not able to save presets", __FILE__, __LINE__, true);
-//    engine_error(!writefileGlobals.is_open(), "globals.json not found, not able to save globals", __FILE__, __LINE__, true);
-//    
-//    JSONglobals["midiInChannel"] = getPage("midi_in_channel")->getCurrentChoice() + 1;
-//    JSONglobals["midiOutChannel"] = getPage("midi_out_channel")->getCurrentChoice() + 1;
-//    JSONglobals["potBehaviour"] = getPage("pot_behaviour")->getCurrentChoice();
-//    JSONglobals["lastUsedPreset"] = lastUsedPresetIndex;
-//    
-//    writefilePresets << JSONpresets.dump(4);
-//    writefileGlobals << JSONglobals.dump(4);
-//    
+    #ifndef BELA_CONNECTED
+    std::ofstream writefilePresets("/Users/julianfuchs/Dropbox/BelaProjects/GrainMother/GrainMother/presets.json");
+    std::ofstream writefileGlobals("/Users/julianfuchs/Dropbox/BelaProjects/GrainMother/GrainMother/globals.json");
+    #else
+    std::ofstream writefilePresets("presets.json");
+    std::ofstream writefileGlobals("globals.json");
+    #endif
+    
+    engine_error(!writefilePresets.is_open(), "presets.json not found, not able to save presets", __FILE__, __LINE__, true);
+    engine_error(!writefileGlobals.is_open(), "globals.json not found, not able to save globals", __FILE__, __LINE__, true);
+    
+    JSONglobals["midiInChannel"] = getPage("midi_in_channel")->getCurrentChoice() + 1;
+    JSONglobals["midiOutChannel"] = getPage("midi_out_channel")->getCurrentChoice() + 1;
+    JSONglobals["potBehaviour"] = getPage("pot_behaviour")->getCurrentChoice();
+    JSONglobals["lastUsedPreset"] = lastUsedPresetIndex;
+    
+    writefilePresets << JSONpresets.dump(4);
+    writefileGlobals << JSONglobals.dump(4);
+    
     for (auto i : pages) delete i;
     pages.clear();
 }
@@ -259,34 +259,34 @@ void Menu::loadPreset()
 
 void Menu::savePreset()
 {
-//    // index
-//    size_t index = getPage("save_preset")->getCurrentChoice();
-//    
-//    // name
-//    // TODO: add a new name to the preset
-//    
-//    // -- parameters
-//    auto engine = programParameters[0];
-//    auto effect1= programParameters[1];
-//    auto effect2 = programParameters[2];
-////    auto effect3 = programParameters[3];
-//    
-//    // save Data to JSON
-//    for (unsigned int n = 0; n < engine->getNumParametersInGroup(); ++n)
-//        JSONpresets[index]["engine"][n] = engine->getParameter(n)->getPrintValueAsFloat();
-//    
-//    for (unsigned int n = 0; n < effect1->getNumParametersInGroup(); ++n)
-//        JSONpresets[index]["effect1"][n] = effect1->getParameter(n)->getPrintValueAsFloat();
-//    
-//    for (unsigned int n = 0; n < effect2->getNumParametersInGroup(); ++n)
-//        JSONpresets[index]["effect2"][n] = effect2->getParameter(n)->getPrintValueAsFloat();
-//    
-////    for (unsigned int n = 0; n < effect3->getNumParametersInGroup(); ++n)
-////        JSONpresets[index]["effect3"][n] = effect3->getParameter(n)->getPrintValueAsFloat();
-//
-//    #ifdef CONSOLE_PRINT
-//    consoleprint("Saved preset with name " + getPage("save_preset")->getCurrentPrintValue() + " to JSON!", __FILE__, __LINE__);
-//    #endif
+    // index
+    size_t index = getPage("save_preset")->getCurrentChoice();
+    
+    // name
+    // TODO: add a new name to the preset
+    
+    // -- parameters
+    auto engine = programParameters[0];
+    auto effect1= programParameters[1];
+    auto effect2 = programParameters[2];
+//    auto effect3 = programParameters[3];
+    
+    // save Data to JSON
+    for (unsigned int n = 0; n < engine->getNumParametersInGroup(); ++n)
+        JSONpresets[index]["engine"][n] = engine->getParameter(n)->getPrintValueAsFloat();
+    
+    for (unsigned int n = 0; n < effect1->getNumParametersInGroup(); ++n)
+        JSONpresets[index]["effect1"][n] = effect1->getParameter(n)->getPrintValueAsFloat();
+    
+    for (unsigned int n = 0; n < effect2->getNumParametersInGroup(); ++n)
+        JSONpresets[index]["effect2"][n] = effect2->getParameter(n)->getPrintValueAsFloat();
+    
+//    for (unsigned int n = 0; n < effect3->getNumParametersInGroup(); ++n)
+//        JSONpresets[index]["effect3"][n] = effect3->getParameter(n)->getPrintValueAsFloat();
+
+    #ifdef CONSOLE_PRINT
+    consoleprint("Saved preset with name " + getPage("save_preset")->getCurrentPrintValue() + " to JSON!", __FILE__, __LINE__);
+    #endif
     
     for (auto i : onSaveMessage) i();
 }
@@ -341,7 +341,11 @@ void Menu::buttonPressed (UIElement* _uielement)
         case ButtonID::UP:
         case ButtonID::DOWN:
         {
-            isScrolling = true;
+            if (isoftype<ParameterPage>(currentPage))
+            {
+                isScrolling = true;
+                scrollDirection = (button->getIndex() == ButtonID::UP) ? UP : DOWN;
+            }
             break;
         }
         case ButtonID::EXIT:
@@ -371,9 +375,10 @@ void Menu::buttonReleased (UIElement* _uielement)
     }
 }
 
-void Menu::scroll (const int _direction)
+void Menu::scroll()
 {
-    if (_direction >= 0) currentPage->up();
+    rt_printf("scrolling activated \n");
+    if (scrollDirection == UP) currentPage->up();
     else currentPage->down();
 }
 
