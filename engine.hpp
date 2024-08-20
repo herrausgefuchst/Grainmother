@@ -120,6 +120,8 @@ public:
     
     void globalSettingChanged(Menu::Page* page_) override;
     
+    void effectOrderChanged() override;
+    
     void nudgeTempo (const int _direction);
         
 private:

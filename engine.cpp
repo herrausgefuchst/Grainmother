@@ -41,6 +41,24 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
         engineParameters.addParameter(engineParameterID[ENUM2INT(EngineParameters::EFFECTEDITFOCUS)],
                                       engineParameterName[ENUM2INT(EngineParameters::EFFECTEDITFOCUS)],
                                       { "Reverb", "Granulator", "Resonator" }, ParameterTypes::CHOICE);
+        
+        // effect order
+        engineParameters.addParameter(engineParameterID[ENUM2INT(EngineParameters::EFFECTORDER)],
+                                      engineParameterName[ENUM2INT(EngineParameters::EFFECTORDER)], {
+            "1->2->3",
+            "2|3->1"
+            "1|3->2",
+            "1|2->3",
+            "3->1|2",
+            "2->1|3",
+            "1->2|3",
+            "1|2|3",
+            "3->2->1",
+            "3->1->2",
+            "2->3->1",
+            "2->1->3",
+            "1->3->2",
+        }, ParameterTypes::CHOICE);
     }
     
     // Effects
@@ -201,12 +219,11 @@ void UserInterface::setup(AudioEngine *_engine)
     led[LED::TEMPO].setup(LED::TEMPO, "Tempo");
     led[LED::BYPASS].setup(LED::BYPASS, "Bypass");
     
+    menu.addPage("effect_order", engine->getParameter("effect_order"));
+    
     menu.addPage("reverb_lowcut", engine->getParameter("reverb", "reverb_lowcut"));
     menu.addPage("reverb_multfreq", engine->getParameter("reverb", "reverb_multfreq"));
     menu.addPage("reverb_multgain", engine->getParameter("reverb", "reverb_multgain"));
-    
-    menu.addPage("reverb_additionalParameters", "Reverb - Additional Parameters",
-                 { menu.getPage("reverb_lowcut"), menu.getPage("reverb_multfreq"), menu.getPage("reverb_multgain") });
     
     menu.setup(engine->getProgramParameters());
     
@@ -336,6 +353,13 @@ void UserInterface::globalSettingChanged(Menu::Page* page_)
     
     //TODO: midi in
     //TODO: midi out
+}
+
+
+void UserInterface::effectOrderChanged()
+{
+    rt_printf("Effect Order will be changed!\n");
+    // TODO: effect order algorithm
 }
 
 

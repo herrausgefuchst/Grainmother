@@ -40,7 +40,7 @@ static const size_t NUM_EFFECTS = 3;
 
 static const size_t NUM_PARAMETERGROUPS = 4;
 
-static const size_t NUM_ENGINEPARAMETERS = 6;
+static const size_t NUM_ENGINEPARAMETERS = 7;
 
 enum class EngineParameters {
     TEMPO,
@@ -49,6 +49,7 @@ enum class EngineParameters {
     EFFECT2BYPASS,
     EFFECT3BYPASS,
     EFFECTEDITFOCUS,
+    EFFECTORDER
 };
 
 static const String engineParameterName[NUM_ENGINEPARAMETERS] {
@@ -57,7 +58,8 @@ static const String engineParameterName[NUM_ENGINEPARAMETERS] {
     "Effect 1 Bypass",
     "Effect 2 Bypass",
     "Effect 3 Bypass",
-    "Effect Edit Focus"
+    "Effect Edit Focus",
+    "Effect Order"
 };
 
 static const String engineParameterID[NUM_ENGINEPARAMETERS] {
@@ -66,7 +68,8 @@ static const String engineParameterID[NUM_ENGINEPARAMETERS] {
     "effect1_bypass",
     "effect2_bypass",
     "effect3_bypass",
-    "effect_edit_focus"
+    "effect_edit_focus",
+    "effect_order"
 };
 
 enum class ParameterGroupID {

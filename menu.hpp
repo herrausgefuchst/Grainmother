@@ -32,7 +32,7 @@ public:
         virtual void enter();
         virtual void exit();
         
-        void setCurrentChoice (const size_t index_) {}
+        virtual void setCurrentChoice (const size_t index_) {}
         
         String getName() const { return name; }
         String getID() const { return id; }
@@ -49,144 +49,52 @@ public:
     class ParameterPage : public Page
     {
     public:
-        ParameterPage(const String id_, AudioParameter* param_, Menu& menu_) 
-            : Page(menu_)
-        {
-            id = id_;
-            name = param_->getName();
-            
-            parameter = param_;
-        }
+        ParameterPage(const String id_, AudioParameter* param_, Menu& menu_);
         
-        void up() override
-        {
-            parameter->nudgeValue(1);
-            
-            #ifdef CONSOLE_PRINT
-            consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
-            #endif
-            
-            if (onUp) onUp();
-        }
+        void up() override;
+        void down() override;
         
-        void down() override
-        {
-            parameter->nudgeValue(-1);
-            
-            #ifdef CONSOLE_PRINT
-            consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
-            #endif
-            
-            if (onDown) onDown();
-        }
-        
-        String getCurrentPrintValue() const override
-        {
-            return parameter->getPrintValueAsString();
-        }
+        String getCurrentPrintValue() const override;
         
     private:
         AudioParameter* parameter = nullptr;
     };
     
+    
     class NavigationPage : public Page
     {
     public:
-        NavigationPage(const String id_, const String name_, std::initializer_list<Page*> options_, Menu& menu_)
-            : Page(menu_)
-            , options(options_)
-        {
-            id = id_;
-            name = name_;
-        }
+        NavigationPage(const String id_, const String name_, std::initializer_list<Page*> options_, Menu& menu_);
         
-        void up() override
-        {
-            choiceIndex = (choiceIndex >= options.size() - 1) ? 0 : choiceIndex + 1;
-            
-            #ifdef CONSOLE_PRINT
-            consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
-            #endif
-            
-            if (onUp) onUp();
-        }
+        void up() override;
+        void down() override;
+        void enter() override;
         
-        void down() override
-        {
-            choiceIndex = (choiceIndex == 0) ? options.size() - 1 : choiceIndex - 1;
-            
-            #ifdef CONSOLE_PRINT
-            consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
-            #endif
-            
-            if (onDown) onDown();
-        }
+        String getCurrentPrintValue() const override;
         
-        void enter() override
-        {
-            menu.setCurrentPage(options[choiceIndex]);
-            
-            if (onEnter) onEnter();
-        }
-        
-        String getCurrentPrintValue() const override
-        {
-            return options[choiceIndex]->getName();
-        }
+        void setCurrentChoice(const size_t index_) override;
         
     private:
         std::vector<Page*> options;
         size_t choiceIndex = 0;
     };
     
+    
     class GlobalSettingPage : public Page
     {
     public:
-        GlobalSettingPage(const String id_, const String name_, const size_t min_, const size_t max_, Menu& menu_, size_t defaultIndex_ = 0, String* choiceNames_ = nullptr)
-            : Page(menu_)
-            , min(min_), max(max_)
-        {
-            id = id_;
-            name = name_;
-            
-            if (choiceNames_) choiceNames.assign(choiceNames_, choiceNames_+ (max-min+1));
-            else for(unsigned int n = 0; n < (max-min+1); ++n) choiceNames.push_back(TOSTRING(min+n));
-            
-            choiceIndex = defaultIndex_;
-        }
+        GlobalSettingPage(const String id_, const String name_, const size_t min_, const size_t max_, Menu& menu_, size_t defaultIndex_ = 0, String* choiceNames_ = nullptr);
         
-        void up() override
-        {
-            choiceIndex = (choiceIndex >= choiceNames.size() - 1) ? 0 : choiceIndex + 1;
-            
-            #ifdef CONSOLE_PRINT
-            consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
-            #endif
-            
-            if (onUp) onUp();
-        }
+        void up() override;
         
-        void down() override
-        {
-            choiceIndex = (choiceIndex == 0) ? choiceNames.size() - 1 : choiceIndex - 1;
-            
-            #ifdef CONSOLE_PRINT
-            consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
-            #endif
-            
-            if (onDown) onDown();
-        }
+        void down() override;
         
-        String getCurrentPrintValue() const override
-        {
-            return choiceNames[choiceIndex];
-        }
+        String getCurrentPrintValue() const override;
         
-        size_t getCurrentChoice() const override
-        {
-            return choiceIndex;
-        }
+        size_t getCurrentChoice() const override;
     
+        void setCurrentChoice(const size_t index_) override;
+        
     private:
         size_t min, max;
         size_t choiceIndex = 0;
@@ -215,6 +123,8 @@ public:
         virtual void menupageSelected(Page* page_) {}
         
         virtual void globalSettingChanged(Page* page_) {}
+        
+        virtual void effectOrderChanged() {}
     };
 
     void addListener (Listener* _listener);

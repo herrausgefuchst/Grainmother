@@ -27,6 +27,145 @@ void Menu::Page::exit()
     if (onExit) onExit();
 }
 
+
+
+Menu::ParameterPage::ParameterPage(const String id_, AudioParameter* param_, Menu& menu_)
+    : Page(menu_)
+{
+    id = id_;
+    name = param_->getName();
+    
+    parameter = param_;
+}
+
+void Menu::ParameterPage::up()
+{
+    parameter->nudgeValue(1);
+    
+    #ifdef CONSOLE_PRINT
+    consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
+    #endif
+    
+    if (onUp) onUp();
+}
+
+void Menu::ParameterPage::down()
+{
+    parameter->nudgeValue(-1);
+    
+    #ifdef CONSOLE_PRINT
+    consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
+    #endif
+    
+    if (onDown) onDown();
+}
+
+String Menu::ParameterPage::getCurrentPrintValue() const
+{
+    return parameter->getPrintValueAsString();
+}
+
+
+
+Menu::NavigationPage::NavigationPage(const String id_, const String name_, std::initializer_list<Page*> options_, Menu& menu_)
+    : Page(menu_)
+    , options(options_)
+{
+    id = id_;
+    name = name_;
+}
+
+void Menu::NavigationPage::up()
+{
+    choiceIndex = (choiceIndex == 0) ? options.size() - 1 : choiceIndex - 1;
+    
+    #ifdef CONSOLE_PRINT
+    consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
+    #endif
+    
+    if (onUp) onUp();
+}
+
+void Menu::NavigationPage::down()
+{
+    choiceIndex = (choiceIndex >= options.size() - 1) ? 0 : choiceIndex + 1;
+    
+    #ifdef CONSOLE_PRINT
+    consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
+    #endif
+    
+    if (onDown) onDown();
+}
+
+void Menu::NavigationPage::enter()
+{
+    menu.setCurrentPage(options[choiceIndex]);
+    
+    if (onEnter) onEnter();
+}
+
+String Menu::NavigationPage::getCurrentPrintValue() const
+{
+    return options[choiceIndex]->getName();
+}
+
+void Menu::NavigationPage::setCurrentChoice(const size_t index_)
+{
+    choiceIndex = index_;
+}
+
+
+
+Menu::GlobalSettingPage::GlobalSettingPage(const String id_, const String name_, const size_t min_, const size_t max_, Menu& menu_, size_t defaultIndex_, String* choiceNames_)
+    : Page(menu_)
+    , min(min_), max(max_)
+{
+    id = id_;
+    name = name_;
+    
+    if (choiceNames_) choiceNames.assign(choiceNames_, choiceNames_+ (max-min+1));
+    else for(unsigned int n = 0; n < (max-min+1); ++n) choiceNames.push_back(TOSTRING(min+n));
+    
+    choiceIndex = defaultIndex_;
+}
+
+void Menu::GlobalSettingPage::up()
+{
+    choiceIndex = (choiceIndex >= choiceNames.size() - 1) ? 0 : choiceIndex + 1;
+    
+    #ifdef CONSOLE_PRINT
+    consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
+    #endif
+    
+    if (onUp) onUp();
+}
+
+void Menu::GlobalSettingPage::down()
+{
+    choiceIndex = (choiceIndex == 0) ? choiceNames.size() - 1 : choiceIndex - 1;
+    
+    #ifdef CONSOLE_PRINT
+    consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
+    #endif
+    
+    if (onDown) onDown();
+}
+
+String Menu::GlobalSettingPage::getCurrentPrintValue() const
+{
+    return choiceNames[choiceIndex];
+}
+
+size_t Menu::GlobalSettingPage::getCurrentChoice() const
+{
+    return choiceIndex;
+}
+
+void Menu::GlobalSettingPage::setCurrentChoice(const size_t index_)
+{
+    choiceIndex = index_;
+}
+
 // MARK: - MENU
 // ********************************************************************************
 
@@ -70,10 +209,12 @@ inline void Menu::initializeJSON()
 
 void Menu::initializePages()
 {
-    // -- Additional Reverb Parameters
-    getPage("reverb_lowcut")->addParent(getPage("reverb_additionalParameters"));
-    getPage("reverb_multfreq")->addParent(getPage("reverb_additionalParameters"));
-    getPage("reverb_multgain")->addParent(getPage("reverb_additionalParameters"));
+    // -- Reverb Additional Parameters
+    addPage("reverb_additionalParameters", "Reverb - Additional Parameters", {
+        getPage("reverb_lowcut"),
+        getPage("reverb_multfreq"),
+        getPage("reverb_multgain")
+    });
     
     // -- Global Settings
     // pages for the different settings
@@ -91,8 +232,9 @@ void Menu::initializePages()
     
     // -- Overall Menu
     addPage("menu", "Menu", {
-        getPage("global_settings"),
+        getPage("effect_order"),
         getPage("reverb_additionalParameters"),
+        getPage("global_settings")
     });
     
     // retrieve preset names from JSON
@@ -109,6 +251,11 @@ void Menu::initializePages()
 
 void Menu::initializePageHierarchy()
 {
+    // -- Reverb - Additional Parameters
+    getPage("reverb_lowcut")->addParent(getPage("reverb_additionalParameters"));
+    getPage("reverb_multfreq")->addParent(getPage("reverb_additionalParameters"));
+    getPage("reverb_multgain")->addParent(getPage("reverb_additionalParameters"));
+    
     // -- Global Settings
     getPage("midi_in_channel")->addParent(getPage("global_settings"));
     getPage("midi_out_channel")->addParent(getPage("global_settings"));
@@ -117,6 +264,7 @@ void Menu::initializePageHierarchy()
     // -- Overall Menu
     getPage("global_settings")->addParent(getPage("menu"));
     getPage("reverb_additionalParameters")->addParent(getPage("menu"));
+    getPage("effect_order")->addParent(getPage("menu"));
 
     // -- Home screen
     getPage("save_preset")->addParent(getPage("load_preset"));
@@ -125,12 +273,15 @@ void Menu::initializePageHierarchy()
 
 void Menu::initializePageActions()
 {
-    // Home Page
+    // Load/Home Page
     Page* homePage = getPage("load_preset");
     homePage->onUp = [this] { loadPreset(); };
     homePage->onDown = [this] { loadPreset(); };
     homePage->onExit = [this] { setCurrentPage("menu"); };
-    homePage->onEnter = [this] { setCurrentPage("save_preset"); };
+    homePage->onEnter = [this] {
+        getPage("save_preset")->setCurrentChoice(getPage("load_preset")->getCurrentChoice());
+        setCurrentPage("save_preset");
+    };
     
     // Save Page
     Page* savePage = getPage("save_preset");
