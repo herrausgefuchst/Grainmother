@@ -219,11 +219,11 @@ void UserInterface::setup(AudioEngine *_engine)
     led[LED::TEMPO].setup(LED::TEMPO, "Tempo");
     led[LED::BYPASS].setup(LED::BYPASS, "Bypass");
     
-    menu.addPage("effect_order", engine->getParameter("effect_order"));
+    menu.addPage<Menu::ParameterPage>("effect_order", engine->getParameter("effect_order"));
     
-    menu.addPage("reverb_lowcut", engine->getParameter("reverb", "reverb_lowcut"));
-    menu.addPage("reverb_multfreq", engine->getParameter("reverb", "reverb_multfreq"));
-    menu.addPage("reverb_multgain", engine->getParameter("reverb", "reverb_multgain"));
+    menu.addPage<Menu::ParameterPage>("reverb_lowcut", engine->getParameter("reverb", "reverb_lowcut"));
+    menu.addPage<Menu::ParameterPage>("reverb_multfreq", engine->getParameter("reverb", "reverb_multfreq"));
+    menu.addPage<Menu::ParameterPage>("reverb_multgain", engine->getParameter("reverb", "reverb_multgain"));
     
     menu.setup(engine->getProgramParameters());
     
@@ -338,7 +338,7 @@ void UserInterface::nudgeTempo(const int _direction)
 {
     if (button[ButtonID::TEMPO].getPhase() == Button::LOW)
     {
-        menu.setBypass(true);
+//        menu.setBypass(true);
         engine->getParameter("tempo")->nudgeValue(_direction);
     }
 }

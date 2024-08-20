@@ -114,9 +114,7 @@ void Menu::NavigationPage::setCurrentChoice(const size_t index_)
     choiceIndex = index_;
 }
 
-
-
-Menu::GlobalSettingPage::GlobalSettingPage(const String id_, const String name_, const size_t min_, const size_t max_, Menu& menu_, size_t defaultIndex_, String* choiceNames_)
+Menu::GlobalSettingPage::GlobalSettingPage(const String& id_, const String& name_, size_t min_, size_t max_, size_t defaultIndex_, String* choiceNames_, Menu& menu_)
     : Page(menu_)
     , min(min_), max(max_)
 {
@@ -124,6 +122,21 @@ Menu::GlobalSettingPage::GlobalSettingPage(const String id_, const String name_,
     name = name_;
     
     if (choiceNames_) choiceNames.assign(choiceNames_, choiceNames_+ (max-min+1));
+    else for(unsigned int n = 0; n < (max-min+1); ++n) choiceNames.push_back(TOSTRING(min+n));
+    
+    choiceIndex = defaultIndex_;
+}
+
+Menu::GlobalSettingPage::GlobalSettingPage(const String& id_, const String& name_, size_t min_, size_t max_, size_t defaultIndex_, std::initializer_list<String> choiceNames_, Menu& menu)
+    : Page(menu)
+    , min(min_), max(max_)
+{
+    String* choiceNamesPtr = choiceNames_.size() > 0 ? const_cast<String*>(&*choiceNames_.begin()) : nullptr;
+    
+    id = id_;
+    name = name_;
+    
+    if (choiceNamesPtr) choiceNames.assign(choiceNamesPtr, choiceNamesPtr + (max-min+1));
     else for(unsigned int n = 0; n < (max-min+1); ++n) choiceNames.push_back(TOSTRING(min+n));
     
     choiceIndex = defaultIndex_;
@@ -171,38 +184,49 @@ void Menu::GlobalSettingPage::setCurrentChoice(const size_t index_)
 
 void Menu::setup(std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programParameters_)
 {
+    // copy all parameters
     programParameters = programParameters_;
     
+    // get JSON files for presets and global settings
     initializeJSON();
     
+    // create the menu elements
     initializePages();
     
+    // build the menu structure
     initializePageHierarchy();
     
+    // assign menu actions
     initializePageActions();
     
+    // load the last used preset preset
     loadPreset();
     
-    // -- set start page
+    // set start page
     setCurrentPage("load_preset");
 }
 
 inline void Menu::initializeJSON()
 {
+    // get the JSON files for presets and global settings
     std::ifstream readfilePresets;
     std::ifstream readfileGlobals;
     
+    // console print - version (developing)
     #ifndef BELA_CONNECTED
     readfilePresets.open("/Users/julianfuchs/Dropbox/BelaProjects/GrainMother/GrainMother/presets.json");
     readfileGlobals.open("/Users/julianfuchs/Dropbox/BelaProjects/GrainMother/GrainMother/globals.json");
+    // BELA - version (embedded)
     #else
     readfilePresets.open("presets.json");
     readfileGlobals.open("globals.json");
     #endif
     
+    // error if files couldnt be found
     engine_error(!readfilePresets.is_open(), "presets.json not found, therefore not able to load presets", __FILE__, __LINE__, true);
     engine_error(!readfileGlobals.is_open(), "globals.json not found, therefore not able to load globals", __FILE__, __LINE__, true);
     
+    // parse through the files and save them in JSON variables
     JSONpresets = json::parse(readfilePresets);
     JSONglobals = json::parse(readfileGlobals);
 }
@@ -210,7 +234,7 @@ inline void Menu::initializeJSON()
 void Menu::initializePages()
 {
     // -- Reverb Additional Parameters
-    addPage("reverb_additionalParameters", "Reverb - Additional Parameters", {
+    addPage<NavigationPage>("reverb_additionalParameters", "Reverb - Additional Parameters", std::initializer_list<Page*>{
         getPage("reverb_lowcut"),
         getPage("reverb_multfreq"),
         getPage("reverb_multgain")
@@ -218,39 +242,47 @@ void Menu::initializePages()
     
     // -- Global Settings
     // pages for the different settings
-    addPage("midi_in_channel", "MIDI Input Channel", 1, 16, (size_t)JSONglobals["midiInChannel"] - 1, nullptr);
-    addPage("midi_out_channel", "MIDI Output Channel", 1, 16, (size_t)JSONglobals["midiOutChannel"] - 1, nullptr);
-    addPage("pot_behaviour", "Potentiometer Behaviour", 0, 1, (size_t)JSONglobals["potBehaviour"], { "Jump", "Catch" });
+    addPage<GlobalSettingPage>("midi_in_channel", "MIDI Input Channel", 1, 16, (size_t)JSONglobals["midiInChannel"] - 1, nullptr);
+    addPage<GlobalSettingPage>("midi_out_channel", "MIDI Output Channel", 1, 16, (size_t)JSONglobals["midiOutChannel"] - 1, nullptr);
+    addPage<GlobalSettingPage>("pot_behaviour", "Potentiometer Behaviour", 0, 1, (size_t)JSONglobals["potBehaviour"], std::initializer_list<String>{ "Jump", "Catch" });
     
     // -- Global Settings
     // page for navigating through the settings
-    addPage("global_settings", "Global Settings", {
+    addPage<NavigationPage>("global_settings", "Global Settings", std::initializer_list<Page*>{
         getPage("midi_in_channel"),
         getPage("midi_out_channel"),
         getPage("pot_behaviour")
     });
     
     // -- Overall Menu
-    addPage("menu", "Menu", {
+    addPage<NavigationPage>("menu", "Menu", std::initializer_list<Page*>{
         getPage("effect_order"),
         getPage("reverb_additionalParameters"),
         getPage("global_settings")
     });
     
     // retrieve preset names from JSON
-    String presetName[NUM_PRESETS];
+    String presetLoadNames[NUM_PRESETS];
+    String presetSaveNames[NUM_PRESETS-1];
+    
     for (unsigned int n = 0; n < NUM_PRESETS; ++n)
-        presetName[n] = JSONpresets[n]["name"];
+        presetLoadNames[n] = JSONpresets[n]["name"];
+    
+    for (unsigned int n = 1; n < NUM_PRESETS; ++n)
+        presetSaveNames[n-1] = presetLoadNames[n];
     
     // -- Home / Load and Show Preset
-    addPage("load_preset", "Home", 0, NUM_PRESETS-1, (size_t)JSONglobals["lastUsedPreset"], presetName);
+    addPage<GlobalSettingPage>("load_preset", "Home", 0, NUM_PRESETS-1, (size_t)JSONglobals["lastUsedPreset"], presetLoadNames);
     
     // -- Save Preset To?
-    addPage("save_preset", "Save Preset to Slot: ", 0, NUM_PRESETS-1, (size_t)JSONglobals["lastUsedPreset"], presetName);
+    addPage<GlobalSettingPage>("save_preset", "Save Preset to Slot: ", 0, NUM_PRESETS-2, 0, presetSaveNames);
 }
 
 void Menu::initializePageHierarchy()
 {
+    // add parents to certain pages
+    // defines where to jump back on click of exit button
+    
     // -- Reverb - Additional Parameters
     getPage("reverb_lowcut")->addParent(getPage("reverb_additionalParameters"));
     getPage("reverb_multfreq")->addParent(getPage("reverb_additionalParameters"));
@@ -273,21 +305,30 @@ void Menu::initializePageHierarchy()
 
 void Menu::initializePageActions()
 {
+    // define special actions for certain pages
+
     // Load/Home Page
+    // - loading preset if up/down
+    // - go the menu if exit
+    // - go to save-page and copy the current choice index to it if enter
     Page* homePage = getPage("load_preset");
     homePage->onUp = [this] { loadPreset(); };
     homePage->onDown = [this] { loadPreset(); };
     homePage->onExit = [this] { setCurrentPage("menu"); };
     homePage->onEnter = [this] {
-        getPage("save_preset")->setCurrentChoice(getPage("load_preset")->getCurrentChoice());
+        size_t currentLoadIndex = getPage("load_preset")->getCurrentChoice();
+        size_t currentSaveIndex = (currentLoadIndex == 0) ? 0 : currentLoadIndex-1;
+        getPage("save_preset")->setCurrentChoice(currentSaveIndex);
         setCurrentPage("save_preset");
     };
     
     // Save Page
+    // - save preset if enter
     Page* savePage = getPage("save_preset");
     savePage->onEnter = [this] { savePreset(); };
     
     // Global Settings
+    // - notify listeners if up/down
     getPage("midi_in_channel")->onUp = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
     getPage("midi_in_channel")->onDown = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
     getPage("midi_out_channel")->onUp = [this] { for (auto i : listeners) i->globalSettingChanged(currentPage); };
@@ -298,52 +339,37 @@ void Menu::initializePageActions()
 
 Menu::~Menu()
 {
+    // get the JSON files for presets and global settings
+    // console print - version (developing)
     #ifndef BELA_CONNECTED
     std::ofstream writefilePresets("/Users/julianfuchs/Dropbox/BelaProjects/GrainMother/GrainMother/presets.json");
     std::ofstream writefileGlobals("/Users/julianfuchs/Dropbox/BelaProjects/GrainMother/GrainMother/globals.json");
+    // BELA - version (embedded)
     #else
     std::ofstream writefilePresets("presets.json");
     std::ofstream writefileGlobals("globals.json");
     #endif
     
+    // error if files couldnt be found
     engine_error(!writefilePresets.is_open(), "presets.json not found, not able to save presets", __FILE__, __LINE__, true);
     engine_error(!writefileGlobals.is_open(), "globals.json not found, not able to save globals", __FILE__, __LINE__, true);
     
+    // get and save the global settings
     JSONglobals["midiInChannel"] = getPage("midi_in_channel")->getCurrentChoice() + 1;
     JSONglobals["midiOutChannel"] = getPage("midi_out_channel")->getCurrentChoice() + 1;
     JSONglobals["potBehaviour"] = getPage("pot_behaviour")->getCurrentChoice();
     JSONglobals["lastUsedPreset"] = lastUsedPresetIndex;
     
+    // overwrite the files
     writefilePresets << JSONpresets.dump(4);
     writefileGlobals << JSONglobals.dump(4);
     
+    // delete all page pointers
     for (auto i : pages) delete i;
     pages.clear();
 }
 
-void Menu::addPage(const String id_, AudioParameter* param_)
-{
-    pages.push_back(new ParameterPage(id_, param_, *this));
-}
-
-void Menu::addPage(const String id_, const String name_, std::initializer_list<Page*> options_)
-{
-    pages.push_back(new NavigationPage(id_, name_, options_, *this));
-}
-
-void Menu::addPage(const String id_, const String name_, const size_t min_, const size_t max_, const size_t default_, String* choiceNames_)
-{
-    pages.push_back(new GlobalSettingPage(id_, name_, min_, max_, *this, default_, choiceNames_));
-}
-
-void Menu::addPage(const String id_, const String name_, const size_t min_, const size_t max_, const size_t default_, std::initializer_list<String> choiceNames_)
-{
-    String* choiceNamesPtr = choiceNames_.size() > 0 ? const_cast<String*>(&*choiceNames_.begin()) : nullptr;
-    
-    pages.push_back(new GlobalSettingPage(id_, name_, min_, max_, *this, default_, choiceNamesPtr));
-}
-
-Menu::Page* Menu::getPage(const String id_)
+Menu::Page* Menu::getPage(const String& id_)
 {
     Menu::Page* page = nullptr;
     
@@ -370,19 +396,19 @@ inline void Menu::print()
 
 void Menu::loadPreset()
 {
-    // parameters
+    // extract parametergroups
     auto engine = programParameters[0];
     auto effect1= programParameters[1];
     auto effect2 = programParameters[2];
 //    auto effect3 = programParameters[3];
     
-    // console print yes or no?
+    // console print yes or no? (developping)
     bool withPrint = true;
 
-    // index
+    // get the index of the currently selected preset
     size_t index = getPage("load_preset")->getCurrentChoice();
     
-    // load from JSON file
+    // load and set parameters from JSON file
     for (unsigned int n = 0; n < engine->getNumParametersInGroup(); ++n)
         engine->getParameter(n)->setValue((float)JSONpresets[index]["engine"][n], withPrint);
     
@@ -405,13 +431,14 @@ void Menu::loadPreset()
     consoleprint("Loaded preset with name " + getPage("load_preset")->getCurrentPrintValue() + " from JSON!", __FILE__, __LINE__);
     #endif
     
+    // notify listeners
     for (auto i : onLoadMessage) i();
 }
 
 void Menu::savePreset()
 {
     // index
-    size_t index = getPage("save_preset")->getCurrentChoice();
+    size_t index = getPage("save_preset")->getCurrentChoice() + 1;
     
     // name
     // TODO: add a new name to the preset
@@ -450,22 +477,18 @@ void Menu::buttonClicked (UIElement* _uielement)
     {
         case ButtonID::UP:
         {
-            if (!bypass)
-            {
-                currentPage->up();
-                for (auto i : listeners) i->menupageSelected(currentPage);
-            }
-            else bypass = !bypass;
+            currentPage->up();
+            
+            for (auto i : listeners) i->menuPageChanged(currentPage);
+
             break;
         }
         case ButtonID::DOWN:
         {
-            if (!bypass)
-            {
-                currentPage->down();
-                for (auto i : listeners) i->menupageSelected(currentPage);
-            }
-            else bypass = !bypass;
+            currentPage->down();
+            
+            for (auto i : listeners) i->menuPageChanged(currentPage);
+            
             break;
         }
         case ButtonID::EXIT:
@@ -540,17 +563,11 @@ void Menu::setCurrentPage(Menu::Page* page_)
     print();
 }
 
-void Menu::setCurrentPage(const String id_)
+void Menu::setCurrentPage(const String& id_)
 {
     currentPage = getPage(id_);
     
     print();
-}
-
-void Menu::setNewPresetName (const String _name)
-{
-//    pages[Page::HOME]->setItemName(_name, currentPage->getCurrentChoice());
-//    pages[Page::SAVE]->setItemName(_name, currentPage->getCurrentChoice());
 }
 
 void Menu::addListener (Listener* _listener)

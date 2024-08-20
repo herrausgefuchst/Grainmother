@@ -65,8 +65,8 @@ public:
     
     bool update (const bool _withConsole = false);
     
-    void parameterChanged (AudioParameter* _param);
-    void menupageSelected (Menu::Page* _page);
+    void parameterChanged (AudioParameter* _param) override;
+    void menuPageChanged (Menu::Page* _page) override;
     
     void displaySlideParameter (AudioParameter* _param);
     void displayChoiceParameter (AudioParameter* _param);

@@ -83,14 +83,13 @@ public:
     class GlobalSettingPage : public Page
     {
     public:
-        GlobalSettingPage(const String id_, const String name_, const size_t min_, const size_t max_, Menu& menu_, size_t defaultIndex_ = 0, String* choiceNames_ = nullptr);
+        GlobalSettingPage(const String& id_, const String& name_, size_t min_, size_t max_, size_t defaultIndex_, String* choiceNames_, Menu& menu_);
+        GlobalSettingPage(const String& id_, const String& name_, size_t min_, size_t max_, size_t defaultIndex_, std::initializer_list<String> choiceNames_, Menu& menu_);
         
         void up() override;
-        
         void down() override;
         
         String getCurrentPrintValue() const override;
-        
         size_t getCurrentChoice() const override;
     
         void setCurrentChoice(const size_t index_) override;
@@ -106,57 +105,54 @@ public:
 // ********************************************************************************
     
     Menu() {}
-    void setup(std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programParameters_);
     ~Menu ();
         
-    void buttonClicked (UIElement* _uielement) override;
-    void buttonPressed (UIElement* _uielement) override;
-    void buttonReleased (UIElement* _uielement) override;
+    void setup(std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programParameters_);
+    
+    template<typename PageType, typename... Args>
+    void addPage(const String id_, Args&&... args)
+    {
+        pages.push_back(new PageType(id_, std::forward<Args>(args)..., *this));
+    }
+    
+    Page* getPage(const String& id_);
+    
+    void setCurrentPage(Page* page_);
+    void setCurrentPage(const String& id_);
     
     void scroll();
+    
+    void buttonClicked(UIElement* uielement_) override;
+    void buttonPressed(UIElement* uielement_) override;
+    void buttonReleased(UIElement* uielement_) override;
         
     class Listener
     {
     public:
         virtual ~Listener() {}
         
-        virtual void menupageSelected(Page* page_) {}
+        virtual void menuPageChanged(Page* page_) {}
         
         virtual void globalSettingChanged(Page* page_) {}
         
         virtual void effectOrderChanged() {}
     };
 
-    void addListener (Listener* _listener);
+    void addListener(Listener* listener_);
+    
     std::vector<std::function<void()>> onSaveMessage;
     std::vector<std::function<void()>> onLoadMessage;
     
-    void addPage(const String id_, AudioParameter* param_);
-    void addPage(const String id_, const String name_, std::initializer_list<Page*> options_);
-    void addPage(const String id_, const String name_, const size_t min_, const size_t max_, const size_t default_, String* choiceNames_);
-    void addPage(const String id_, const String name_, const size_t min_, const size_t max_, const size_t default_, std::initializer_list<String> choiceNames_);
-    
-    Page* getPage(const String id_);
-    
-    void setCurrentPage(Page* page_);
-    void setCurrentPage(const String id_);
-    void setNewPresetName (const String _name);
-    void setBypass (const bool _bypass) { bypass = _bypass; }
-    
-    size_t getCurrentChoice() const{ return currentPage->getCurrentChoice(); }
-    String getCurrentPageID() const { return currentPage->getID(); }
-    String getCurrentPageName() const { return currentPage->getName(); }
-    
 private:
-    inline void print();
-
-    void loadPreset();
-    void savePreset();
-    
     void initializePages();
     void initializePageHierarchy();
     void initializePageActions();
     void initializeJSON();
+    
+    void print();
+
+    void loadPreset();
+    void savePreset();
 
 protected:
     Page* currentPage = nullptr;
@@ -164,8 +160,6 @@ protected:
 private:
     std::vector<Page*> pages;
     std::vector<Listener*> listeners;
-    
-    bool bypass = false; // TODO: why is this here?
 
     json JSONpresets;
     json JSONglobals;
