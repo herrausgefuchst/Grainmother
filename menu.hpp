@@ -13,9 +13,10 @@ using json = nlohmann::json;
 class Menu : public UIElement::Listener
 {
 public:
-    
-// MARK: - MENU::PAGE
-// ********************************************************************************
+
+    // =======================================================================================
+    // MARK: - MENU::PAGE
+    // =======================================================================================
     
     class Page
     {
@@ -45,11 +46,14 @@ public:
         Page* parent = nullptr;
     };
     
+    // =======================================================================================
+    // MARK: - MENU::PAGE::PARAMETERPAGE
+    // =======================================================================================
     
     class ParameterPage : public Page
     {
     public:
-        ParameterPage(const String id_, AudioParameter* param_, Menu& menu_);
+        ParameterPage(const String& id_, AudioParameter* param_, Menu& menu_);
         
         void up() override;
         void down() override;
@@ -60,11 +64,14 @@ public:
         AudioParameter* parameter = nullptr;
     };
     
+    // =======================================================================================
+    // MARK: - MENU::PAGE::NAVIGATIONPAGE
+    // =======================================================================================
     
     class NavigationPage : public Page
     {
     public:
-        NavigationPage(const String id_, const String name_, std::initializer_list<Page*> options_, Menu& menu_);
+        NavigationPage(const String& id_, const String& name_, std::initializer_list<Page*> options_, Menu& menu_);
         
         void up() override;
         void down() override;
@@ -79,12 +86,15 @@ public:
         size_t choiceIndex = 0;
     };
     
+    // =======================================================================================
+    // MARK: - MENU::PAGE::SETTINGPAGE
+    // =======================================================================================
     
-    class GlobalSettingPage : public Page
+    class SettingPage : public Page
     {
     public:
-        GlobalSettingPage(const String& id_, const String& name_, size_t min_, size_t max_, size_t defaultIndex_, String* choiceNames_, Menu& menu_);
-        GlobalSettingPage(const String& id_, const String& name_, size_t min_, size_t max_, size_t defaultIndex_, std::initializer_list<String> choiceNames_, Menu& menu_);
+        SettingPage(const String& id_, const String& name_, size_t min_, size_t max_, size_t defaultIndex_, String* choiceNames_, Menu& menu_);
+        SettingPage(const String& id_, const String& name_, size_t min_, size_t max_, size_t defaultIndex_, std::initializer_list<String> choiceNames_, Menu& menu_);
         
         void up() override;
         void down() override;
@@ -100,9 +110,9 @@ public:
         std::vector<String> choiceNames;
     };
 
-    
-// MARK: - MENU
-// ********************************************************************************
+    // =======================================================================================
+    // MARK: - MENU
+    // =======================================================================================
     
     Menu() {}
     ~Menu ();
@@ -110,7 +120,7 @@ public:
     void setup(std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programParameters_);
     
     template<typename PageType, typename... Args>
-    void addPage(const String id_, Args&&... args)
+    void addPage(const String& id_, Args&&... args)
     {
         pages.push_back(new PageType(id_, std::forward<Args>(args)..., *this));
     }
