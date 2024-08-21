@@ -246,6 +246,8 @@ void UserInterface::setup(AudioEngine *_engine)
     
     menu.setup(engine->getProgramParameters());
     
+    display.setup(menu.getPage("load_preset"));
+    
     initializeListeners();
     
     // load last used Preset

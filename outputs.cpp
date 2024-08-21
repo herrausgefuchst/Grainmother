@@ -153,12 +153,6 @@ Display::Display()
 #endif
 }
 
-void Display::setPresetCache(const uint index_, const String& name_)
-{
-    presetIndex = index_;
-    presetName = name_;
-}
-
 bool Display::update(const bool withConsole_)
 {
     bool needsRefreshment = false;
@@ -183,7 +177,7 @@ bool Display::update(const bool withConsole_)
         {
             if (--resetDisplayCounter == 0)
             {
-                displayPreset(presetIndex, presetName);
+                displayPreset();
                 newMessageCache = true;
                 stateDuration = PERMANENT;
             }
@@ -301,7 +295,7 @@ void Display::menuPageChanged(Menu::Page* page_)
 {
     if (page_->getID() == "load_preset")
     {
-        displayPreset((int)page_->getCurrentChoice(), page_->getCurrentPrintValue());
+        displayPreset();
     }
     else if (instanceof<Menu::ParameterPage>(page_))
     {
@@ -342,17 +336,17 @@ void Display::displayMenuPage(Menu::Page* page_)
     displayCache.createRows();
 }
 
-void Display::displayPreset(const uint index_, const String& name_)
+void Display::displayPreset()
 {
 #ifdef BELA_CONNECTED
     oscTransmitter.newMessage("/preset");
-    oscTransmitter.add(name_);
-    oscTransmitter.add((int)index_);
+    oscTransmitter.add(presetPage->getCurrentPrintValue());
+    oscTransmitter.add((int)presetPage->getCurrentChoice());
 #endif
     
     displayCache.newMessage("/preset");
-    displayCache.add(name_);
-    displayCache.add((int)index_);
+    displayCache.add(presetPage->getCurrentPrintValue());
+    displayCache.add((int)presetPage->getCurrentChoice());
     displayCache.createRows();
 }
 

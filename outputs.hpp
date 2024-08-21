@@ -52,8 +52,8 @@ public:
     
     ~Display() {}
     
-    void setPresetCache(const uint index_, const String& name_);
-            
+    void setup(Menu::Page* presetPage_) { presetPage = presetPage_; }
+                
     bool update(const bool withConsole_ = false);
     
     void parameterCalledDisplay(AudioParameter* param_) override;
@@ -63,7 +63,7 @@ public:
     void displayChoiceParameter(AudioParameter* param_);
     void displayButtonParameter(AudioParameter* param_);
     void displayMenuPage(Menu::Page* page_);
-    void displayPreset(const uint index_, const String& name_);
+    void displayPreset();
     
 private:
 #ifdef BELA_CONNECTED
@@ -74,8 +74,7 @@ private:
     unsigned int resetDisplayCounter = 0;
     bool newMessageCache = false;
     
-    unsigned int presetIndex;
-    String presetName;
+    Menu::Page* presetPage = nullptr;
 };
 
 #endif /* display_hpp */

@@ -1,7 +1,6 @@
 #pragma once
 
-#define BELA_CONNECTED
-//#define JSON_USED
+//#define BELA_CONNECTED
 
 #include <iostream>
 #include <vector>
