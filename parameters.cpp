@@ -167,7 +167,7 @@ SlideParameter::SlideParameter(const uint index_, const String id_, const String
                                const float sampleRate_,
                                const Scaling scaling_, const float ramptimeMs_)
     : AudioParameter(index_, id_, name_)
-    , unit(unit_), min(min_), max(max_), nudgeStep(round_float_3(nudgeStep_)), range(max_ - min_), ramptimeMs(ramptimeMs_)
+    , unit(unit_), min(min_), max(max_), nudgeStep(round_float_3(nudgeStep_)), defaultValue(default_), range(max_ - min_), ramptimeMs(ramptimeMs_)
     , scaling(scaling_)
 {
     // handling wrong initialization values
@@ -287,6 +287,12 @@ void SlideParameter::setNormalizedValue(float value_, const bool withPrint_)
     
     // notify listeners
     notifyListeners(withPrint_);
+}
+
+
+void SlideParameter::setDefault()
+{
+    setValue(defaultValue);
 }
 
 

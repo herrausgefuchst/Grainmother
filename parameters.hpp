@@ -105,6 +105,10 @@ public:
      */
     virtual void setValue(const int value_, const bool withPrint_ = true) {}
 
+    
+    virtual void setDefault() {}
+    
+    
     /**
      * @brief Nudges the parameter value by a given direction.
      * @param direction_ The direction to nudge the value.
@@ -335,6 +339,8 @@ public:
      * @param withPrint_ Whether to notify listeners.
      */
     void setNormalizedValue(const float value_, const bool withPrint_ = true);
+    
+    void setDefault() override;
 
     void nudgeValue(const int direction_) override;
 
@@ -363,6 +369,7 @@ private:
     const String unit;
     const float min;
     const float max;
+    const float defaultValue;
     float nudgeStep;
     const float range;
     float ramptimeMs;

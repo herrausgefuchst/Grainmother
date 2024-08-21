@@ -44,7 +44,7 @@ public:
         std::vector<int> ints;
         std::vector<String> rows;
 
-    } displayCache, lastDisplayCache;
+    } displayCache;
     
     Display() {}
     
@@ -66,6 +66,7 @@ public:
     void refreshResetDisplayCounter() { resetDisplayCounter = DISPLAY_AUTOHOMESCREEN; }
     
     StateDuration getStateDuration() const { return stateDuration; }
+    
     AudioParameter* getTemporaryParameter() const { return tempParameter; }
     
 private:

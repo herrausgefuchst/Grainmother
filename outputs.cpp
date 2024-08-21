@@ -146,6 +146,24 @@ void Display::DisplayCache::print()
 // MARK: - DISPLAY
 // ********************************************************************************
 
+// in OLED
+// TODO: empty space of suffix
+// TODO: bidirectional slide parameters should have slider above and values down
+// TODO: send over the normalized value for showing logarithmic values
+// TODO: arrow i.e. in effect order disappears sometimes
+
+// in here
+// TODO: send over the normalized value for showing logarithmic values
+// TODO: see the parameter also when pot changed, not only when catched
+// TODO: adjust nudge values
+// TODO: add spaces in names of effect order |
+// TODO: arrow i.e. in effect order disappears sometimes
+// TODO: Reverb Additional Parameters: name too long
+// TODO: reset menu effect parameters on long press of button enter
+// TODO: Pontentiometer Behaviour, name too long
+// TODO: global setting change: only blink once for leds
+
+
 void Display::setup(Menu::Page* presetPage_)
 {
     presetPage = presetPage_;

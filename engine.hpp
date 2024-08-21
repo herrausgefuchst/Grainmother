@@ -132,8 +132,9 @@ private:
     void nudgeTempo(const int direction_);
     void nudgeUIParameter(const int direction_);
     
-    void scrollUIParameter(const int direction_);
+    void startScrollingUIParameter(const int direction_);
     void stopScrollingUIParameter();
+    void setDefaultUIParameter();
     
     void alertLEDs();
     

@@ -296,11 +296,13 @@ void UserInterface::initializeListeners()
     button[ButtonID::UP].onClick.push_back([this] { nudgeUIParameter(1); });
     button[ButtonID::DOWN].onClick.push_back([this] { nudgeUIParameter(-1); });
     
-    button[ButtonID::UP].onPress.push_back([this] { scrollUIParameter(1); });
-    button[ButtonID::DOWN].onPress.push_back([this] { scrollUIParameter(-1); });
+    button[ButtonID::UP].onPress.push_back([this] { startScrollingUIParameter(1); });
+    button[ButtonID::DOWN].onPress.push_back([this] { startScrollingUIParameter(-1); });
     
     button[ButtonID::UP].onRelease.push_back([this] { stopScrollingUIParameter(); });
     button[ButtonID::DOWN].onRelease.push_back([this] { stopScrollingUIParameter(); });
+    
+    button[ButtonID::ENTER].onPress.push_back([this] { setDefaultUIParameter(); });
     
     // Buttons -> Effect Edit Focus
     button[ButtonID::FX1].onPress.push_back([this] {  engine->getParameter("effect_edit_focus")->setValue(0); });
@@ -444,13 +446,16 @@ void UserInterface::nudgeUIParameter(const int direction_)
 }
 
 
-void UserInterface::scrollUIParameter(const int direction_)
+void UserInterface::startScrollingUIParameter(const int direction_)
 {
     if (display.getStateDuration() == Display::TEMPORARY)
     {
         menu.onHold = true;
+        
         display.refreshResetDisplayCounter();
-        this->scrollingParameter = display.getTemporaryParameter();
+        
+        scrollingParameter = display.getTemporaryParameter();
+            
         scrollingDirection = direction_;
     }
 }
@@ -458,9 +463,29 @@ void UserInterface::scrollUIParameter(const int direction_)
 
 void UserInterface::stopScrollingUIParameter()
 {
+    if (scrollingParameter)
+    {
+        scrollingParameter = nullptr;
+    }
+}
+
+
+void UserInterface::setDefaultUIParameter()
+{
     if (display.getStateDuration() == Display::TEMPORARY)
     {
-        this->scrollingParameter = nullptr;
+        menu.onHold = true;
+        
+        display.refreshResetDisplayCounter();
+        
+        AudioParameter* param = display.getTemporaryParameter();
+        
+        if (param)
+        {
+            param->setDefault();
+            
+            potentiometer[param->getIndex()].decouple(param->getNormalizedValue());
+        }
     }
 }
 
