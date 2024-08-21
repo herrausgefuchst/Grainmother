@@ -14,7 +14,7 @@
 
 // display should be printable to:
 // 1. OLED Display (via OscSender class of BELA)
-// 2. GUI (via update() function, returns bool, if yes, vector of String with corresponding rows can be taken from DisplayCatch
+// 2. GUI (via update() function, returns bool, if yes, vector of String with corresponding rows can be taken from DisplayCache
 // 3. CONSOLE (via update() function, _withConsole indicates if the Displaycatch should be printed
 
 static const int DISPLAY_AUTOHOMESCREEN = 48; // x * DISPLAY_FRAMERATE
@@ -26,25 +26,14 @@ class Display   : public AudioParameter::Listener
                 , public Menu::Listener
 {
 public:
-    enum Type { CONSTANT, TEMPORARILY };
-    
-    struct DisplayCatch
+    struct DisplayCache
     {
-        inline void newMessage (const String _message);
+        inline void newMessage(const String& message_);
         
-        void add (const float _value) {
-            floats.push_back(_value);
-        }
-        void add (const int _value) {
-            ints.push_back(_value);
-        }
-        void add (const String _value) {
-            strings.push_back(_value);
-        }
-        void add (String* _value, const int _size) {
-            for (unsigned int n = 0; n < _size; n++)
-                strings.push_back(_value[n]);
-        }
+        void add(const float value_);
+        void add(const int value_);
+        void add(const String& value_);
+        void add(String* value_, const size_t size_);
         
         void createRows();
         inline void clear();
@@ -56,35 +45,37 @@ public:
         std::vector<int> ints;
         std::vector<String> rows;
 
-    } displaycatch;
+    } displayCache, lastDisplayCache;
     
     Display();
+    
     ~Display() {}
     
-    void setPresetCatch (const int _index, const String _name);
+    void setPresetCache(const uint index_, const String& name_);
+            
+    bool update(const bool withConsole_ = false);
     
-    bool update (const bool _withConsole = false);
+    void parameterChanged(AudioParameter* param_) override;
+    void menuPageChanged(Menu::Page* page_) override;
     
-    void parameterChanged (AudioParameter* _param) override;
-    void menuPageChanged (Menu::Page* _page) override;
-    
-    void displaySlideParameter (AudioParameter* _param);
-    void displayChoiceParameter (AudioParameter* _param);
-    void displayButtonParameter (AudioParameter* _param);
-    void displayMenuPage (Menu::Page* _page);
-    void displayPreset (const int _index, const String _name);
+    void displaySlideParameter(AudioParameter* param_);
+    void displayChoiceParameter(AudioParameter* param_);
+    void displayButtonParameter(AudioParameter* param_);
+    void displayMenuPage(Menu::Page* page_);
+    void displayPreset(const uint index_, const String& name_);
     
 private:
 #ifdef BELA_CONNECTED
     OscSender oscTransmitter;
 #endif
+    enum StateDuration { PERMANENT, TEMPORARY };
+    StateDuration stateDuration = TEMPORARY;
     
-    Type display_type = TEMPORARILY;
-    int autodisplay_ctr = 0;
-    bool message_catch = false;
+    unsigned int resetDisplayCounter = 0;
+    bool newMessageCache = false;
     
-    int preset_index;
-    String preset_name;
+    unsigned int presetIndex;
+    String presetName;
 };
 
 #endif /* display_hpp */

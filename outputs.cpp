@@ -4,13 +4,30 @@
 // MARK: - DISPLAY-CATCH
 // ********************************************************************************
 
-inline void Display::DisplayCatch::newMessage (const String _message)
+inline void Display::DisplayCache::newMessage(const String& message_)
 {
-    message = _message;
+    message = message_;
     clear();
 }
 
-inline void Display::DisplayCatch::clear()
+void Display::DisplayCache::add(const float value_) {
+    floats.push_back(value_);
+}
+
+void Display::DisplayCache::add(const int value_) {
+    ints.push_back(value_);
+}
+
+void Display::DisplayCache::add(const String& value_) {
+    strings.push_back(value_);
+}
+
+void Display::DisplayCache::add(String* value_, const size_t size_) {
+    for (unsigned int n = 0; n < size_; ++n)
+        strings.push_back(value_[n]);
+}
+
+inline void Display::DisplayCache::clear()
 {
     strings.clear();
     ints.clear();
@@ -18,7 +35,7 @@ inline void Display::DisplayCatch::clear()
     rows.clear();
 }
 
-void Display::DisplayCatch::createRows()
+void Display::DisplayCache::createRows()
 {
     if (message == "/parameterChange_bipolar" || message == "/parameterChange_unipolar")
     {
@@ -120,21 +137,12 @@ void Display::DisplayCatch::createRows()
     }
 }
 
-void Display::DisplayCatch::print()
+void Display::DisplayCache::print()
 {
-    
-#ifdef BELA_CONNECTED
-    for (unsigned int n = 0; n < DISPLAY_NUM_ROWS; n++)
+    for (unsigned int n = 0; n < DISPLAY_NUM_ROWS; ++n)
         rt_printf("%s \n", rows[n].c_str());
+    
     rt_printf("\n");
-    
-#else
-    for (unsigned int n = 0; n < DISPLAY_NUM_ROWS; n++)
-        printf("%s \n", rows[n].c_str());
-    printf("\n");
-    
-#endif
-    
 }
 
 // MARK: - DISPLAY
@@ -147,39 +155,39 @@ Display::Display()
 #endif
 }
 
-void Display::setPresetCatch (const int _index, const String _name)
+void Display::setPresetCache(const uint index_, const String& name_)
 {
-    preset_index = _index;
-    preset_name = _name;
+    presetIndex = index_;
+    presetName = name_;
 }
 
-bool Display::update (const bool _withConsole)
+bool Display::update(const bool withConsole_)
 {
     bool needsRefreshment = false;
     
-    if (message_catch)
+    if (newMessageCache)
     {
         
 #ifdef BELA_CONNECTED
         oscTransmitter.send();
 #endif
         
-        if (_withConsole) displaycatch.print();
+        if (withConsole_) displayCache.print();
         
-        message_catch = !message_catch;
-        autodisplay_ctr = DISPLAY_AUTOHOMESCREEN;
+        newMessageCache = false;
+        resetDisplayCounter = DISPLAY_AUTOHOMESCREEN;
         needsRefreshment = true;
     }
     
     else
     {
-        if (display_type == TEMPORARILY)
+        if (stateDuration == TEMPORARY)
         {
-            if (--autodisplay_ctr <= 0)
+            if (--resetDisplayCounter == 0)
             {
-                displayPreset(preset_index, preset_name);
-                message_catch = true;
-                display_type = CONSTANT;
+                displayPreset(presetIndex, presetName);
+                newMessageCache = true;
+                stateDuration = PERMANENT;
             }
         }
     }
@@ -187,19 +195,19 @@ bool Display::update (const bool _withConsole)
     return needsRefreshment;
 }
 
-void Display::parameterChanged(AudioParameter *_param)
+void Display::parameterChanged(AudioParameter* param_)
 {
-    if (instanceof<SlideParameter>(_param)) displaySlideParameter(_param);
-    else if (instanceof<ChoiceParameter>(_param)) displayChoiceParameter(_param);
-    else if (instanceof<ButtonParameter>(_param)) displayButtonParameter(_param);
+    if (instanceof<SlideParameter>(param_)) displaySlideParameter(param_);
+    else if (instanceof<ChoiceParameter>(param_)) displayChoiceParameter(param_);
+    else if (instanceof<ButtonParameter>(param_)) displayButtonParameter(param_);
     
-    message_catch = true;
-    display_type = TEMPORARILY;
+    newMessageCache = true;
+    stateDuration = TEMPORARY;
 }
 
-void Display::displaySlideParameter (AudioParameter* _param)
+void Display::displaySlideParameter(AudioParameter* param_)
 {
-    SlideParameter* parameter = static_cast<SlideParameter*>(_param);
+    SlideParameter* parameter = static_cast<SlideParameter*>(param_);
     
 #ifdef BELA_CONNECTED
     // parameter is bipolar
@@ -215,21 +223,21 @@ void Display::displaySlideParameter (AudioParameter* _param)
 #endif
     
     // parameter is bipolar
-    if (parameter->getMin() < 0.f) displaycatch.newMessage("/parameterChange_bipolar");
+    if (parameter->getMin() < 0.f) displayCache.newMessage("/parameterChange_bipolar");
     // parameter is unipolar
-    else displaycatch.newMessage("/parameterChange_unipolar");
+    else displayCache.newMessage("/parameterChange_unipolar");
     
-    displaycatch.add(parameter->getName());
-    displaycatch.add(parameter->getUnit());
-    displaycatch.add(parameter->getMin());
-    displaycatch.add(parameter->getMax());
-    displaycatch.add(parameter->getPrintValueAsFloat());
-    displaycatch.createRows();
+    displayCache.add(parameter->getName());
+    displayCache.add(parameter->getUnit());
+    displayCache.add(parameter->getMin());
+    displayCache.add(parameter->getMax());
+    displayCache.add(parameter->getPrintValueAsFloat());
+    displayCache.createRows();
 }
 
-void Display::displayChoiceParameter (AudioParameter *_param)
+void Display::displayChoiceParameter(AudioParameter* param_)
 {
-    ChoiceParameter* parameter = static_cast<ChoiceParameter*>(_param);
+    ChoiceParameter* parameter = static_cast<ChoiceParameter*>(param_);
     
     String* choices = parameter->getChoiceNames();
  
@@ -245,17 +253,17 @@ void Display::displayChoiceParameter (AudioParameter *_param)
     oscTransmitter.add(scrollable);
 #endif
     
-    displaycatch.newMessage("/parameterChange_choice");
-    displaycatch.add(parameter->getName());
-    displaycatch.add(choices, parameter->getNumChoices());
-//    displaycatch.add(parameter->getNumChoices());
-    displaycatch.add(parameter->getValueAsInt());
-    displaycatch.createRows();
+    displayCache.newMessage("/parameterChange_choice");
+    displayCache.add(parameter->getName());
+    displayCache.add(choices, parameter->getNumChoices());
+//    displayCache.add(parameter->getNumChoices());
+    displayCache.add(parameter->getValueAsInt());
+    displayCache.createRows();
 }
 
-void Display::displayButtonParameter (AudioParameter *_param)
+void Display::displayButtonParameter(AudioParameter* param_)
 {
-    ButtonParameter* parameter = static_cast<ButtonParameter*>(_param);
+    ButtonParameter* parameter = static_cast<ButtonParameter*>(param_);
     
 #ifdef BELA_CONNECTED
     oscTransmitter.newMessage("/parameterChange_button");
@@ -263,25 +271,25 @@ void Display::displayButtonParameter (AudioParameter *_param)
     oscTransmitter.add(parameter->getValueAsInt());
 #endif
     
-    displaycatch.newMessage("/parameterChange_button");
-    displaycatch.add(parameter->getName());
-    displaycatch.add(parameter->getValueAsInt());
-    displaycatch.createRows();
+    displayCache.newMessage("/parameterChange_button");
+    displayCache.add(parameter->getName());
+    displayCache.add(parameter->getValueAsInt());
+    displayCache.createRows();
 }
 
-void Display::menuPageChanged(Menu::Page* _page)
+void Display::menuPageChanged(Menu::Page* page_)
 {
-    if (_page->getID() == "home")
-        displayPreset((int)_page->getCurrentChoice(), _page->getCurrentPrintValue());
+    if (page_->getID() == "home")
+        displayPreset((int)page_->getCurrentChoice(), page_->getCurrentPrintValue());
     
     else
-        displayMenuPage(_page);
+        displayMenuPage(page_);
     
-    message_catch = true;
-    display_type = CONSTANT;
+    newMessageCache = true;
+    stateDuration = PERMANENT;
 }
 
-void Display::displayMenuPage (Menu::Page* _page)
+void Display::displayMenuPage(Menu::Page* page_)
 {
     // convert vecotr of strings to array of strings
 //    std::vector<Menu::Page::Item*> items = _page->getItems();
@@ -302,27 +310,26 @@ void Display::displayMenuPage (Menu::Page* _page)
 //    oscTransmitter.add(lower);
 //#endif
 //    
-//    displaycatch.newMessage("/menupage");
-//    displaycatch.add(_page->getName());
-//    displaycatch.add(choices, _page->getNumChoices());
-//    displaycatch.add(_page->getNumChoices());
-////    displaycatch.add(_page->getCurrentChoice());
-//    displaycatch.createRows();
+//    displayCache.newMessage("/menupage");
+//    displayCache.add(_page->getName());
+//    displayCache.add(choices, _page->getNumChoices());
+//    displayCache.add(_page->getNumChoices());
+////    displayCache.add(_page->getCurrentChoice());
+//    displayCache.createRows();
 }
 
-void Display::displayPreset (const int _index, const String _name)
+void Display::displayPreset(const uint index_, const String& name_)
 {
-    
 #ifdef BELA_CONNECTED
     oscTransmitter.newMessage("/preset");
     oscTransmitter.add(_name);
     oscTransmitter.add(_index);
 #endif
     
-    displaycatch.newMessage("/preset");
-    displaycatch.add(_name);
-    displaycatch.add(_index);
-    displaycatch.createRows();
+    displayCache.newMessage("/preset");
+    displayCache.add(name_);
+    displayCache.add((int)index_);
+    displayCache.createRows();
 }
 
 
