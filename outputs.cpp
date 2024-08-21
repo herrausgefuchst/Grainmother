@@ -336,76 +336,108 @@ const uint LED::NUM_BLINKS = 5;
 
 void LED::setup(const String& id_)
 {
+    // set ID
     id = id_;
     
+    // setup counter for the time of one blink
     blinkRateCounter = BLINKING_RATE;
+    
+    // setup counter for the number of blinks
+    // 2 x number of blinks for on and off states
     numBlinksCounter = NUM_BLINKS * 2;
 }
 
+
 void LED::parameterChanged(AudioParameter* param_)
 {
+    // find out which parameter type has changed
+    // - Button and Toggle
     if (instanceof<ButtonParameter>(param_) || instanceof<ToggleParameter>(param_))
     {
+        // just copy the parameter value (0 or 1)
         value = param_->getValueAsFloat();
     }
     
-    else if (instanceof<ChoiceParameter>(param_) 
+    // - Choice but not EffectEditFocus:
+    else if (instanceof<ChoiceParameter>(param_)
              && param_->getParameterID() != "effect_edit_focus")
     {
+        // cast to a ChoiceParameter
         ChoiceParameter* param = static_cast<ChoiceParameter*>(param_);
         
+        // set value to a ratio: parameter value / number of choices
         value = 0.3f + 0.7f * ((param->getValueAsFloat() + 1.f) / (float)param->getNumChoices());
     }
     
+    // - EffectEditFocus:
     else if (param_->getParameterID() == "effect_edit_focus")
     {
+        // check if this LED is an EffectLED
+        // TODO: rather do this via a std::function?
         if ((param_->getValueAsInt() == 0 && id == "effect1")
             || (param_->getValueAsInt() == 1 && id == "effect2")
             || (param_->getValueAsInt() == 2 && id == "effect3"))
         {
+            // set state VALUEFOCUS
+            // if we are still in alert mode, set the state the LED returns to afterwards
             if (state == ALERT) lastState = VALUEFOCUS;
             
+            // else set the state
             else state = VALUEFOCUS;
         }
         
+        // TODO: do we need this?
         else state = VALUE;
     }
 }
 
+
 void LED::potCatchedValue()
 {
+    // TODO: rather do this in a std::function?
     blinkOnce();
 }
 
 
 void LED::alert()
 {
+    // reset blink value
     blinkValue = 0.f;
     
+    // reset counter for the time of one blink
     blinkRateCounter = BLINKING_RATE;
     
+    // Save the previous state.
+    // Avoid overwriting the previous state if ALERT is called repeatedly.
+    // This could cause the system to get stuck in ALERT.
     if (state != ALERT) lastState = state;
     
+    // set state
     state = ALERT;
 }
 
 
 void LED::blinkOnce()
 {
+    // prevent blinking if the current state is alert.
     if (state != ALERT)
     {
+        // set blink value based on the current value (turn on if value > 0).
         blinkValue = value > 0.f ? 1.f : 0.f;
         
+        // reset the counter for the duration of one blink.
         blinkRateCounter = BLINKING_RATE;
         
+        // save the current state before changing it.
         lastState = state;
         
+        // update the state to indicate a single blink.
         state = BLINKONCE;
     }
 }
 
 
-float LED::get()
+float LED::getValue()
 {
     float output = 0.f;
         
@@ -413,61 +445,61 @@ float LED::get()
     {
         case VALUE:
         {
+            // return the current value
             output = value;
-            
             break;
         }
 
         case VALUEFOCUS:
         {
+            // switch the blink value if the time of one blink ran out
             if (--blinkRateCounter == 0)
             {
                 blinkRateCounter = BLINKING_RATE;
-                
                 blinkValue = !blinkValue;
             }
             
+            // effect led can have a value (0 or 1 = bypass on or off)
+            // and a blink function. depending on the value we return
+            // either a softer or stronger blink effect
             if (value > 0.5f) output = 0.68f * value + 0.32f * blinkValue;
-            
             else output = 0.08f * blinkValue + 0.42f;
-            
             break;
         }
             
         case ALERT:
         {
+            // switch the blink value if the time of one blink ran out
             if (--blinkRateCounter == 0)
             {
+                // reset the state after the specified number of blinks
                 if (--numBlinksCounter == 0)
                 {
                     numBlinksCounter = NUM_BLINKS * 2;
-                    
                     state = lastState;
                 }
                 
                 blinkValue = !blinkValue;
-                
                 blinkRateCounter = BLINKING_RATE;
                 
+                // return the blink value
                 output = blinkValue;
             }
-            
             break;
         }
             
         case BLINKONCE:
         {
+            // reset the state if the time of one blink ran out
             if (--blinkRateCounter == 0)
             {
                 blinkValue = !blinkValue;
-                
                 state = lastState;
-                
                 blinkRateCounter = BLINKING_RATE;
             }
             
+            // return blink value
             output = blinkValue;
-            
             break;
         }
 

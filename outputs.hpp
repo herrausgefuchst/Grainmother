@@ -97,14 +97,12 @@ private:
 // Statemachine:
 // VALUE: LED only represents value of connected parameter
 // VALUEFOCUS: LED represents value of connected parameter and blinks (effect edit focus)
-// ALARM: LED blinks LED_NUM_BLINK times and sets back to previous state afterwards (i.e. preset change)
+// ALERT: LED blinks LED_NUM_BLINK times and sets back to previous state afterwards (i.e. preset change)
 // BLINKONCE: LED blinks once ands returns to previous state afterwards
 
 class LED : public UIElement::Listener , public AudioParameter::Listener
 {
 public:
-    String states[4] = {"value", "valuefocus", "alarm", "blinkonce"};
-    
     LED() {}
     ~LED() {}
     
@@ -116,7 +114,7 @@ public:
     
     void blinkOnce();
     
-    float get();
+    float getValue();
     
     void parameterChanged(AudioParameter* param_) override;
     
