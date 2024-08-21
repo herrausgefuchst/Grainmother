@@ -162,10 +162,29 @@ AudioParameter* AudioEngine::getParameter(const String paramGroup_, const String
     }
     
     if (!parametergroup)
-
         engine_rt_error("AudioEngine couldnt find ParameterGroup with index " + paramGroup_, __FILE__, __LINE__, true);
     
     return parametergroup->getParameter(paramID_);
+}
+
+
+AudioParameter* AudioEngine::getParameter(const String& paramGroup_, const uint paramIndex_)
+{
+    AudioParameterGroup* parametergroup = nullptr;
+    
+    for (unsigned int n = 0; n < programParameters.size(); ++n)
+    {
+        if (programParameters[n]->getID() == paramGroup_)
+        {
+            parametergroup = programParameters[n];
+            break;
+        }
+    }
+    
+    if (!parametergroup)
+        engine_rt_error("AudioEngine couldnt find ParameterGroup with index " + paramGroup_, __FILE__, __LINE__, true);
+    
+    return parametergroup->getParameter(paramIndex_);
 }
 
 
@@ -278,26 +297,26 @@ void UserInterface::initializeListeners()
     // Potentiometers -> LED
     for (uint n = 0; n < NUM_POTENTIOMETERS; ++n) potentiometer[n].addListener(&led[LED_ACTION]);
     
-//    // ! DISPLAY MUST BE FIRST LISTENER OF EACH PARAMETER !
-//    // Parameters -> Display
-//    engine->getParameter("tempo")->addListener(&display);
-//    engine->getParameter("globalbypass")->addListener(nullptr);
-//    engine->getParameter("beatrepeat")->addListener(nullptr);
-//    engine->getParame–ter("granulator")->addListener(nullptr);
-//    engine->getParameter("delay")->addListener(nullptr);
-//    engine->getParameter("effecteditfocus")->addListener(nullptr);
-//    for (unsigned int n = 0; n < 9; n++) engine->getParameter(AudioParameterGroup::BEATREPEAT, n)->addListener(&display);
-//    for (unsigned int n = 0; n < 9; n++) engine->getParameter(AudioParameterGroup::GRANULATOR, n)->addListener(&display);
-//    //TODO: add Resonator
-//    
-//    // Parameters -> LEDs
+    // ! DISPLAY MUST BE FIRST LISTENER OF EACH PARAMETER !
+    // Parameters -> Display
+    engine->getParameter("tempo")->addListener(&display);
+    engine->getParameter("global_bypass")->addListener(nullptr);
+    engine->getParameter("effect1_bypass")->addListener(nullptr);
+    engine->getParameter("effect2_bypass")->addListener(nullptr);
+    engine->getParameter("effect3_bypass")->addListener(nullptr);
+    engine->getParameter("effect_edit_focus")->addListener(nullptr);
+    for (unsigned int n = 0; n < NUM_POTENTIOMETERS+1; ++n) engine->getParameter("reverb", n)->addListener(&display);
+    for (unsigned int n = 0; n < NUM_POTENTIOMETERS+1; ++n) engine->getParameter("granulator", n)->addListener(&display);
+    //TODO: add Resonator
+    
+    // Parameters -> LEDs
     engine->getParameter("global_bypass")->addListener(&led[LED_BYPASS]);
     engine->getParameter("effect1_bypass")->addListener(&led[LED_FX1]);
     engine->getParameter("effect2_bypass")->addListener(&led[LED_FX2]);
     engine->getParameter("effect3_bypass")->addListener(&led[LED_FX3]);
     engine->getParameter((uint)ParameterGroupID::REVERB, NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
     engine->getParameter((uint)ParameterGroupID::GRANULATOR, NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
-//    //TODO: add Resonator
+    //TODO: add Resonator
     engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX1]);
     engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX2]);
     engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX3]);
@@ -308,9 +327,9 @@ void UserInterface::initializeListeners()
 //    // Metronome -> LED
 //    engine->getMetronome()->onTic.push_back([this] { led[LED::TEMPO].setBlinkOnce(); });
 //    
-//    // Menu -> Display
-//    menu.addListener(&display);
-//    
+    // Menu -> Display
+    menu.addListener(&display);
+    
     // UserInterface -> Menu
     menu.addListener(this);
     

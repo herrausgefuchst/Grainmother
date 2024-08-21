@@ -74,6 +74,9 @@ public:
     AudioParameter* getParameter(const String paramGroup_, const String paramID_);
     
     
+    AudioParameter* getParameter(const String& paramGroup_, const uint paramIndex_);
+    
+    
     /**
      * @brief Gets the program parameters.
      * @return An array of pointers to the program parameter groups.

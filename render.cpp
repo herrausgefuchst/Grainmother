@@ -24,9 +24,9 @@ bool setup (BelaContext *context, void *userData)
     guiBufferIdx[LEDS] = gui.setBuffer('f', NUM_LEDS);
     for (unsigned int n = DSP1; n <= DSP10; n++) guiBufferIdx[n] = gui.setBuffer('c', DISPLAY_NUM_LETTERS_IN_ROW);
     
-//    // display
-//    DISPLAY_BLOCKS_PER_FRAME = context->audioSampleRate / ( DISPLAY_FRAMERATE * context->audioFrames );
-//    displayBlockCtr = DISPLAY_BLOCKS_PER_FRAME;
+    // display
+    DISPLAY_BLOCKS_PER_FRAME = context->audioSampleRate / ( DISPLAY_FRAMERATE * context->audioFrames );
+    displayBlockCtr = DISPLAY_BLOCKS_PER_FRAME;
     
     // leds
     LED_BLOCKS_PER_FRAME = context->audioSampleRate / ( LED_FRAMERATE * context->audioFrames );
@@ -82,14 +82,16 @@ void render (BelaContext *context, void *userData)
     
     Bela_scheduleAuxiliaryTask(THREAD_processNonAudioTasks);
     
-//    // display
-//    if (--displayBlockCtr <= 0)
-//    {
-//        displayBlockCtr = DISPLAY_BLOCKS_PER_FRAME;
+    // display
+    if (--displayBlockCtr <= 0)
+    {
+        displayBlockCtr = DISPLAY_BLOCKS_PER_FRAME;
+        
+        userinterface.display.update(true);
 //        if(userinterface.display.update(false))
 //            Bela_scheduleAuxiliaryTask(taskUpdateGUIDisplay);
-//    }
-//    
+    }
+    
 //    // update effects
 //    engine.processBlock();
 
@@ -198,7 +200,7 @@ void updateLEDs(void* arg_)
         ledBlockCtr = LED_BLOCKS_PER_FRAME;
         
         for (unsigned int n = 0; n < NUM_LEDS; ++n)
-            ledCache[n] = userinterface.led[n].get();
+            ledCache[n] = userinterface.led[n].getValue();
         
     //    gui.sendBuffer(guiBufferIdx[LEDS], ledCache);
     }

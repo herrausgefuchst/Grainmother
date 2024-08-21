@@ -45,6 +45,8 @@ public:
         
         virtual size_t getCurrentChoice() const { return 0; }
         
+        virtual size_t getNumChoices() const { return 0; }
+        
     protected:
         Menu& menu;
         String id, name;
@@ -86,6 +88,8 @@ public:
         
         void setCurrentChoice(const size_t index_) override { choiceIndex = index_; }
         
+        size_t getNumChoices() const override { return options.size(); }
+        
     private:
         std::vector<Page*> options;
         size_t choiceIndex = 0;
@@ -114,6 +118,8 @@ public:
         size_t getCurrentChoice() const override { return choiceIndex; }
     
         void setCurrentChoice(const size_t index_) override { choiceIndex = index_; }
+        
+        size_t getNumChoices() const override { return choiceNames.size(); }
         
     private:
         size_t choiceIndex = 0;

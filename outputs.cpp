@@ -207,6 +207,13 @@ void Display::parameterChanged(AudioParameter* param_)
 
 void Display::displaySlideParameter(AudioParameter* param_)
 {
+    // order of cache elements
+    // 1. name of parameter
+    // 2. suffix of parameter (unit)
+    // 3. minimum of parameter
+    // 4. maximum of parameter
+    // 5. current value of parameter
+    
     SlideParameter* parameter = static_cast<SlideParameter*>(param_);
     
 #ifdef BELA_CONNECTED
@@ -244,25 +251,40 @@ void Display::displayChoiceParameter(AudioParameter* param_)
 #ifdef BELA_CONNECTED
     oscTransmitter.newMessage("/parameterChange_choice");
     int index = parameter->getValueAsInt();
+    
+    // TODO: what does this do?
     int scrollable = 2;
     if (index == 0) scrollable = 1;
     if (index == parameter->getNumChoices() - 1) scrollable = -1;
     if (parameter->getNumChoices() == 0) scrollable = 0;
+    
+    // order of cache elements
+    // 1. name of parameter
+    // 2. current choice name
+    // 3. flag defining if ne choice is at one edge of the array
     oscTransmitter.add(parameter->getName());
     oscTransmitter.add(choices[index]);
     oscTransmitter.add(scrollable);
 #endif
-    
+    // order of cache elements
+    // 1. name of parameter
+    // 2. an array of choice names, size of array
+    // 3. size of array
+    // 4. current choice index
     displayCache.newMessage("/parameterChange_choice");
     displayCache.add(parameter->getName());
     displayCache.add(choices, parameter->getNumChoices());
-//    displayCache.add(parameter->getNumChoices());
+    displayCache.add((int)parameter->getNumChoices());
     displayCache.add(parameter->getValueAsInt());
     displayCache.createRows();
 }
 
 void Display::displayButtonParameter(AudioParameter* param_)
 {
+    // order of cache elements
+    // 1. name of parameter
+    // 2. current state
+    
     ButtonParameter* parameter = static_cast<ButtonParameter*>(param_);
     
 #ifdef BELA_CONNECTED
@@ -279,7 +301,7 @@ void Display::displayButtonParameter(AudioParameter* param_)
 
 void Display::menuPageChanged(Menu::Page* page_)
 {
-    if (page_->getID() == "home")
+    if (page_->getID() == "load_preset")
         displayPreset((int)page_->getCurrentChoice(), page_->getCurrentPrintValue());
     
     else
@@ -295,35 +317,41 @@ void Display::displayMenuPage(Menu::Page* page_)
 //    std::vector<Menu::Page::Item*> items = _page->getItems();
 //    String choices[_page->getNumChoices()];
 //    for (unsigned int n = 0; n < _page->getNumChoices(); n++) choices[n] = items[n]->name;
-//    
-//#ifdef BELA_CONNECTED
-//    oscTransmitter.newMessage("/menupage");
-//    
-//    int currentChoice = _page->getCurrentChoice();
-//    String current = items[currentChoice]->name;
+    
+    String choiceNames[page_->getNumChoices()];
+    // placeholder!
+    for (uint n = 0; n < page_->getNumChoices(); ++n) choiceNames[n] = page_->getCurrentPrintValue();
+    
+#ifdef BELA_CONNECTED
+    oscTransmitter.newMessage("/menupage");
+    
+//    int currentChoice = (int)page_->getCurrentChoice();
+    String current = page_->getCurrentPrintValue();
 //    String upper = currentChoice == 0 ? "" : items[currentChoice - 1]->name;
 //    String lower = currentChoice == (_page->getNumChoices() - 1) ? "" : items[currentChoice + 1]->name;
-//    
-//    oscTransmitter.add(_page->getName());
-//    oscTransmitter.add(current);
-//    oscTransmitter.add(upper);
-//    oscTransmitter.add(lower);
-//#endif
-//    
-//    displayCache.newMessage("/menupage");
-//    displayCache.add(_page->getName());
-//    displayCache.add(choices, _page->getNumChoices());
-//    displayCache.add(_page->getNumChoices());
-////    displayCache.add(_page->getCurrentChoice());
-//    displayCache.createRows();
+    String upper = current;
+    String lower = current;
+    
+    oscTransmitter.add(page_->getName());
+    oscTransmitter.add(current);
+    oscTransmitter.add(upper);
+    oscTransmitter.add(lower);
+#endif
+    
+    displayCache.newMessage("/menupage");
+    displayCache.add(page_->getName());
+    displayCache.add(choiceNames, page_->getNumChoices());
+    displayCache.add((int)page_->getNumChoices());
+    displayCache.add((int)page_->getCurrentChoice());
+    displayCache.createRows();
 }
 
 void Display::displayPreset(const uint index_, const String& name_)
 {
 #ifdef BELA_CONNECTED
     oscTransmitter.newMessage("/preset");
-    oscTransmitter.add(_name);
-    oscTransmitter.add(_index);
+    oscTransmitter.add(name_);
+    oscTransmitter.add((int)index_);
 #endif
     
     displayCache.newMessage("/preset");
