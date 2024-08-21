@@ -517,46 +517,53 @@ void Menu::buttonClicked (UIElement* _uielement)
 
 void Menu::buttonPressed (UIElement* _uielement)
 {
-    Button* button = static_cast<Button*>(_uielement);
-
-    switch (button->getIndex())
+    if (!onHold)
     {
-        case ButtonID::UP:
-        case ButtonID::DOWN:
+        Button* button = static_cast<Button*>(_uielement);
+
+        switch (button->getIndex())
         {
-            if (isoftype<ParameterPage>(currentPage))
+            case ButtonID::UP:
+            case ButtonID::DOWN:
             {
-                isScrolling = true;
-                scrollDirection = (button->getIndex() == ButtonID::UP) ? UP : DOWN;
+                if (isoftype<ParameterPage>(currentPage))
+                {
+                    isScrolling = true;
+                    scrollDirection = (button->getIndex() == ButtonID::UP) ? UP : DOWN;
+                }
+                break;
             }
-            break;
+            case ButtonID::EXIT:
+            {
+                if (currentPage->getID() == "load_preset") loadPreset();
+                break;
+            }
+            case ButtonID::ENTER:
+            default:
+                break;
         }
-        case ButtonID::EXIT:
-        {
-            if (currentPage->getID() == "load_preset") loadPreset();
-            break;
-        }
-        case ButtonID::ENTER:
-        default:
-            break;
     }
 }
 
 
 void Menu::buttonReleased (UIElement* _uielement)
 {
-    Button* button = static_cast<Button*>(_uielement);
-
-    switch (button->getIndex())
+    if (!onHold)
     {
-        case ButtonID::UP:
-        case ButtonID::DOWN:
+        Button* button = static_cast<Button*>(_uielement);
+
+        switch (button->getIndex())
         {
-            isScrolling = false;
+            case ButtonID::UP:
+            case ButtonID::DOWN:
+            {
+                isScrolling = false;
+            }
+            default:
+                break;
         }
-        default:
-            break;
     }
+    else onHold = false;
 }
 
 

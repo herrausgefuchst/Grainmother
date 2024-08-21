@@ -204,13 +204,37 @@ Effect* AudioEngine::getEffect(const unsigned int index_)
     return effect;
 }
 
+
+// =======================================================================================
 // MARK: - USER INTERFACE
 // =======================================================================================
 
-void UserInterface::setup(AudioEngine *_engine)
+
+void UserInterface::setup(AudioEngine* engine_)
 {
-    engine = _engine;
+    engine = engine_;
   
+    initializeUIElements();
+    
+    initializeMenu();
+    
+    display.setup(menu.getPage("load_preset"));
+    
+    initializeListeners();
+    
+    alertLEDs();
+    
+    // need to tell the effect LEDs which effect is currently focused
+    AudioParameter* effecteditfocus = engine->getParameter("effect_edit_focus");
+    int focus = effecteditfocus->getValueAsInt();
+    if (focus == 0) led[LED_FX1].parameterChanged(effecteditfocus);
+    else if (focus == 1) led[LED_FX2].parameterChanged(effecteditfocus);
+    else if (focus == 2) led[LED_FX3].parameterChanged(effecteditfocus);
+}
+
+
+void UserInterface::initializeUIElements()
+{
     button[ButtonID::FX1].setup(ButtonID::FX1, "Effect 1");
     button[ButtonID::FX2].setup(ButtonID::FX2, "Effect 2");
     button[ButtonID::FX3].setup(ButtonID::FX3, "Effect 3");
@@ -237,7 +261,11 @@ void UserInterface::setup(AudioEngine *_engine)
     led[LED_ACTION].setup("action");
     led[LED_TEMPO].setup("tempo");
     led[LED_BYPASS].setup("bypass");
-    
+}
+
+
+void UserInterface::initializeMenu()
+{
     menu.addPage<Menu::ParameterPage>("effect_order", engine->getParameter("effect_order"));
     
     menu.addPage<Menu::ParameterPage>("reverb_lowcut", engine->getParameter("reverb", "reverb_lowcut"));
@@ -245,26 +273,6 @@ void UserInterface::setup(AudioEngine *_engine)
     menu.addPage<Menu::ParameterPage>("reverb_multgain", engine->getParameter("reverb", "reverb_multgain"));
     
     menu.setup(engine->getProgramParameters());
-    
-    display.setup(menu.getPage("load_preset"));
-    
-    initializeListeners();
-    
-    // load last used Preset
-    loadPresetFromJSON();
-    
-    // need to tell the effect LEDs which effect is currently focused
-    AudioParameter* effecteditfocus = engine->getParameter("effect_edit_focus");
-    int focus = effecteditfocus->getValueAsInt();
-    if (focus == 0) led[LED_FX1].parameterChanged(effecteditfocus);
-    else if (focus == 1) led[LED_FX2].parameterChanged(effecteditfocus);
-    else if (focus == 2) led[LED_FX3].parameterChanged(effecteditfocus);
-}
-
-
-void UserInterface::processNonAudioTasks()
-{
-    if (menu.isScrolling) menu.scroll();
 }
 
 
@@ -285,32 +293,14 @@ void UserInterface::initializeListeners()
     button[ButtonID::ENTER].addListener(&menu);
 //    button[ButtonID::TEMPO].onClick.push_back([this] { engine->getTempoTapper()->tapTempo(); });
     
-    button[ButtonID::UP].onClick.push_back([this] {
-       if (display.getStateDuration() == Display::TEMPORARY)
-       {
-           menu.onHold = true;
-           display.refreshResetDisplayCounter();
-           AudioParameter* param = display.getTemporaryParameter();
-           if (param) 
-           {
-               param->nudgeValue(1);
-               potentiometer[param->getIndex()].decouple(param->getNormalizedValue());
-           }
-       }
-    });
-    button[ButtonID::DOWN].onClick.push_back([this] {
-       if (display.getStateDuration() == Display::TEMPORARY)
-       {
-           menu.onHold = true;
-           display.refreshResetDisplayCounter();
-           AudioParameter* param = display.getTemporaryParameter();
-           if (param)
-           {
-               param->nudgeValue(-1);
-               potentiometer[param->getIndex()].decouple(param->getNormalizedValue());
-           }
-       }
-    });
+    button[ButtonID::UP].onClick.push_back([this] { nudgeUIParameter(1); });
+    button[ButtonID::DOWN].onClick.push_back([this] { nudgeUIParameter(-1); });
+    
+    button[ButtonID::UP].onPress.push_back([this] { scrollUIParameter(1); });
+    button[ButtonID::DOWN].onPress.push_back([this] { scrollUIParameter(-1); });
+    
+    button[ButtonID::UP].onRelease.push_back([this] { stopScrollingUIParameter(); });
+    button[ButtonID::DOWN].onRelease.push_back([this] { stopScrollingUIParameter(); });
     
     // Buttons -> Effect Edit Focus
     button[ButtonID::FX1].onPress.push_back([this] {  engine->getParameter("effect_edit_focus")->setValue(0); });
@@ -326,7 +316,6 @@ void UserInterface::initializeListeners()
     // Potentiometers -> LED
     for (uint n = 0; n < NUM_POTENTIOMETERS; ++n) potentiometer[n].addListener(&led[LED_ACTION]);
     
-    // ! DISPLAY MUST BE FIRST LISTENER OF EACH PARAMETER !
     // Parameters -> Display
     engine->getParameter("tempo")->addListener(&display);
     for (unsigned int n = 0; n < GrainmotherReverb::NUM_PARAMETERS; ++n) engine->getParameter("reverb", n)->addListener(&display);
@@ -358,11 +347,47 @@ void UserInterface::initializeListeners()
     menu.addListener(this);
     
     // Menu -> JSON
-    menu.onLoadMessage.push_back( [this] { loadPresetFromJSON(); } );
+    menu.onLoadMessage.push_back( [this] { alertLEDs(); } );
 }
 
 
-void UserInterface::setEffectEditFocus (const bool _withNotification)
+void UserInterface::processNonAudioTasks()
+{
+    if (menu.isScrolling) menu.scroll();
+    
+    if (scrollingParameter)
+    {
+        scrollingParameter->scroll(scrollingDirection);
+        potentiometer[scrollingParameter->getIndex()].decouple(scrollingParameter->getNormalizedValue());
+    }
+}
+
+
+void UserInterface::globalSettingChanged(Menu::Page* page_)
+{
+    if (page_->getID() == "pot_behaviour")
+    {
+        rt_printf("Pot Behaviour will be changed!\n");
+        Potentiometer::setPotBevaviour(INT2ENUM(page_->getCurrentChoice(), PotBehaviour));
+    }
+    
+    //TODO: midi in
+    //TODO: midi out
+    
+    alertLEDs();
+}
+
+
+void UserInterface::effectOrderChanged()
+{
+    rt_printf("Effect Order will be changed!\n");
+    // TODO: effect order algorithm
+    
+    alertLEDs();
+}
+
+
+void UserInterface::setEffectEditFocus()
 {
     // get a pointer to the effect-edit-focus-parameter
     auto focus = engine->getParameter("effect_edit_focus");
@@ -392,36 +417,55 @@ void UserInterface::setEffectEditFocus (const bool _withNotification)
     led[LED_ACTION].parameterChanged(effect->getParameter(NUM_POTENTIOMETERS));
 }
 
-void UserInterface::nudgeTempo(const int _direction)
+
+void UserInterface::nudgeTempo(const int direction_)
 {
     if (button[ButtonID::TEMPO].getPhase() == Button::LOW)
     {
 //        menu.setBypass(true);
-        engine->getParameter("tempo")->nudgeValue(_direction);
+        engine->getParameter("tempo")->nudgeValue(direction_);
     }
 }
 
-void UserInterface::globalSettingChanged(Menu::Page* page_)
+
+void UserInterface::nudgeUIParameter(const int direction_)
 {
-    if (page_->getID() == "pot_behaviour")
+    if (display.getStateDuration() == Display::TEMPORARY)
     {
-        rt_printf("Pot Behaviour will be changed!\n");
-        Potentiometer::setPotBevaviour(INT2ENUM(page_->getCurrentChoice(), PotBehaviour));
+        menu.onHold = true;
+        display.refreshResetDisplayCounter();
+        AudioParameter* param = display.getTemporaryParameter();
+        if (param)
+        {
+            param->nudgeValue(direction_);
+            potentiometer[param->getIndex()].decouple(param->getNormalizedValue());
+        }
     }
-    
-    //TODO: midi in
-    //TODO: midi out
 }
 
 
-void UserInterface::effectOrderChanged()
+void UserInterface::scrollUIParameter(const int direction_)
 {
-    rt_printf("Effect Order will be changed!\n");
-    // TODO: effect order algorithm
+    if (display.getStateDuration() == Display::TEMPORARY)
+    {
+        menu.onHold = true;
+        display.refreshResetDisplayCounter();
+        this->scrollingParameter = display.getTemporaryParameter();
+        scrollingDirection = direction_;
+    }
 }
 
 
-void UserInterface::loadPresetFromJSON()
+void UserInterface::stopScrollingUIParameter()
+{
+    if (display.getStateDuration() == Display::TEMPORARY)
+    {
+        this->scrollingParameter = nullptr;
+    }
+}
+
+
+void UserInterface::alertLEDs()
 {
     // LED-notification
     for (unsigned int n = 0; n < NUM_LEDS; ++n)

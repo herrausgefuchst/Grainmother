@@ -146,10 +146,12 @@ void Display::DisplayCache::print()
 // MARK: - DISPLAY
 // ********************************************************************************
 
-Display::Display()
+void Display::setup(Menu::Page* presetPage_)
 {
+    presetPage = presetPage_;
+    
 #ifdef BELA_CONNECTED
-    oscTransmitter.setup(DISPLAY_OSC_REMOTE_PORT, OSC_REMOTE_IP);
+    oscTransmitter.setup(7562, "192.168.7.2");
 #endif
 }
 

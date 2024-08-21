@@ -110,28 +110,38 @@ private:
 // MARK: - USER INTERFACE
 // =======================================================================================
 
+
 class UserInterface : public Menu::Listener
 {
 public:
-    void setup(AudioEngine* _engine);
+    void setup(AudioEngine* engine_);
     
     void processNonAudioTasks();
-    
-    void loadPresetFromJSON();
-    
-    void setEffectEditFocus (const bool _withNotification = true);
     
     void globalSettingChanged(Menu::Page* page_) override;
     
     void effectOrderChanged() override;
-    
-    void nudgeTempo (const int _direction);
         
 private:
+    void initializeUIElements();
+    void initializeMenu();
     void initializeListeners();
+    
+    void setEffectEditFocus();
+    
+    void nudgeTempo(const int direction_);
+    void nudgeUIParameter(const int direction_);
+    
+    void scrollUIParameter(const int direction_);
+    void stopScrollingUIParameter();
+    
+    void alertLEDs();
     
     AudioEngine* engine = nullptr;
     Menu menu;
+    
+    AudioParameter* scrollingParameter = nullptr;
+    int scrollingDirection;
 
 public:
     Button button[NUM_BUTTONS];

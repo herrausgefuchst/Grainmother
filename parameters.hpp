@@ -109,8 +109,10 @@ public:
      * @brief Nudges the parameter value by a given direction.
      * @param direction_ The direction to nudge the value.
      */
-    virtual void nudgeValue(const int direction_) {}
+    virtual void nudgeValue(const int direction_) { rt_printf("nudging value\n"); }
 
+    void scroll(const int direction_) { nudgeValue(direction_); }
+    
     /**
      * @brief Gets the name of the parameter.
      * @return The name of the parameter.

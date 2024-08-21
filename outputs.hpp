@@ -18,8 +18,6 @@
 // 3. CONSOLE (via update() function, _withConsole indicates if the Displaycatch should be printed
 
 static const int DISPLAY_AUTOHOMESCREEN = 48; // x * DISPLAY_FRAMERATE
-static const int DISPLAY_OSC_REMOTE_PORT = 7562;
-static const char* OSC_REMOTE_IP = "192.168.7.2.";
 static const int DISPLAY_NUM_ROWS = 10;
 
 class Display : public AudioParameter::Listener
@@ -48,11 +46,11 @@ public:
 
     } displayCache, lastDisplayCache;
     
-    Display();
+    Display() {}
     
     ~Display() {}
     
-    void setup(Menu::Page* presetPage_) { presetPage = presetPage_; }
+    void setup(Menu::Page* presetPage_);
                 
     bool update(const bool withConsole_ = false);
     
