@@ -328,7 +328,7 @@ void UserInterface::initializeListeners()
 //    engine->getMetronome()->onTic.push_back([this] { led[LED::TEMPO].setBlinkOnce(); });
 //    
     // Menu -> Display
-    menu.addListener(&display);
+    menu.onPageChange = [this] { display.menuPageChanged(menu.getCurrentPage()); };
     
     // UserInterface -> Menu
     menu.addListener(this);

@@ -1,7 +1,6 @@
 #pragma once
 
 #define BELA_CONNECTED
-#define CONSOLE_PRINT
 //#define JSON_USED
 
 #include <iostream>

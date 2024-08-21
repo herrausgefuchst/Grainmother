@@ -143,6 +143,8 @@ public:
     
     Page* getPage(const String& id_);
     
+    Page* getCurrentPage() { return currentPage; }
+    
     void setCurrentPage(Page* page_);
     void setCurrentPage(const String& id_);
     
@@ -168,6 +170,9 @@ public:
     
     std::vector<std::function<void()>> onSaveMessage;
     std::vector<std::function<void()>> onLoadMessage;
+    std::function<void()> onPageChange;
+    std::function<void()> onEffectOrderChange;
+    std::function<void()> onGlobalSettingChange;
     
 private:
     void initializePages();
@@ -175,7 +180,7 @@ private:
     void initializePageActions();
     void initializeJSON();
     
-    void print();
+    void display();
 
     void loadPreset();
     void savePreset();

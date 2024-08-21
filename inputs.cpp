@@ -1,5 +1,7 @@
 #include "inputs.hpp"
 
+//#define CONSOLE_PRINT
+
 // MARK: - AUDIO PLAYER
 // ********************************************************************************
 

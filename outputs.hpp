@@ -23,7 +23,6 @@ static const char* OSC_REMOTE_IP = "192.168.7.2.";
 static const int DISPLAY_NUM_ROWS = 10;
 
 class Display   : public AudioParameter::Listener
-                , public Menu::Listener
 {
 public:
     struct DisplayCache
@@ -56,7 +55,7 @@ public:
     bool update(const bool withConsole_ = false);
     
     void parameterChanged(AudioParameter* param_) override;
-    void menuPageChanged(Menu::Page* page_) override;
+    void menuPageChanged(Menu::Page* page_);
     
     void displaySlideParameter(AudioParameter* param_);
     void displayChoiceParameter(AudioParameter* param_);

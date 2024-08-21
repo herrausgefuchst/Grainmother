@@ -1,5 +1,7 @@
 #include "menu.hpp"
 
+#define CONSOLE_PRINT
+
 // =======================================================================================
 // MARK: - MENU::PAGE
 // =======================================================================================
@@ -57,10 +59,8 @@ void Menu::ParameterPage::up()
     // tell parameter to nudge upwards
     parameter->nudgeValue(1);
     
-    // console print
-    #ifdef CONSOLE_PRINT
-    consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
-    #endif
+    // console print / display
+    menu.display();
     
     // call notify-function if connected
     if (onUp) onUp();
@@ -72,10 +72,8 @@ void Menu::ParameterPage::down()
     // tell parameter to nudge downwards
     parameter->nudgeValue(-1);
     
-    // console print
-    #ifdef CONSOLE_PRINT
-    consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
-    #endif
+    // console print / display
+    menu.display();
     
     // call notify-function if connected
     if (onDown) onDown();
@@ -98,10 +96,8 @@ void Menu::NavigationPage::up()
     // decrement the current index (array index is vice versa user control)
     choiceIndex = (choiceIndex == 0) ? options.size() - 1 : choiceIndex - 1;
     
-    // console print
-    #ifdef CONSOLE_PRINT
-    consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
-    #endif
+    // console print / display
+    menu.display();
     
     // call notify-function if connected
     if (onUp) onUp();
@@ -113,10 +109,8 @@ void Menu::NavigationPage::down()
     // increment the current index (array index is vice versa user control)
     choiceIndex = (choiceIndex >= options.size() - 1) ? 0 : choiceIndex + 1;
     
-    // console print
-    #ifdef CONSOLE_PRINT
-    consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
-    #endif
+    // console print / display
+    menu.display();
     
     // call notify-function if connected
     if (onDown) onDown();
@@ -186,10 +180,8 @@ void Menu::SettingPage::up()
     // increment the current index
     choiceIndex = (choiceIndex >= choiceNames.size() - 1) ? 0 : choiceIndex + 1;
     
-    // console print
-    #ifdef CONSOLE_PRINT
-    consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
-    #endif
+    // console print / display
+    menu.display();
     
     // call notify-function if connected
     if (onUp) onUp();
@@ -201,10 +193,8 @@ void Menu::SettingPage::down()
     // decrement the current index
     choiceIndex = (choiceIndex == 0) ? choiceNames.size() - 1 : choiceIndex - 1;
     
-    // console print
-    #ifdef CONSOLE_PRINT
-    consoleprint("Menu Page: '" + name + "', Value: '" + getCurrentPrintValue(), __FILE__, __LINE__);
-    #endif
+    // console print / display
+    menu.display();
     
     // call notify-function if connected
     if (onDown) onDown();
@@ -460,10 +450,8 @@ void Menu::setCurrentPage(Menu::Page* page_)
     // set new page
     currentPage = page_;
     
-    // console print
-    #ifdef CONSOLE_PRINT
-    print();
-    #endif
+    // notify display
+    display();
 }
 
 
@@ -472,10 +460,8 @@ void Menu::setCurrentPage(const String& id_)
     // get and set page with given id
     currentPage = getPage(id_);
     
-    // console print
-    #ifdef CONSOLE_PRINT
-    print();
-    #endif
+    // notify display
+    display();
 }
 
 
@@ -497,16 +483,12 @@ void Menu::buttonClicked (UIElement* _uielement)
         case ButtonID::UP:
         {
             currentPage->up();
-            
-            for (auto i : listeners) i->menuPageChanged(currentPage);
 
             break;
         }
         case ButtonID::DOWN:
         {
             currentPage->down();
-            
-            for (auto i : listeners) i->menuPageChanged(currentPage);
             
             break;
         }
@@ -651,7 +633,12 @@ void Menu::savePreset()
 }
 
 
-inline void Menu::print()
+inline void Menu::display()
 {
+    #ifdef CONSOLE_PRINT
     consoleprint("Menu Page: '" + currentPage->getName() + "', Value: '" + currentPage->getCurrentPrintValue() + "'", __FILE__, __LINE__);
+    #endif
+    
+    // notify display
+    if(onPageChange) onPageChange();
 }
