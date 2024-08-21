@@ -22,9 +22,11 @@ static const int DISPLAY_OSC_REMOTE_PORT = 7562;
 static const char* OSC_REMOTE_IP = "192.168.7.2.";
 static const int DISPLAY_NUM_ROWS = 10;
 
-class Display   : public AudioParameter::Listener
+class Display : public AudioParameter::Listener
 {
 public:
+    enum StateDuration { PERMANENT, TEMPORARY };
+    
     struct DisplayCache
     {
         inline void newMessage(const String& message_);
@@ -54,7 +56,7 @@ public:
             
     bool update(const bool withConsole_ = false);
     
-    void parameterChanged(AudioParameter* param_) override;
+    void parameterCalledDisplay(AudioParameter* param_) override;
     void menuPageChanged(Menu::Page* page_);
     
     void displaySlideParameter(AudioParameter* param_);
@@ -67,7 +69,6 @@ private:
 #ifdef BELA_CONNECTED
     OscSender oscTransmitter;
 #endif
-    enum StateDuration { PERMANENT, TEMPORARY };
     StateDuration stateDuration = TEMPORARY;
     
     unsigned int resetDisplayCounter = 0;

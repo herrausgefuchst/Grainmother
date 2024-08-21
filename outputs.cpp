@@ -53,21 +53,20 @@ void Display::DisplayCache::createRows()
     else if (message == "/parameterChange_choice")
     {
         String name = strings[0];
-        int size = ints[0];
-        int value = ints[1];
+        uint size = ints[0];
+        uint choiceIndex = ints[1] + 1;
+        uint lowerIndex = (choiceIndex == 1) ? size : choiceIndex-1;
+        uint upperIndex = (choiceIndex == size) ? 1 : choiceIndex+1;
         
         rows.push_back("_________________________________________________");
         rows.push_back("|+|");
-        rows.push_back("|+|      " + strings[0]);
+        rows.push_back("|+|      " + name);
         rows.push_back("|+|");
-        int idx = value == 0 ? size : value;
-        rows.push_back("|+|      " + strings[idx]);
-        rows.push_back("|+|  --> " + strings[value+1]);
+        rows.push_back("|+|      " + strings[upperIndex]);
+        rows.push_back("|+|  --> " + strings[choiceIndex]);
         if (size > 2)
         {
-            idx += 2;
-            if (idx > size) idx -= size;
-            rows.push_back("|+|      " + strings[idx]);
+            rows.push_back("|+|      " + strings[lowerIndex]);
         }
         else
             rows.push_back("|+|");
@@ -100,21 +99,20 @@ void Display::DisplayCache::createRows()
     else if (message == "/menupage")
     {
         String name = strings[0];
-        int size = ints[0];
-        int value = ints[1];
+        uint size = ints[0];
+        uint choiceIndex = ints[1] + 1;
+        uint upperIndex = (choiceIndex == 1) ? size : choiceIndex-1;
+        uint lowerIndex = (choiceIndex == size) ? 1 : choiceIndex+1;
         
         rows.push_back("_________________________________________________");
         rows.push_back("|+|");
-        rows.push_back("|+|      " + strings[0]);
+        rows.push_back("|+|      " + name);
         rows.push_back("|+|");
-        int idx = value == 0 ? size : value;
-        rows.push_back("|+|      " + strings[idx]);
-        rows.push_back("|+|  --> " + strings[value+1]);
+        rows.push_back("|+|      " + strings[upperIndex]);
+        rows.push_back("|+|  --> " + strings[choiceIndex]);
         if (size > 2)
         {
-            idx += 2;
-            if (idx > size) idx -= size;
-            rows.push_back("|+|      " + strings[idx]);
+            rows.push_back("|+|      " + strings[lowerIndex]);
         }
         else
             rows.push_back("|+|");
@@ -195,14 +193,14 @@ bool Display::update(const bool withConsole_)
     return needsRefreshment;
 }
 
-void Display::parameterChanged(AudioParameter* param_)
+void Display::parameterCalledDisplay(AudioParameter* param_)
 {
     if (instanceof<SlideParameter>(param_)) displaySlideParameter(param_);
     else if (instanceof<ChoiceParameter>(param_)) displayChoiceParameter(param_);
     else if (instanceof<ButtonParameter>(param_)) displayButtonParameter(param_);
     
     newMessageCache = true;
-    stateDuration = TEMPORARY;
+    stateDuration = (param_->getIndex() > NUM_POTENTIOMETERS) ? PERMANENT : TEMPORARY;
 }
 
 void Display::displaySlideParameter(AudioParameter* param_)
@@ -302,8 +300,14 @@ void Display::displayButtonParameter(AudioParameter* param_)
 void Display::menuPageChanged(Menu::Page* page_)
 {
     if (page_->getID() == "load_preset")
+    {
         displayPreset((int)page_->getCurrentChoice(), page_->getCurrentPrintValue());
-    
+    }
+    else if (instanceof<Menu::ParameterPage>(page_))
+    {
+        Menu::ParameterPage* page = static_cast<Menu::ParameterPage*>(page_);
+        parameterCalledDisplay(page->getParameter());
+    }
     else
         displayMenuPage(page_);
     
@@ -313,24 +317,16 @@ void Display::menuPageChanged(Menu::Page* page_)
 
 void Display::displayMenuPage(Menu::Page* page_)
 {
-    // convert vecotr of strings to array of strings
-//    std::vector<Menu::Page::Item*> items = _page->getItems();
-//    String choices[_page->getNumChoices()];
-//    for (unsigned int n = 0; n < _page->getNumChoices(); n++) choices[n] = items[n]->name;
-    
-    String choiceNames[page_->getNumChoices()];
-    // placeholder!
-    for (uint n = 0; n < page_->getNumChoices(); ++n) choiceNames[n] = page_->getCurrentPrintValue();
+    size_t currentChoice = page_->getCurrentChoice();
+    String* choiceNames = page_->getChoiceNames();
+    size_t numChoices = page_->getNumChoices();
     
 #ifdef BELA_CONNECTED
     oscTransmitter.newMessage("/menupage");
     
-//    int currentChoice = (int)page_->getCurrentChoice();
     String current = page_->getCurrentPrintValue();
-//    String upper = currentChoice == 0 ? "" : items[currentChoice - 1]->name;
-//    String lower = currentChoice == (_page->getNumChoices() - 1) ? "" : items[currentChoice + 1]->name;
-    String upper = current;
-    String lower = current;
+    String upper = (currentChoice == 0) ? "" : choiceNames[currentChoice-1];
+    String lower = (currentChoice == numChoices-1) ? "" : choiceNames[currentChoice+1];
     
     oscTransmitter.add(page_->getName());
     oscTransmitter.add(current);
@@ -340,9 +336,9 @@ void Display::displayMenuPage(Menu::Page* page_)
     
     displayCache.newMessage("/menupage");
     displayCache.add(page_->getName());
-    displayCache.add(choiceNames, page_->getNumChoices());
-    displayCache.add((int)page_->getNumChoices());
-    displayCache.add((int)page_->getCurrentChoice());
+    displayCache.add(choiceNames, numChoices);
+    displayCache.add((int)numChoices);
+    displayCache.add((int)currentChoice);
     displayCache.createRows();
 }
 

@@ -45,7 +45,7 @@ void Reverb::initializeParameters()
     
     // parameters controlled by potentiometers/sliders (index 0...7)
     for (unsigned int n = 0; n < NUM_POTENTIOMETERS; ++n)
-        parameters.addParameter(parameterID[n],
+        parameters.addParameter(n, parameterID[n],
                                 parameterName[n],
                                 parameterSuffix[n],
                                 parameterMin[n],
@@ -55,13 +55,13 @@ void Reverb::initializeParameters()
                                 sampleRate);
     
     // parameter controlled by the Action-Button (index 8)
-    parameters.addParameter(parameterID[NUM_POTENTIOMETERS],
+    parameters.addParameter(NUM_POTENTIOMETERS, parameterID[NUM_POTENTIOMETERS],
                             parameterName[NUM_POTENTIOMETERS],
                             reverbTypeNames, NUM_TYPES);
     
     // parameters controlled by menu (index 9...11)
     for (unsigned int n = NUM_POTENTIOMETERS+1; n < NUM_PARAMETERS; ++n)
-        parameters.addParameter(parameterID[n],
+        parameters.addParameter(n, parameterID[n],
                                 parameterName[n],
                                 parameterSuffix[n],
                                 parameterMin[n],
@@ -127,7 +127,7 @@ void Granulator::initializeParameters()
     
     // parameters controlled by potentiometers/sliders (index 0...7)
     for (unsigned int n = 0; n < NUM_POTENTIOMETERS; ++n)
-        parameters.addParameter(parameterID[n],
+        parameters.addParameter(n, parameterID[n],
                                 parameterName[n],
                                 parameterSuffix[n],
                                 parameterMin[n],
@@ -137,14 +137,14 @@ void Granulator::initializeParameters()
                                 sampleRate);
     
     // parameter controlled by the Action-Button (index 8)
-    parameters.addParameter(parameterID[NUM_POTENTIOMETERS],
+    parameters.addParameter(NUM_POTENTIOMETERS, parameterID[NUM_POTENTIOMETERS],
                             parameterName[NUM_POTENTIOMETERS],
                             ButtonParameter::Type::COUPLED,
                             {"Off", "On"});
     
     // parameters controlled by menu (index 9...11)
     for (unsigned int n = NUM_POTENTIOMETERS+1; n < NUM_PARAMETERS; ++n)
-        parameters.addParameter(parameterID[n],
+        parameters.addParameter(n, parameterID[n],
                                 parameterName[n],
                                 parameterSuffix[n],
                                 parameterMin[n],

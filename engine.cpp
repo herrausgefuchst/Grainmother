@@ -17,33 +17,33 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     // engine parameters
     {
         // tempo
-        engineParameters.addParameter(engineParameterID[ENUM2INT(EngineParameters::TEMPO)],
+        engineParameters.addParameter(10u, engineParameterID[ENUM2INT(EngineParameters::TEMPO)],
                                       engineParameterName[ENUM2INT(EngineParameters::TEMPO)],
                                       "bpm", -300.f, 300.f, 8.f, 60.f, sampleRate);
 
         // global bypass
-        engineParameters.addParameter(engineParameterID[ENUM2INT(EngineParameters::GLOBALBYPASS)],
+        engineParameters.addParameter(11u, engineParameterID[ENUM2INT(EngineParameters::GLOBALBYPASS)],
                                       engineParameterName[ENUM2INT(EngineParameters::GLOBALBYPASS)],
                                       ButtonParameter::COUPLED, { "OFF", "ON" });
 
         // effect bypasses
-        engineParameters.addParameter(engineParameterID[ENUM2INT(EngineParameters::EFFECT1BYPASS)],
+        engineParameters.addParameter(12u, engineParameterID[ENUM2INT(EngineParameters::EFFECT1BYPASS)],
                                       engineParameterName[ENUM2INT(EngineParameters::EFFECT1BYPASS)],
                                       { "OFF", "ON" }, ParameterTypes::TOGGLE);
-        engineParameters.addParameter(engineParameterID[ENUM2INT(EngineParameters::EFFECT2BYPASS)],
+        engineParameters.addParameter(13u, engineParameterID[ENUM2INT(EngineParameters::EFFECT2BYPASS)],
                                       engineParameterName[ENUM2INT(EngineParameters::EFFECT2BYPASS)],
                                       { "OFF", "ON" }, ParameterTypes::TOGGLE);
-        engineParameters.addParameter(engineParameterID[ENUM2INT(EngineParameters::EFFECT3BYPASS)],
+        engineParameters.addParameter(14u, engineParameterID[ENUM2INT(EngineParameters::EFFECT3BYPASS)],
                                       engineParameterName[ENUM2INT(EngineParameters::EFFECT3BYPASS)],
                                       { "OFF", "ON" }, ParameterTypes::TOGGLE);
 
         // effect edit focus
-        engineParameters.addParameter(engineParameterID[ENUM2INT(EngineParameters::EFFECTEDITFOCUS)],
+        engineParameters.addParameter(15u, engineParameterID[ENUM2INT(EngineParameters::EFFECTEDITFOCUS)],
                                       engineParameterName[ENUM2INT(EngineParameters::EFFECTEDITFOCUS)],
                                       { "Reverb", "Granulator", "Resonator" }, ParameterTypes::CHOICE);
         
         // effect order
-        engineParameters.addParameter(engineParameterID[ENUM2INT(EngineParameters::EFFECTORDER)],
+        engineParameters.addParameter(16u, engineParameterID[ENUM2INT(EngineParameters::EFFECTORDER)],
                                       engineParameterName[ENUM2INT(EngineParameters::EFFECTORDER)], {
             "1->2->3",
             "2|3->1",
@@ -300,13 +300,8 @@ void UserInterface::initializeListeners()
     // ! DISPLAY MUST BE FIRST LISTENER OF EACH PARAMETER !
     // Parameters -> Display
     engine->getParameter("tempo")->addListener(&display);
-    engine->getParameter("global_bypass")->addListener(nullptr);
-    engine->getParameter("effect1_bypass")->addListener(nullptr);
-    engine->getParameter("effect2_bypass")->addListener(nullptr);
-    engine->getParameter("effect3_bypass")->addListener(nullptr);
-    engine->getParameter("effect_edit_focus")->addListener(nullptr);
-    for (unsigned int n = 0; n < NUM_POTENTIOMETERS+1; ++n) engine->getParameter("reverb", n)->addListener(&display);
-    for (unsigned int n = 0; n < NUM_POTENTIOMETERS+1; ++n) engine->getParameter("granulator", n)->addListener(&display);
+    for (unsigned int n = 0; n < GrainmotherReverb::NUM_PARAMETERS; ++n) engine->getParameter("reverb", n)->addListener(&display);
+    for (unsigned int n = 0; n < GrainmotherGranulator::NUM_PARAMETERS; ++n) engine->getParameter("granulator", n)->addListener(&display);
     //TODO: add Resonator
     
     // Parameters -> LEDs

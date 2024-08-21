@@ -88,7 +88,10 @@ void Menu::ParameterPage::down()
 Menu::NavigationPage::NavigationPage(const String& id_, const String& name_, std::initializer_list<Page*> options_, Menu& menu_)
     : Page(menu_, id_, name_)
     , options(options_)
-{}
+{
+    for (uint n = 0; n < options.size(); ++n)
+        choiceNames.push_back(options[n]->getName());
+}
 
 
 void Menu::NavigationPage::up()
@@ -177,8 +180,8 @@ Menu::SettingPage::SettingPage(const String& id_, const String& name_,
 
 void Menu::SettingPage::up()
 {
-    // increment the current index
-    choiceIndex = (choiceIndex >= choiceNames.size() - 1) ? 0 : choiceIndex + 1;
+    // decrement the current index
+    choiceIndex = (choiceIndex == 0) ? choiceNames.size() - 1 : choiceIndex - 1;
     
     // console print / display
     menu.display();
@@ -190,8 +193,8 @@ void Menu::SettingPage::up()
 
 void Menu::SettingPage::down()
 {
-    // decrement the current index
-    choiceIndex = (choiceIndex == 0) ? choiceNames.size() - 1 : choiceIndex - 1;
+    // increment the current index
+    choiceIndex = (choiceIndex >= choiceNames.size() - 1) ? 0 : choiceIndex + 1;
     
     // console print / display
     menu.display();

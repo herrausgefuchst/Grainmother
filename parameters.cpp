@@ -9,14 +9,12 @@
 
 void AudioParameter::notifyListeners(const bool withPrint_)
 {
-    // ! DISPLAY MUST BE FIRST LISTENER OF EACH PARAMETER !
-    
-    // if a display print is wanted, all listeners get notified
-    // else, first listener (display) is skipped
-    unsigned int n = withPrint_ ? 0 : 1;
-    
     // notify listener about changed parameter
-    for (; n < listeners.size(); ++n) listeners[n]->parameterChanged(this);
+    for (uint n = 0; n < listeners.size(); ++n)
+    {
+        listeners[n]->parameterChanged(this);
+        if (withPrint_) listeners[n]->parameterCalledDisplay(this);
+    }
     
     // call lambda functions
     for (auto i : onChange) i();
@@ -28,9 +26,9 @@ void AudioParameter::notifyListeners(const bool withPrint_)
 // =======================================================================================
 
 
-ChoiceParameter::ChoiceParameter(const String id_, const String name_, 
+ChoiceParameter::ChoiceParameter(const uint index_, const String id_, const String name_,
                                  const String* choiceNames_, const unsigned int numChoices_)
-    : AudioParameter(id_, name_)
+    : AudioParameter(index_, id_, name_)
     , numChoices(numChoices_)
     , choiceNames(std::make_unique<String[]>(numChoices_))
 {
@@ -163,12 +161,12 @@ void ChoiceParameter::buttonClicked(UIElement* uielement_)
 
 // TODO: check if ramps work
 
-SlideParameter::SlideParameter(const String id_, const String name_, const String unit_,
-                               const float min_, const float max_, 
+SlideParameter::SlideParameter(const uint index_, const String id_, const String name_, const String unit_,
+                               const float min_, const float max_,
                                const float nudgeStep_, const float default_,
                                const float sampleRate_,
                                const Scaling scaling_, const float ramptimeMs_)
-    : AudioParameter(id_, name_)
+    : AudioParameter(index_, id_, name_)
     , unit(unit_), min(min_), max(max_), nudgeStep(round_float_3(nudgeStep_)), range(max_ - min_), ramptimeMs(ramptimeMs_)
     , scaling(scaling_)
 {
@@ -383,9 +381,9 @@ void SlideParameter::nudgeValue(const int direction_)
 
 // TODO: i dont understand the meaning of the parameter types, lets see...
 
-ButtonParameter::ButtonParameter(const String id_, const String name_,
+ButtonParameter::ButtonParameter(const uint index_, const String id_, const String name_,
                                  const Type type_, const String* toggleStateNames_)
-    : AudioParameter(id_, name_)
+    : AudioParameter(index_, id_, name_)
     , type(type_)
 {
     // if its valid, copy the names of toogle states into member array
@@ -528,9 +526,9 @@ String ButtonParameter::getPrintValueAsString() const
 // =======================================================================================
 
 
-ToggleParameter::ToggleParameter(const String id_, const String name_,
+ToggleParameter::ToggleParameter(const uint index_, const String id_, const String name_,
                                  const String* toggleStateNames_)
-    : AudioParameter(id_, name_)
+    : AudioParameter(index_, id_, name_)
 {
     // if its valid, copy the names of toogle states into member array
     if (toggleStateNames_)
@@ -631,7 +629,7 @@ AudioParameterGroup::~AudioParameterGroup()
 }
 
 
-void AudioParameterGroup::addParameter(const String id_, const String name_, const String unit_,
+void AudioParameterGroup::addParameter(const uint index_, const String id_, const String name_, const String unit_,
                                        const float min_, const float max_,
                                        const float nudgeStep_, const float default_,
                                        const float sampleRate_,
@@ -642,11 +640,11 @@ void AudioParameterGroup::addParameter(const String id_, const String name_, con
     
     if (nextFreeIndex >= 0)
         parameterGroup[nextFreeIndex] = new SlideParameter
-        (id_, name_, unit_, min_, max_, nudgeStep_, default_, sampleRate_, scaling_, ramptimeMs_);
+        (index_, id_, name_, unit_, min_, max_, nudgeStep_, default_, sampleRate_, scaling_, ramptimeMs_);
 }
 
 
-void AudioParameterGroup::addParameter(const String id_, const String name_,
+void AudioParameterGroup::addParameter(const uint index_, const String id_, const String name_,
                                        const ButtonParameter::Type type_,
                                        const String* toggleStateNames_)
 {
@@ -654,11 +652,11 @@ void AudioParameterGroup::addParameter(const String id_, const String name_,
     
     if (nextFreeIndex >= 0)
         parameterGroup[nextFreeIndex] = new ButtonParameter
-        (id_, name_, type_, toggleStateNames_);
+        (index_, id_, name_, type_, toggleStateNames_);
 }
 
 
-void AudioParameterGroup::addParameter(const String id_, const String name_,
+void AudioParameterGroup::addParameter(const uint index_, const String id_, const String name_,
                                        const ButtonParameter::Type type_,
                                        std::initializer_list<String> toggleStateNames_)
 {
@@ -666,22 +664,22 @@ void AudioParameterGroup::addParameter(const String id_, const String name_,
     
     if (nextFreeIndex >= 0)
         parameterGroup[nextFreeIndex] = new ButtonParameter
-        (id_, name_, type_, toggleStateNames_.begin());
+        (index_, id_, name_, type_, toggleStateNames_.begin());
 }
 
 
-void AudioParameterGroup::addParameter(const String id_, const String name_,
+void AudioParameterGroup::addParameter(const uint index_, const String id_, const String name_,
                                        const String* array_, const int numChoices_)
 {
     int nextFreeIndex = getNextFreeGroupIndex();
     
     if (nextFreeIndex >= 0)
         parameterGroup[nextFreeIndex] = new ChoiceParameter
-        (id_, name_, array_, numChoices_);
+        (index_, id_, name_, array_, numChoices_);
 }
 
 
-void AudioParameterGroup::addParameter(const String id_, const String name_,
+void AudioParameterGroup::addParameter(const uint index_, const String id_, const String name_,
                                        std::initializer_list<String> choices, ParameterTypes type_)
 {
     int nextFreeIndex = getNextFreeGroupIndex();
@@ -690,11 +688,11 @@ void AudioParameterGroup::addParameter(const String id_, const String name_,
     {
         if (type_ == ParameterTypes::CHOICE)
             parameterGroup[nextFreeIndex] = new ChoiceParameter
-            (id_, name_, choices.begin(), static_cast<int>(choices.size()));
+            (index_, id_, name_, choices.begin(), static_cast<int>(choices.size()));
         
         else if (type_ == ParameterTypes::TOGGLE)
             parameterGroup[nextFreeIndex] = new ToggleParameter
-            (id_, name_, choices.begin());
+            (index_, id_, name_, choices.begin());
         
         else
             engine_rt_error("Parameter of this Type can't be initialized with these variables",

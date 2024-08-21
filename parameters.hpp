@@ -37,7 +37,8 @@ public:
      * @param id_ The ID of the parameter.
      * @param name_ The name of the parameter.
      */
-    AudioParameter(const String id_, const String name_) : id(id_), name(name_) {}
+    AudioParameter(const uint index_, const String id_, const String name_)
+        : index(index_), id(id_), name(name_) {}
 
     /**
      * @brief Virtual destructor for AudioParameter.
@@ -61,6 +62,8 @@ public:
          * @param param_ Pointer to the changed parameter.
          */
         virtual void parameterChanged(AudioParameter* param_) {}
+        
+        virtual void parameterCalledDisplay(AudioParameter* param_) {}
     };
 
     /**
@@ -120,6 +123,10 @@ public:
      */
     String getParameterID() const { return id; }
 
+    
+    uint getIndex() const { return index; }
+    
+    
     /**
      * @brief Gets the current value of the parameter as a float.
      * @return The float value.
@@ -182,6 +189,7 @@ public:
     
 protected:
     std::vector<Listener*> listeners; /**< List of listeners observing this parameter */
+    const uint index;
     const String id, name; /**< The ID and name of the parameter */
 };
 
@@ -204,7 +212,7 @@ public:
      * @param numChoices_ The number of choices available.
      * @param choiceNames_ Pointer to an array of choice names.
      */
-    ChoiceParameter(const String id_, const String name_, const String* choiceNames_, const unsigned int numChoices_);
+    ChoiceParameter(const uint index_, const String id_, const String name_, const String* choiceNames_, const unsigned int numChoices_);
 
     /**
      * @brief Destructor for ChoiceParameter.
@@ -297,7 +305,7 @@ public:
      * @param scaling_ The scaling type (linear or frequency).
      * @param ramptimeMs_ The ramp time in milliseconds for changes
      */
-    SlideParameter(const String id_, const String name_, const String unit_, 
+    SlideParameter(const uint index_, const String id_, const String name_, const String unit_,
                    const float min_, const float max_, const float nudgeStep_,
                    const float default_,
                    const float sampleRate_,
@@ -413,7 +421,7 @@ public:
      * @param name_ The name of the parameter.
      * @param type_ The type of button interaction.
      */
-    ButtonParameter(const String id_, const String name_, const Type type_, const String* toggleStateNames_ = nullptr);
+    ButtonParameter(const uint index_, const String id_, const String name_, const Type type_, const String* toggleStateNames_ = nullptr);
 
     /**
      * @brief Destructor for ButtonParameter.
@@ -450,7 +458,7 @@ class ToggleParameter : public AudioParameter
 public:
     enum ToggleState { INACTIVE, ACTIVE };
     
-    ToggleParameter(const String id_, const String name_, const String* toggleStateNames_ = nullptr);
+    ToggleParameter(const uint index_, const String id_, const String name_, const String* toggleStateNames_ = nullptr);
     
     ~ToggleParameter() {}
         
@@ -526,7 +534,7 @@ public:
      * @param scaling_ The scaling type for the parameter (linear or frequency).
      * @param ramptimeMs_ The ramp time in milliseconds for value changes.
      */
-    void addParameter(const String id_, const String name_, const String unit_,
+    void addParameter(const uint index_, const String id_, const String name_, const String unit_,
                       const float min_, const float max_,
                       const float nudgeStep_, const float default_,
                       const float sampleRate_,
@@ -540,10 +548,10 @@ public:
      * @param type_ The button type (e.g., TOGGLE, MOMENTARY).
      * @param toggleStateNames_ the print Strings of the two toggle states (optional)
      */
-    void addParameter(const String id_, const String name_,
+    void addParameter(const uint index_, const String id_, const String name_,
                       const ButtonParameter::Type type_, const String* toggleStateNames_ = nullptr);
 
-    void addParameter(const String id_, const String name_,
+    void addParameter(const uint index_, const String id_, const String name_,
                       const ButtonParameter::Type type_, std::initializer_list<String> toggleStateNames_);
     
     /**
@@ -553,7 +561,7 @@ public:
      * @param numChoices_ The number of choices available.
      * @param array_ A pointer to an array of choice names.
      */
-    void addParameter(const String id_, const String name_, const String* array_, const int numChoices_);
+    void addParameter(const uint index_, const String id_, const String name_, const String* array_, const int numChoices_);
 
     /**
      * @brief Adds a choice parameter to the group using an initializer list.
@@ -561,7 +569,7 @@ public:
      * @param name_ The name of the parameter.
      * @param choices_ A list of choices for the parameter.
      */
-    void addParameter(const String id_, const String name_, std::initializer_list<String> choices_, ParameterTypes type_);
+    void addParameter(const uint index_, const String id_, const String name_, std::initializer_list<String> choices_, ParameterTypes type_);
     
     /**
      * @brief Retrieves a parameter by its index within the group.

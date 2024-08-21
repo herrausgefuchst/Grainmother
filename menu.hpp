@@ -47,6 +47,8 @@ public:
         
         virtual size_t getNumChoices() const { return 0; }
         
+        virtual String* getChoiceNames() { return nullptr; }
+        
     protected:
         Menu& menu;
         String id, name;
@@ -67,6 +69,8 @@ public:
         
         String getCurrentPrintValue() const override { return parameter->getPrintValueAsString(); }
         
+        AudioParameter* getParameter() { return parameter; }
+        
     private:
         AudioParameter* parameter = nullptr;
     };
@@ -86,12 +90,17 @@ public:
         
         String getCurrentPrintValue() const override { return options[choiceIndex]->getName(); }
         
+        size_t getCurrentChoice() const override { return choiceIndex; }
+        
         void setCurrentChoice(const size_t index_) override { choiceIndex = index_; }
         
         size_t getNumChoices() const override { return options.size(); }
         
+        String* getChoiceNames() override { return choiceNames.data(); }
+        
     private:
         std::vector<Page*> options;
+        std::vector<String> choiceNames;
         size_t choiceIndex = 0;
     };
     
@@ -120,6 +129,8 @@ public:
         void setCurrentChoice(const size_t index_) override { choiceIndex = index_; }
         
         size_t getNumChoices() const override { return choiceNames.size(); }
+        
+        String* getChoiceNames() override { return choiceNames.data(); }
         
     private:
         size_t choiceIndex = 0;
@@ -158,8 +169,6 @@ public:
     {
     public:
         virtual ~Listener() {}
-        
-        virtual void menuPageChanged(Page* page_) {}
         
         virtual void globalSettingChanged(Page* page_) {}
         
