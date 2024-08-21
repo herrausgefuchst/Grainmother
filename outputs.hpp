@@ -65,11 +65,18 @@ public:
     void displayMenuPage(Menu::Page* page_);
     void displayPreset();
     
+    void refreshResetDisplayCounter() { resetDisplayCounter = DISPLAY_AUTOHOMESCREEN; }
+    
+    StateDuration getStateDuration() const { return stateDuration; }
+    AudioParameter* getTemporaryParameter() const { return tempParameter; }
+    
 private:
 #ifdef BELA_CONNECTED
     OscSender oscTransmitter;
 #endif
     StateDuration stateDuration = TEMPORARY;
+    
+    AudioParameter* tempParameter = nullptr;
     
     unsigned int resetDisplayCounter = 0;
     bool newMessageCache = false;

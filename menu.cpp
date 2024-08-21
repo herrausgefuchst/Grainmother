@@ -478,36 +478,40 @@ void Menu::scroll()
 
 void Menu::buttonClicked (UIElement* _uielement)
 {
-    Button* button = static_cast<Button*>(_uielement);
-         
-    // TODO: index/id could be more understandable and clear
-    switch (button->getIndex())
+    if (!onHold)
     {
-        case ButtonID::UP:
+        Button* button = static_cast<Button*>(_uielement);
+             
+        // TODO: index/id could be more understandable and clear
+        switch (button->getIndex())
         {
-            currentPage->up();
+            case ButtonID::UP:
+            {
+                currentPage->up();
 
-            break;
+                break;
+            }
+            case ButtonID::DOWN:
+            {
+                currentPage->down();
+                
+                break;
+            }
+            case ButtonID::EXIT:
+            {
+                currentPage->exit();
+                break;
+            }
+            case ButtonID::ENTER:
+            {
+                currentPage->enter();
+                break;
+            }
+            default:
+                break;
         }
-        case ButtonID::DOWN:
-        {
-            currentPage->down();
-            
-            break;
-        }
-        case ButtonID::EXIT:
-        {
-            currentPage->exit();
-            break;
-        }
-        case ButtonID::ENTER:
-        {
-            currentPage->enter();
-            break;
-        }
-        default:
-            break;
     }
+    else onHold = false;
 }
 
 

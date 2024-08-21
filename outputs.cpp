@@ -178,7 +178,11 @@ bool Display::update(const bool withConsole_)
             if (--resetDisplayCounter == 0)
             {
                 displayPreset();
+                
                 newMessageCache = true;
+                
+                tempParameter = nullptr;
+                
                 stateDuration = PERMANENT;
             }
         }
@@ -194,7 +198,10 @@ void Display::parameterCalledDisplay(AudioParameter* param_)
     else if (instanceof<ButtonParameter>(param_)) displayButtonParameter(param_);
     
     newMessageCache = true;
+    
     stateDuration = (param_->getIndex() > NUM_POTENTIOMETERS) ? PERMANENT : TEMPORARY;
+    
+    tempParameter = param_;
 }
 
 void Display::displaySlideParameter(AudioParameter* param_)

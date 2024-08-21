@@ -285,6 +285,33 @@ void UserInterface::initializeListeners()
     button[ButtonID::ENTER].addListener(&menu);
 //    button[ButtonID::TEMPO].onClick.push_back([this] { engine->getTempoTapper()->tapTempo(); });
     
+    button[ButtonID::UP].onClick.push_back([this] {
+       if (display.getStateDuration() == Display::TEMPORARY)
+       {
+           menu.onHold = true;
+           display.refreshResetDisplayCounter();
+           AudioParameter* param = display.getTemporaryParameter();
+           if (param) 
+           {
+               param->nudgeValue(1);
+               potentiometer[param->getIndex()].decouple(param->getNormalizedValue());
+           }
+       }
+    });
+    button[ButtonID::DOWN].onClick.push_back([this] {
+       if (display.getStateDuration() == Display::TEMPORARY)
+       {
+           menu.onHold = true;
+           display.refreshResetDisplayCounter();
+           AudioParameter* param = display.getTemporaryParameter();
+           if (param)
+           {
+               param->nudgeValue(-1);
+               potentiometer[param->getIndex()].decouple(param->getNormalizedValue());
+           }
+       }
+    });
+    
     // Buttons -> Effect Edit Focus
     button[ButtonID::FX1].onPress.push_back([this] {  engine->getParameter("effect_edit_focus")->setValue(0); });
     button[ButtonID::FX2].onPress.push_back([this] {  engine->getParameter("effect_edit_focus")->setValue(1); });

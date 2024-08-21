@@ -212,6 +212,7 @@ private:
     
 public:
     bool isScrolling = false;
+    bool onHold = false;
 };
 
 
