@@ -45,7 +45,7 @@ bool setup (BelaContext *context, void *userData)
     // aux tasks
     if((THREAD_updateLEDs = Bela_createAuxiliaryTask(&updateLEDs, 89, "updateLEDs", nullptr)) == 0) return false;
     if((THREAD_updateUserInterface = Bela_createAuxiliaryTask(&updateUserInterface, 88, "updateUserInterface", context)) == 0) return false;
-    if((THREAD_processNonAudioTasks = Bela_createAuxiliaryTask(&processNonAudioTasks, 87, "processNonAudioTasks", nullptr)) == 0) return false;
+    if((THREAD_updateNonAudioTasks = Bela_createAuxiliaryTask(&updateNonAudioTasks, 87, "updateNonAudioTasks", nullptr)) == 0) return false;
 //    if((taskUpdateGUIDisplay = Bela_createAuxiliaryTask(&updateGUIdisplay, 88, "update-GUI-display", nullptr)) == 0) return false;
     
     // digital pinmodes
@@ -56,7 +56,7 @@ bool setup (BelaContext *context, void *userData)
     
     engine.setup(context->audioSampleRate, context->audioFrames);
     
-    userinterface.setup(&engine);
+    userinterface.setup(&engine, context->audioSampleRate);
     
     return true;
 }
@@ -74,13 +74,14 @@ void render (BelaContext *context, void *userData)
     
     // update leds
     Bela_scheduleAuxiliaryTask(THREAD_updateLEDs);
+    
+    // update user interface
+    Bela_scheduleAuxiliaryTask(THREAD_updateNonAudioTasks);
         
     // write led analog output
     // this has to live here, running it in the thread doesnt seem to work
     for (unsigned int n = 0; n < NUM_LEDS; ++n)
         analogWrite(context, 0, HARDWARE_PIN_LED[n], ledCache[n]);
-    
-    Bela_scheduleAuxiliaryTask(THREAD_processNonAudioTasks);
     
     // display
     if (--displayBlockCtr <= 0)
@@ -100,6 +101,8 @@ void render (BelaContext *context, void *userData)
     sampleIndex = 0;
     for(; sampleIndex < context->audioFrames; ++sampleIndex)
     {
+        userinterface.processNonAudioTasks();
+        
         // process effects
         StereoFloat output = inputHandler.process(context, sampleIndex);
         
@@ -207,13 +210,13 @@ void updateLEDs(void* arg_)
 }
 
 
-void processNonAudioTasks(void* arg_)
+void updateNonAudioTasks(void* arg_)
 {
     if (--scrollingBlockCtr == 0)
     {
         scrollingBlockCtr = SCROLLING_BLOCKS_PER_FRAME;
         
-        userinterface.processNonAudioTasks();
+        userinterface.updateNonAudioTasks();
     }
 }
 

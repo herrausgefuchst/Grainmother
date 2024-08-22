@@ -55,45 +55,27 @@ void Ramp::setValue(const float value_)
 // MARK: - TEMPOTAPPER
 // ********************************************************************************
   
-void TempoTapper::setup(const float _minBPM, const float _maxBPM, const float _fs)
+void TempoTapper::setup(const float minBPM_, const float maxBPM_, const float sampleRate_)
 {
-    engine_error(_maxBPM == 0 || _minBPM == 0,
-          "max or min BPM cannot be 0",
-          __FILE__, __LINE__, true);
+    sampleRate = sampleRate_;
     
-    fs = _fs;
-    mincounter = (60.f * fs) / _maxBPM;
-    maxcounter = (60.f * fs) / _minBPM;
+    maxBpmCounts = (60.f * sampleRate) / maxBPM_;
+    minBpmCounts = (60.f * sampleRate) / minBPM_;
     // high bpm = low counter!
     //   60 bpm = (60 * fs) / 60
     //    1 bpm = (60 * fs)
     //  120 bpm = (60 * fs) / 120
 }
 
-bool TempoTapper::process()
+
+void TempoTapper::process()
 {
-    if (isCounting)
-        if (++counter > maxcounter)
-            stopCounting();
-    
-    return bpmChanged;
+    if (++tapCounter > minBpmCounts)
+    {
+        isCounting = false;
+    }
 }
 
-inline void TempoTapper::startCounting()
-{
-    if (counter >= mincounter && counter <= maxcounter) calculateNewTempo();
-    
-    isCounting = true;
-    
-    counter = 0;
-}
-
-inline void TempoTapper::stopCounting()
-{
-    isCounting = false;
-
-    counter = -1;
-}
 
 void TempoTapper::calculateNewTempo()
 {
@@ -104,23 +86,39 @@ void TempoTapper::calculateNewTempo()
     //  88200 samples / fs = 2s
     //  60s / 2s = 30 bpm
     
-    float seconds = counter / fs;
-    bpm = 60.f / seconds;
-    bpm = roundf(10.f*bpm) * 0.1f; //TODO: ???
-    
-    bpmChanged = true;
+    tempoSamples = tapCounter;
+    tempoSec = tapCounter / sampleRate;
+    tempoMsec = tempoSec * 1000.f;
+    tempoBpm = 60.f / tempoSec;
+//    bpm = round_float_1(bpm);
 }
 
-float TempoTapper::getBPM()
-{
-    bpmChanged = false;
-    
-    return bpm;
-}
 
-void TempoTapper::tapTempo()
+bool TempoTapper::tapTempo()
 {
-    startCounting();
+    // new tap arrives, different options:
+    // 1. the tap starts the counter
+    // 2. a tap was detected before (in a valid time distance). this would mean, calculate new bpm and restart counter
+    
+    bool newTempoDetected = false;
+    
+    if (isCounting)
+    {
+        if (tapCounter >= maxBpmCounts && tapCounter <= minBpmCounts)
+        {
+            calculateNewTempo();
+            
+            newTempoDetected =  true;
+        }
+    }
+    
+    isCounting = true;
+    
+    tapCounter = 0;
+    
+    rt_printf("new tap received!\n");
+    
+    return newTempoDetected;
 }
 
 

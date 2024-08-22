@@ -17,7 +17,7 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     // engine parameters
     {
         // tempo
-        engineParameters.addParameter(10u, engineParameterID[ENUM2INT(EngineParameters::TEMPO)],
+        engineParameters.addParameter(0u, engineParameterID[ENUM2INT(EngineParameters::TEMPO)],
                                       engineParameterName[ENUM2INT(EngineParameters::TEMPO)],
                                       " bpm", 30.f, 300.f, 1.f, 120.f, sampleRate);
 
@@ -74,16 +74,11 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     for (unsigned int n = 1; n < NUM_EFFECTS+1; ++n)
         programParameters.at(n) = effects.at(n-1)->getEffectParameterGroup();
     
-    // Tempo & Metronome
-    tempoTapper.setup(engineParameters.getParameter("tempo")->getMin(), engineParameters.getParameter("tempo")->getMax(), sampleRate);
     metronome.setup(sampleRate, engineParameters.getParameter("tempo")->getValueAsFloat());
 }
 
 StereoFloat AudioEngine::processAudioSamples(const StereoFloat input_)
 {
-    // Tempotapper
-    if (tempoTapper.process()) getParameter("tempo")->setValue(tempoTapper.getBPM());
-    
     // Metronome
     metronome.process();
     
@@ -210,7 +205,7 @@ Effect* AudioEngine::getEffect(const unsigned int index_)
 // =======================================================================================
 
 
-void UserInterface::setup(AudioEngine* engine_)
+void UserInterface::setup(AudioEngine* engine_, const float sampleRate_)
 {
     engine = engine_;
   
@@ -221,6 +216,9 @@ void UserInterface::setup(AudioEngine* engine_)
     display.setup(menu.getPage("load_preset"));
     
     initializeListeners();
+    
+    // Tempo Tapper
+    tempoTapper.setup(engine->getParameter("tempo")->getMin(), engine->getParameter("tempo")->getMax(), sampleRate_);
     
     alertLEDs(LED::State::ALERT);
     
@@ -286,12 +284,14 @@ void UserInterface::initializeListeners()
 
     // Buttons -> Menu
     button[ButtonID::UP].addListener(&menu);
-//    button[ButtonID::UP].onClick.push_back([this] { nudgeTempo(+1); });
     button[ButtonID::DOWN].addListener(&menu);
-//    button[ButtonID::DOWN].onClick.push_back([this] { nudgeTempo(-1); });
     button[ButtonID::EXIT].addListener(&menu);
     button[ButtonID::ENTER].addListener(&menu);
-//    button[ButtonID::TEMPO].onClick.push_back([this] { engine->getTempoTapper()->tapTempo(); });
+    
+    button[ButtonID::TEMPO].onClick.push_back([this] {
+        bool newTempoDetected = tempoTapper.tapTempo();
+        if (newTempoDetected) engine->getParameter("tempo")->setValue(tempoTapper.getTempoInBpm());
+    });
     
     button[ButtonID::UP].onClick.push_back([this] { nudgeUIParameter(1); });
     button[ButtonID::DOWN].onClick.push_back([this] { nudgeUIParameter(-1); });
@@ -371,8 +371,15 @@ void UserInterface::initializeListeners()
 
 void UserInterface::processNonAudioTasks()
 {
+    // Tempotapper
+    if (tempoTapper.isCounting) tempoTapper.process();
+}
+
+
+void UserInterface::updateNonAudioTasks()
+{
     if (menu.isScrolling) menu.scroll();
-    
+
     if (scrollingParameter)
     {
         scrollingParameter->scroll(scrollingDirection);
@@ -433,16 +440,6 @@ void UserInterface::setEffectEditFocus()
     
     // notify button-led that the parameter changed
     led[LED_ACTION].parameterChanged(effect->getParameter(NUM_POTENTIOMETERS));
-}
-
-
-void UserInterface::nudgeTempo(const int direction_)
-{
-    if (button[ButtonID::TEMPO].getPhase() == Button::LOW)
-    {
-//        menu.setBypass(true);
-        engine->getParameter("tempo")->nudgeValue(direction_);
-    }
 }
 
 

@@ -173,28 +173,34 @@ class TempoTapper
 {
 public:
     TempoTapper() {}
-    TempoTapper (const float _minBPM, const float _maxBPM, const float _fs = 44100.f)
-        { setup(_minBPM, _maxBPM, _fs); }
     
-    void setup (const float _minBPM, const float _maxBPM, const float _fs = 44100.f);
-    bool process();
-    void tapTempo();
-    float getBPM();
-
+    void setup(const float minBPM_, const float maxBPM_, const float sampleRate_);
+    
+    void process();
+    
+    bool tapTempo();
+    
+    float getTempoInBpm() const { return tempoBpm; }
+    float getTempoInSeconds() const { return tempoSec; }
+    float getTempoInMilliseconds() const { return tempoMsec; }
+    uint getTempoInSamples() const { return tempoSamples; }
+    
 private:
-    void startCounting();
-    void stopCounting();
     void calculateNewTempo();
     
-private:
-    float fs;
-    int mincounter, maxcounter;
-
-    float bpm = 120.f;
-    int counter = 0;
+    float sampleRate;
     
+    float tempoBpm;
+    float tempoSec;
+    float tempoMsec;
+    uint tempoSamples;
+    
+    uint maxBpmCounts;
+    uint minBpmCounts;
+    uint tapCounter = 0;
+
+public:
     bool isCounting = false;
-    bool bpmChanged = false;
 };
 
 // MARK: - ChaosGenerator

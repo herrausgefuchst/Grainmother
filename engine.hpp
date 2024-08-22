@@ -89,8 +89,6 @@ public:
      * @return A pointer to the requested Effect.
      */
     Effect* getEffect(const unsigned int index_);
-
-    TempoTapper* getTempoTapper() { return &tempoTapper; }
     
     Metronome* getMetronome() { return &metronome; }
         
@@ -99,7 +97,6 @@ private:
     std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programParameters; /**< Array of program parameter groups */
     AudioParameterGroup engineParameters; /**< Parameters specific to the audio engine */
     
-    TempoTapper tempoTapper; /**< The tempo tapper instance */
     Metronome metronome; /**< The metronome instance */
     
     float sampleRate; /**< Sample rate */
@@ -114,9 +111,11 @@ private:
 class UserInterface : public Menu::Listener
 {
 public:
-    void setup(AudioEngine* engine_);
+    void setup(AudioEngine* engine_, const float sampleRate_);
     
     void processNonAudioTasks();
+    
+    void updateNonAudioTasks();
     
     void globalSettingChanged(Menu::Page* page_) override;
     
@@ -129,7 +128,6 @@ private:
     
     void setEffectEditFocus();
     
-    void nudgeTempo(const int direction_);
     void nudgeUIParameter(const int direction_);
     
     void startScrollingUIParameter(const int direction_);
@@ -139,7 +137,9 @@ private:
     void alertLEDs(LED::State state_);
     
     AudioEngine* engine = nullptr;
+    
     Menu menu;
+    TempoTapper tempoTapper; /**< The tempo tapper instance */
     
     AudioParameter* scrollingParameter = nullptr;
     int scrollingDirection;

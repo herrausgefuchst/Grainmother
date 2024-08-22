@@ -13,7 +13,7 @@
 //void updateGUIdisplay (void* _arg);
 void updateLEDs(void* arg_);
 void updateUserInterface(void* arg_);
-void processNonAudioTasks(void* arg_);
+void updateNonAudioTasks(void* arg_);
 
 namespace BelaVariables
 {
@@ -76,7 +76,7 @@ UserInterface userinterface;
 //AuxiliaryTask taskUpdateGUIDisplay;
 AuxiliaryTask THREAD_updateLEDs;
 AuxiliaryTask THREAD_updateUserInterface;
-AuxiliaryTask THREAD_processNonAudioTasks;
+AuxiliaryTask THREAD_updateNonAudioTasks;
 
 }; // namespace BelaVariables
 
