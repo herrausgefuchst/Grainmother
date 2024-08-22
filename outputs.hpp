@@ -133,26 +133,3 @@ private:
     static const uint BLINKING_RATE; // x * frames (as defined in main.cpp / render.cpp)
     static const uint NUM_BLINKS;
 };
-
-
-// MARK: - METRONOME
-// ********************************************************************************
-
-class Metronome : public AudioParameter::Listener
-{
-public:
-    Metronome (const float _fs = 44100.f, const float _defaultTempo_bpm = 120.f)
-        { setup(_fs, _defaultTempo_bpm); }
-        
-    void setup (const float _fs = 44100.f, const float _defaultTempo_bpm = 120.f);
-    void process();
-    
-    void parameterChanged (AudioParameter* _param);
-    
-    std::vector<std::function<void()>> onTic;
-
-private:
-    int counter = 0;
-    int tempo_samples = 0;
-    float fs;
-};

@@ -73,15 +73,10 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     programParameters.at(0) = (&engineParameters);
     for (unsigned int n = 1; n < NUM_EFFECTS+1; ++n)
         programParameters.at(n) = effects.at(n-1)->getEffectParameterGroup();
-    
-    metronome.setup(sampleRate, engineParameters.getParameter("tempo")->getValueAsFloat());
 }
 
 StereoFloat AudioEngine::processAudioSamples(const StereoFloat input_)
 {
-    // Metronome
-    metronome.process();
-    
     // Effects
     StereoFloat output = input_;
 //    if (getParameter(AudioParameterGroup::ENGINE, BYPASS)->getValueAsInt() == ButtonParameter::UP)
@@ -220,6 +215,8 @@ void UserInterface::setup(AudioEngine* engine_, const float sampleRate_)
     // Tempo Tapper
     tempoTapper.setup(engine->getParameter("tempo")->getMin(), engine->getParameter("tempo")->getMax(), sampleRate_);
     
+    metronome.setup(sampleRate_, engine->getParameter("tempo")->getValueAsFloat());
+
     alertLEDs(LED::State::ALERT);
     
     // need to tell the effect LEDs which effect is currently focused
@@ -290,7 +287,10 @@ void UserInterface::initializeListeners()
     
     button[ButtonID::TEMPO].onClick.push_back([this] {
         bool newTempoDetected = tempoTapper.tapTempo();
-        if (newTempoDetected) engine->getParameter("tempo")->setValue(tempoTapper.getTempoInBpm());
+        if (newTempoDetected) 
+        {
+            engine->getParameter("tempo")->setValue(tempoTapper.getTempoInBpm());
+        }
     });
     
     button[ButtonID::UP].onClick.push_back([this] { nudgeUIParameter(1); });
@@ -350,13 +350,13 @@ void UserInterface::initializeListeners()
     engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX1]);
     engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX2]);
     engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX3]);
-//
-//    // Parameter -> Metronome
-//    engine->getParameter("tempo")->addListener(engine->getMetronome());
-//    
-//    // Metronome -> LED
-//    engine->getMetronome()->onTic.push_back([this] { led[LED::TEMPO].setBlinkOnce(); });
-//    
+
+    // Paraneter Tempo -> Metronome
+    engine->getParameter("tempo")->addListener(&metronome);
+    
+    // Metronome -> LED
+    metronome.onTic = [this] { led[LED_TEMPO].blinkOnce(); };
+    
     // Menu -> Display
     menu.onPageChange = [this] { display.menuPageChanged(menu.getCurrentPage()); };
     
@@ -373,6 +373,9 @@ void UserInterface::processNonAudioTasks()
 {
     // Tempotapper
     if (tempoTapper.isCounting) tempoTapper.process();
+    
+    // Metronome
+    metronome.process();
 }
 
 
@@ -512,4 +515,115 @@ void UserInterface::alertLEDs(LED::State state_)
     else if (state_ == LED::State::BLINKONCE)
         for (unsigned int n = 0; n < NUM_LEDS; ++n)
             led[n].blinkOnce();
+}
+
+
+// MARK: - TEMPOTAPPER
+// ********************************************************************************
+  
+void TempoTapper::setup(const float minBPM_, const float maxBPM_, const float sampleRate_)
+{
+    sampleRate = sampleRate_;
+    
+    maxBpmCounts = (60.f * sampleRate) / maxBPM_;
+    minBpmCounts = (60.f * sampleRate) / minBPM_;
+    // high bpm = low counter!
+    //   60 bpm = (60 * fs) / 60
+    //    1 bpm = (60 * fs)
+    //  120 bpm = (60 * fs) / 120
+}
+
+
+void TempoTapper::process()
+{
+    if (++tapCounter > minBpmCounts)
+    {
+        isCounting = false;
+    }
+}
+
+
+void TempoTapper::calculateNewTempo()
+{
+    //  44100 samples / fs = 1s
+    //  60s / 1s = 60 bpm
+    //  22050 samples / fs = 0.5s
+    //  60s / 0.5s = 120 bpm
+    //  88200 samples / fs = 2s
+    //  60s / 2s = 30 bpm
+    
+    tempoSamples = tapCounter;
+    tempoSec = tapCounter / sampleRate;
+    tempoMsec = tempoSec * 1000.f;
+    tempoBpm = 60.f / tempoSec;
+//    bpm = round_float_1(bpm);
+}
+
+
+bool TempoTapper::tapTempo()
+{
+    // new tap arrives, different options:
+    // 1. the tap starts the counter
+    // 2. a tap was detected before (in a valid time distance). this would mean, calculate new bpm and restart counter
+    
+    bool newTempoDetected = false;
+    
+    if (isCounting)
+    {
+        if (tapCounter >= maxBpmCounts && tapCounter <= minBpmCounts)
+        {
+            calculateNewTempo();
+            
+            newTempoDetected =  true;
+        }
+    }
+    
+    isCounting = true;
+    
+    tapCounter = 0;
+    
+    rt_printf("new tap received!\n");
+    
+    return newTempoDetected;
+}
+
+
+// MARK: - METRONOME
+// ********************************************************************************
+
+// TODO: check in BELA if LEDs and Metronome works correctly
+
+void Metronome::setup(const float sampleRate_, const float defaultTempoBpm_)
+{
+    sampleRate = sampleRate_;
+    
+    tempoSamples = (int)((sampleRate * 60.f) / defaultTempoBpm_);
+    
+    counter = tempoSamples;
+}
+
+
+void Metronome::process()
+{
+    if (--counter == 0)
+    {
+        counter = tempoSamples;
+        onTic();
+    }
+}
+
+
+void Metronome::setTempoSamples(const float tempoSamples_)
+{
+    tempoSamples = tempoSamples_;
+    
+    counter = tempoSamples_;
+}
+
+
+void Metronome::parameterChanged(AudioParameter *param_)
+{
+    float tempoBpm = param_->getValueAsFloat();
+    
+    setTempoSamples((int)(sampleRate * 60.f) / tempoBpm);
 }

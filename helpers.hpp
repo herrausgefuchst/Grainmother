@@ -166,42 +166,6 @@ public:
     bool rampFinished = true;
 };
 
-// MARK: - TempoTapper
-// ********************************************************************************
-
-class TempoTapper
-{
-public:
-    TempoTapper() {}
-    
-    void setup(const float minBPM_, const float maxBPM_, const float sampleRate_);
-    
-    void process();
-    
-    bool tapTempo();
-    
-    float getTempoInBpm() const { return tempoBpm; }
-    float getTempoInSeconds() const { return tempoSec; }
-    float getTempoInMilliseconds() const { return tempoMsec; }
-    uint getTempoInSamples() const { return tempoSamples; }
-    
-private:
-    void calculateNewTempo();
-    
-    float sampleRate;
-    
-    float tempoBpm;
-    float tempoSec;
-    float tempoMsec;
-    uint tempoSamples;
-    
-    uint maxBpmCounts;
-    uint minBpmCounts;
-    uint tapCounter = 0;
-
-public:
-    bool isCounting = false;
-};
 
 // MARK: - ChaosGenerator
 // ********************************************************************************

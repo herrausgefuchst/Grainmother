@@ -89,24 +89,83 @@ public:
      * @return A pointer to the requested Effect.
      */
     Effect* getEffect(const unsigned int index_);
-    
-    Metronome* getMetronome() { return &metronome; }
         
 private:
     std::array<std::unique_ptr<Effect>, NUM_EFFECTS> effects; /**< Array of unique pointers to effects */
     std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programParameters; /**< Array of program parameter groups */
     AudioParameterGroup engineParameters; /**< Parameters specific to the audio engine */
-    
-    Metronome metronome; /**< The metronome instance */
-    
+        
     float sampleRate; /**< Sample rate */
     unsigned int blockSize; /**< Block size */
 };
+
+
+// =======================================================================================
+// MARK: - TempoTapper
+// =======================================================================================
+
+class TempoTapper
+{
+public:
+    void setup(const float minBPM_, const float maxBPM_, const float sampleRate_);
+    
+    void process();
+    
+    bool tapTempo();
+    
+    float getTempoInBpm() const { return tempoBpm; }
+    float getTempoInSeconds() const { return tempoSec; }
+    float getTempoInMilliseconds() const { return tempoMsec; }
+    uint getTempoInSamples() const { return tempoSamples; }
+    
+private:
+    void calculateNewTempo();
+    
+    float sampleRate;
+    
+    float tempoBpm;
+    float tempoSec;
+    float tempoMsec;
+    uint tempoSamples;
+    
+    uint maxBpmCounts;
+    uint minBpmCounts;
+    uint tapCounter = 0;
+
+public:
+    bool isCounting = false;
+};
+
+
+// =======================================================================================
+// MARK: - METRONOME
+// =======================================================================================
+
+class Metronome : public AudioParameter::Listener
+{
+public:
+    void setup(const float sampleRate_, const float defaultTempoBpm_);
+    
+    void process();
+    
+    void setTempoSamples(const float tempoSamples_);
+    
+    void parameterChanged(AudioParameter* param_) override;
+    
+    std::function<void()> onTic;
+
+private:
+    float sampleRate;
+    uint counter = 0;
+    uint tempoSamples = 0;
+};
+
 
 // =======================================================================================
 // MARK: - USER INTERFACE
 // =======================================================================================
 
+class Metronome;
 
 class UserInterface : public Menu::Listener
 {
@@ -140,6 +199,7 @@ private:
     
     Menu menu;
     TempoTapper tempoTapper; /**< The tempo tapper instance */
+    Metronome metronome;
     
     AudioParameter* scrollingParameter = nullptr;
     int scrollingDirection;
@@ -150,5 +210,6 @@ public:
     LED led[NUM_LEDS];
     Display display;
 };
+
 
 #endif /* engine_hpp */

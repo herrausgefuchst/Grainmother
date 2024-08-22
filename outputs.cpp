@@ -539,37 +539,3 @@ float LED::getValue()
     
     return output;
 }
-
-
-// MARK: - METRONOME
-// ********************************************************************************
-
-// TODO: check in BELA if LEDs and Metronome works correctly
-
-void Metronome::setup (const float _fs, const float _defaultTempo_bpm)
-{
-    fs = _fs;
-    tempo_samples = (int)(fs * 60.f) / _defaultTempo_bpm;
-    counter = tempo_samples;
-}
-
-void Metronome::process()
-{
-    if (--counter <= 0)
-    {
-        counter = tempo_samples;
-        for (auto i : onTic) i();
-    }
-}
-
-void Metronome::parameterChanged (AudioParameter* _param)
-{
-    float tempo_bpm = _param->getValueAsFloat();
-    
-    // 60 bpm = 1 tic p sec = 44100 samples
-    // 120 bpm = 2 tics p sec = 22050 samples
-    // 30 bpm = 0.5 tics p sec = 88200 samples
-    // x bpm = x / 60 tics p sec = fs / (x / 60) = fs * 60 / x
-    tempo_samples = (int)((fs * 60.f) / tempo_bpm);
-    counter = tempo_samples;
-}
