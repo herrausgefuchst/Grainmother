@@ -136,7 +136,7 @@ private:
     void stopScrollingUIParameter();
     void setDefaultUIParameter();
     
-    void alertLEDs();
+    void alertLEDs(LED::State state_);
     
     AudioEngine* engine = nullptr;
     Menu menu;

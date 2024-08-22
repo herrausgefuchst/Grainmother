@@ -129,6 +129,12 @@ void Potentiometer::update(const float guivalue_, const float analogvalue_)
             // notify listeners (i.e. LEDs)
             for (auto i : listeners) i->potCatchedValue();
         }
+        // if nothing of this is true, at least call any connected function
+        // that should react on a touch (i.e. display)
+        else
+        {
+            onTouch();
+        }
     }
     #endif // USING_ANALOG_INS
 }

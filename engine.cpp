@@ -19,7 +19,7 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
         // tempo
         engineParameters.addParameter(10u, engineParameterID[ENUM2INT(EngineParameters::TEMPO)],
                                       engineParameterName[ENUM2INT(EngineParameters::TEMPO)],
-                                      "bpm", -300.f, 300.f, 8.f, 60.f, sampleRate);
+                                      " bpm", 30.f, 300.f, 1.f, 120.f, sampleRate);
 
         // global bypass
         engineParameters.addParameter(11u, engineParameterID[ENUM2INT(EngineParameters::GLOBALBYPASS)],
@@ -46,13 +46,13 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
         engineParameters.addParameter(16u, engineParameterID[ENUM2INT(EngineParameters::EFFECTORDER)],
                                       engineParameterName[ENUM2INT(EngineParameters::EFFECTORDER)], {
             "1->2->3",
-            "2|3->1",
-            "1|3->2",
-            "1|2->3",
-            "3->1|2",
-            "2->1|3",
-            "1->2|3",
-            "1|2|3",
+            "2 | 3->1",
+            "1 | 3->2",
+            "1 | 2->3",
+            "3->1 | 2",
+            "2->1 | 3",
+            "1->2 | 3",
+            "1 | 2 | 3",
             "3->2->1",
             "3->1->2",
             "2->3->1",
@@ -222,7 +222,7 @@ void UserInterface::setup(AudioEngine* engine_)
     
     initializeListeners();
     
-    alertLEDs();
+    alertLEDs(LED::State::ALERT);
     
     // need to tell the effect LEDs which effect is currently focused
     AudioParameter* effecteditfocus = engine->getParameter("effect_edit_focus");
@@ -318,6 +318,21 @@ void UserInterface::initializeListeners()
     // Potentiometers -> LED
     for (uint n = 0; n < NUM_POTENTIOMETERS; ++n) potentiometer[n].addListener(&led[LED_ACTION]);
     
+    for (uint n = 0; n < NUM_POTENTIOMETERS; ++n)
+    {
+        potentiometer[n].onTouch = [this, n] 
+        {
+            int focus = engine->getParameter("effect_edit_focus")->getValueAsInt();
+        
+            auto effect = engine->getEffect(focus);
+            
+            AudioParameter* connectedParam = effect->getParameter(n);
+            
+            display.parameterCalledDisplay(connectedParam);
+        };
+    }
+    
+    
     // Parameters -> Display
     engine->getParameter("tempo")->addListener(&display);
     for (unsigned int n = 0; n < GrainmotherReverb::NUM_PARAMETERS; ++n) engine->getParameter("reverb", n)->addListener(&display);
@@ -348,8 +363,9 @@ void UserInterface::initializeListeners()
     // UserInterface -> Menu
     menu.addListener(this);
     
-    // Menu -> JSON
-    menu.onLoadMessage.push_back( [this] { alertLEDs(); } );
+    // Menu -> LEDs
+    menu.onLoadMessage.push_back( [this] { alertLEDs(LED::ALERT); } );
+    menu.onSaveMessage.push_back( [this] { alertLEDs(LED::ALERT); } );
 }
 
 
@@ -376,7 +392,7 @@ void UserInterface::globalSettingChanged(Menu::Page* page_)
     //TODO: midi in
     //TODO: midi out
     
-    alertLEDs();
+    alertLEDs(LED::BLINKONCE);
 }
 
 
@@ -385,7 +401,7 @@ void UserInterface::effectOrderChanged()
     rt_printf("Effect Order will be changed!\n");
     // TODO: effect order algorithm
     
-    alertLEDs();
+    alertLEDs(LED::BLINKONCE);
 }
 
 
@@ -490,9 +506,13 @@ void UserInterface::setDefaultUIParameter()
 }
 
 
-void UserInterface::alertLEDs()
+void UserInterface::alertLEDs(LED::State state_)
 {
-    // LED-notification
-    for (unsigned int n = 0; n < NUM_LEDS; ++n)
-        led[n].alert();
+    if (state_ == LED::State::ALERT)
+        for (unsigned int n = 0; n < NUM_LEDS; ++n)
+            led[n].alert();
+    
+    else if (state_ == LED::State::BLINKONCE)
+        for (unsigned int n = 0; n < NUM_LEDS; ++n)
+            led[n].blinkOnce();
 }

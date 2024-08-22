@@ -1,6 +1,6 @@
 #include "menu.hpp"
 
-#define CONSOLE_PRINT
+//#define CONSOLE_PRINT
 
 // =======================================================================================
 // MARK: - MENU::PAGE
@@ -263,7 +263,7 @@ inline void Menu::initializeJSON()
 void Menu::initializePages()
 {
     // Reverb Additional Parameters
-    addPage<NavigationPage>("reverb_additionalParameters", "Reverb - Additional Parameters", std::initializer_list<Page*>{
+    addPage<NavigationPage>("reverb_additionalParameters", "Reverb", std::initializer_list<Page*>{
         getPage("reverb_lowcut"),
         getPage("reverb_multfreq"),
         getPage("reverb_multgain")
@@ -275,7 +275,7 @@ void Menu::initializePages()
                          (size_t)JSONglobals["midiInChannel"] - 1, 1);
     addPage<SettingPage>("midi_out_channel", "MIDI Output Channel", nullptr, 16,
                          (size_t)JSONglobals["midiOutChannel"] - 1, 1);
-    addPage<SettingPage>("pot_behaviour", "Potentiometer Behaviour",
+    addPage<SettingPage>("pot_behaviour", "Pot Behaviour",
                          std::initializer_list<String>{ "Jump", "Catch" },
                          2, (size_t)JSONglobals["potBehaviour"], 0);
     
@@ -539,6 +539,13 @@ void Menu::buttonPressed (UIElement* _uielement)
                 break;
             }
             case ButtonID::ENTER:
+            {
+                if (isoftype<ParameterPage>(currentPage))
+                {
+                    ParameterPage* page = static_cast<ParameterPage*>(currentPage);
+                    page->getParameter()->setDefault();
+                }
+            }
             default:
                 break;
         }

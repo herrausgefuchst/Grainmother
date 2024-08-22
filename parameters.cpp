@@ -1,6 +1,6 @@
 #include "parameters.hpp"
 
-#define CONSOLE_PRINT
+//#define CONSOLE_PRINT
 
 // =======================================================================================
 // MARK: - Audio Parameter (Base Class)
@@ -219,12 +219,14 @@ void SlideParameter::setValue(float value_, const bool withPrint_)
         case Scaling::LIN:
         {
             normalizedValue = mapValue(value_, min, max, 0.f, 1.f);
+            boundValue(normalizedValue, 0.f, 1.f);
             break;
         }
         case Scaling::FREQ:
         {
             float a = powf_neon(2.f, logbase(range + 1.f, 2.f));
             normalizedValue = logbase(value_ + 1.f - min, a);
+            boundValue(normalizedValue, 0.f, 1.f);
             break;
         }
         default:

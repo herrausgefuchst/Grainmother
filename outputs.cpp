@@ -146,23 +146,6 @@ void Display::DisplayCache::print()
 // MARK: - DISPLAY
 // ********************************************************************************
 
-// in OLED
-// TODO: empty space of suffix
-// TODO: bidirectional slide parameters should have slider above and values down
-// TODO: send over the normalized value for showing logarithmic values
-// TODO: arrow i.e. in effect order disappears sometimes
-
-// in here
-// TODO: send over the normalized value for showing logarithmic values
-// TODO: see the parameter also when pot changed, not only when catched
-// TODO: adjust nudge values
-// TODO: add spaces in names of effect order |
-// TODO: arrow i.e. in effect order disappears sometimes
-// TODO: Reverb Additional Parameters: name too long
-// TODO: reset menu effect parameters on long press of button enter
-// TODO: Pontentiometer Behaviour, name too long
-// TODO: global setting change: only blink once for leds
-
 
 void Display::setup(Menu::Page* presetPage_)
 {
@@ -226,16 +209,15 @@ void Display::parameterCalledDisplay(AudioParameter* param_)
 
 void Display::displaySlideParameter(AudioParameter* param_)
 {
-    // order of cache elements
-    // 1. name of parameter
-    // 2. suffix of parameter (unit)
-    // 3. minimum of parameter
-    // 4. maximum of parameter
-    // 5. current value of parameter
-    
     SlideParameter* parameter = static_cast<SlideParameter*>(param_);
     
 #ifdef BELA_CONNECTED
+    // order of cache elements
+    // 1. name of parameter
+    // 2. suffix of parameter (unit)
+    // 3. current value of parameter
+    // 4. normalized value of parameter
+    
     // parameter is bipolar
     if (parameter->getMin() < 0.f) oscTransmitter.newMessage("/parameterChange_bipolar");
     // parameter is unipolar
@@ -243,10 +225,15 @@ void Display::displaySlideParameter(AudioParameter* param_)
     
     oscTransmitter.add(parameter->getName());
     oscTransmitter.add(parameter->getUnit());
-    oscTransmitter.add(parameter->getMin());
-    oscTransmitter.add(parameter->getMax());
     oscTransmitter.add(parameter->getPrintValueAsFloat());
+    oscTransmitter.add(parameter->getNormalizedValue());
 #endif
+    // order of cache elements
+    // 1. name of parameter
+    // 2. suffix of parameter (unit)
+    // 3. minimum of parameter
+    // 4. max of parameter
+    // 5. value of parameter
     
     // parameter is bipolar
     if (parameter->getMin() < 0.f) displayCache.newMessage("/parameterChange_bipolar");
@@ -271,19 +258,11 @@ void Display::displayChoiceParameter(AudioParameter* param_)
     oscTransmitter.newMessage("/parameterChange_choice");
     int index = parameter->getValueAsInt();
     
-    // TODO: what does this do?
-    int scrollable = 2;
-    if (index == 0) scrollable = 1;
-    if (index == parameter->getNumChoices() - 1) scrollable = -1;
-    if (parameter->getNumChoices() == 0) scrollable = 0;
-    
     // order of cache elements
     // 1. name of parameter
     // 2. current choice name
-    // 3. flag defining if ne choice is at one edge of the array
     oscTransmitter.add(parameter->getName());
     oscTransmitter.add(choices[index]);
-    oscTransmitter.add(scrollable);
 #endif
     // order of cache elements
     // 1. name of parameter

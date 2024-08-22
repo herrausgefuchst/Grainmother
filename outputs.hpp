@@ -99,6 +99,8 @@ private:
 class LED : public UIElement::Listener , public AudioParameter::Listener
 {
 public:
+    enum State { VALUE, VALUEFOCUS, ALERT, BLINKONCE };
+
     LED() {}
     ~LED() {}
     
@@ -122,7 +124,6 @@ private:
     float value = 0.f;
     float blinkValue = 0.f;
     
-    enum State { VALUE, VALUEFOCUS, ALERT, BLINKONCE };
     State state = VALUE;
     State lastState = state;
     

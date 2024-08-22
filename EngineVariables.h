@@ -198,15 +198,15 @@ static const float parameterMax[NUM_PARAMETERS] = {
 static const float parameterStep[NUM_PARAMETERS] = {
     0.1f,
     1.f,
-    1.f,
+    0.5f,
     0.5f,
     1.f,
     0.01f,
-    1.f,
-    0.01f,
-    1.f,
+    10.f,
     1.f,
     1.f,
+    10.f,
+    10.f,
     0.5f
 };
 
@@ -214,15 +214,15 @@ static const float parameterStep[NUM_PARAMETERS] = {
 static const std::string parameterSuffix[NUM_PARAMETERS] = {
     " sec",
     " msec",
-    " hz",
+    " hertz",
     " %",
     " %",
     "",
-    " hz",
+    " hertz",
     " %",
     "",
-    " hz",
-    " hz",
+    " hertz",
+    " hertz",
     " dB"
 };
 
@@ -233,7 +233,7 @@ static const float parameterInitialValue[NUM_PARAMETERS] = {
     5.f,
     0.f,
     100.f,
-    0.2f,
+    0.f,
     20000.f,
     65.f,
     3.f,
@@ -324,16 +324,16 @@ static const float parameterMax[NUM_PARAMETERS] = {
 
 /** @brief step values of parameters */
 static const float parameterStep[NUM_PARAMETERS] = {
-    0.2f,
     0.5f,
     0.5f,
-    0.5f,
-    0.01f,
-    0.01f,
-    0.01f,
-    0.1f,
     1.f,
-    1.f
+    0.5f,
+    0.01f,
+    0.01f,
+    0.01f,
+    1.f,
+    1.f,
+    10.f
 };
 
 /** @brief units of parameters */

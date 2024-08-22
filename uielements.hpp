@@ -184,6 +184,7 @@ public:
     float getLastValue() const { return last; }
     
     std::vector<std::function<void()>> onChange; /**< List of functions to call on value change */
+    std::function<void()> onTouch;
     
 private:
     float current = 0.f; /**< Current value of the potentiometer */
