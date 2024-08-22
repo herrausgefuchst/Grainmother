@@ -73,7 +73,8 @@ void render (BelaContext *context, void *userData)
     Bela_scheduleAuxiliaryTask(THREAD_updateUserInterface);
     
     // update leds
-    Bela_scheduleAuxiliaryTask(THREAD_updateLEDs);
+//    Bela_scheduleAuxiliaryTask(THREAD_updateLEDs);
+    updateLEDs(nullptr);
     
     // update user interface
     Bela_scheduleAuxiliaryTask(THREAD_updateNonAudioTasks);

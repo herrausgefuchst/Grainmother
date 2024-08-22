@@ -293,6 +293,10 @@ void UserInterface::initializeListeners()
         }
     });
     
+    button[ButtonID::TEMPO].onPress.push_back([this] {
+        display.parameterCalledDisplay(engine->getParameter("tempo"));
+    });
+    
     button[ButtonID::UP].onClick.push_back([this] { nudgeUIParameter(1); });
     button[ButtonID::DOWN].onClick.push_back([this] { nudgeUIParameter(-1); });
     
@@ -605,19 +609,19 @@ void Metronome::setup(const float sampleRate_, const float defaultTempoBpm_)
 
 void Metronome::process()
 {
-    if (--counter == 0)
-    {
-        counter = tempoSamples;
-        onTic();
-    }
+    if (counter == tempoSamples) onTic();
+    
+    if (--counter == 0) counter = tempoSamples;
 }
 
 
-void Metronome::setTempoSamples(const float tempoSamples_)
+void Metronome::setTempoSamples(const uint tempoSamples_)
 {
     tempoSamples = tempoSamples_;
     
     counter = tempoSamples_;
+    
+    rt_printf("tempo in samples = %i", tempoSamples);
 }
 
 
@@ -625,5 +629,5 @@ void Metronome::parameterChanged(AudioParameter *param_)
 {
     float tempoBpm = param_->getValueAsFloat();
     
-    setTempoSamples((int)(sampleRate * 60.f) / tempoBpm);
+    setTempoSamples((uint)((sampleRate * 60.f) / tempoBpm));
 }

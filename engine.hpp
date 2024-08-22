@@ -148,7 +148,7 @@ public:
     
     void process();
     
-    void setTempoSamples(const float tempoSamples_);
+    void setTempoSamples(const uint tempoSamples_);
     
     void parameterChanged(AudioParameter* param_) override;
     

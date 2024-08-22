@@ -28,7 +28,7 @@ static const int HARDWARE_PIN_LED[] = { 0, 1, 2, 3, 4, 5 };
 // framerates = num updates per second
 // ! for buttons: be sure to also change debouncetime and longpresstime when changing framerate !
 static const unsigned int DISPLAY_FRAMERATE = 12;
-static const unsigned int LED_FRAMERATE = 10;
+static const unsigned int LED_FRAMERATE = 200;
 static const unsigned int UI_FRAMERATE = 40;
 static const unsigned int SCROLLING_FRAMERATE = 30;
 

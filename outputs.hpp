@@ -127,9 +127,10 @@ private:
     State state = VALUE;
     State lastState = state;
     
-    unsigned int blinkRateCounter;
+    unsigned int rateCounter;
     unsigned int numBlinksCounter;
     
     static const uint BLINKING_RATE; // x * frames (as defined in main.cpp / render.cpp)
+    static const uint ALERT_RATE;
     static const uint NUM_BLINKS;
 };

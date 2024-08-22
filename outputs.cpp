@@ -361,8 +361,9 @@ void Display::displayPreset()
 // ********************************************************************************
 
 
-const uint LED::BLINKING_RATE = 1;
-const uint LED::NUM_BLINKS = 5;
+const uint LED::BLINKING_RATE = 10;
+const uint LED::ALERT_RATE = 23;
+const uint LED::NUM_BLINKS = 4;
 
 
 void LED::setup(const String& id_)
@@ -371,7 +372,7 @@ void LED::setup(const String& id_)
     id = id_;
     
     // setup counter for the time of one blink
-    blinkRateCounter = BLINKING_RATE;
+    rateCounter = BLINKING_RATE;
     
     // setup counter for the number of blinks
     // 2 x number of blinks for on and off states
@@ -436,7 +437,7 @@ void LED::alert()
     blinkValue = 0.f;
     
     // reset counter for the time of one blink
-    blinkRateCounter = BLINKING_RATE;
+    rateCounter = ALERT_RATE;
     
     // Save the previous state.
     // Avoid overwriting the previous state if ALERT is called repeatedly.
@@ -454,13 +455,13 @@ void LED::blinkOnce()
     if (state != ALERT)
     {
         // set blink value based on the current value (turn on if value > 0).
-        blinkValue = value > 0.f ? 1.f : 0.f;
+        blinkValue = value > 0.f ? 0.f : 1.f;
         
         // reset the counter for the duration of one blink.
-        blinkRateCounter = BLINKING_RATE;
+        rateCounter = BLINKING_RATE;
         
         // save the current state before changing it.
-        lastState = state;
+        if (state != BLINKONCE) lastState = state;
         
         // update the state to indicate a single blink.
         state = BLINKONCE;
@@ -484,9 +485,10 @@ float LED::getValue()
         case VALUEFOCUS:
         {
             // switch the blink value if the time of one blink ran out
-            if (--blinkRateCounter == 0)
+            if (--rateCounter == 0)
             {
-                blinkRateCounter = BLINKING_RATE;
+                rateCounter = ALERT_RATE;
+                
                 blinkValue = !blinkValue;
             }
             
@@ -501,7 +503,7 @@ float LED::getValue()
         case ALERT:
         {
             // switch the blink value if the time of one blink ran out
-            if (--blinkRateCounter == 0)
+            if (--rateCounter == 0)
             {
                 // reset the state after the specified number of blinks
                 if (--numBlinksCounter == 0)
@@ -511,30 +513,39 @@ float LED::getValue()
                 }
                 
                 blinkValue = !blinkValue;
-                blinkRateCounter = BLINKING_RATE;
                 
-                // return the blink value
-                output = blinkValue;
+                rateCounter = ALERT_RATE;
             }
+            
+            // return the blink value
+            output = blinkValue;
+            
             break;
         }
             
         case BLINKONCE:
         {
-            // reset the state if the time of one blink ran out
-            if (--blinkRateCounter == 0)
-            {
-                blinkValue = !blinkValue;
-                state = lastState;
-                blinkRateCounter = BLINKING_RATE;
-            }
-            
             // return blink value
             output = blinkValue;
+            
+            // reset the state if the time of one blink ran out
+            if (--rateCounter == 0)
+            {
+                blinkValue = !blinkValue;
+                
+                state = lastState;
+                
+                rateCounter = BLINKING_RATE;
+            }
+            
             break;
         }
 
-        default: break;
+        default: 
+        {
+            rt_printf("no valid LED state!\n");
+            break;
+        }
     }
     
     return output;
