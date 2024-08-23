@@ -3,7 +3,7 @@
 #define USING_ANALOG_INS
 //#define USING_GUI
 
-#define CONSOLE_PRINT
+//#define CONSOLE_PRINT
 
 // =======================================================================================
 // MARK: - UIELEMENT
@@ -39,7 +39,7 @@ static const float POT_MAX_VOLTAGE = 0.831f; /**< Maximum voltage for potentiome
 PotBehaviour Potentiometer::potBehaviour = PotBehaviour::CATCH;
 
 
-void Potentiometer::setup(const int index_, const String name_, const float guidefault_, const float analogdefault_)
+void Potentiometer::setup(const int index_, const String name_, const float guidefault_)
 {
     // set identifiers
     index = index_;
@@ -47,7 +47,6 @@ void Potentiometer::setup(const int index_, const String name_, const float guid
     
     // setup caches
     guiCache = guidefault_;
-    analogCache = analogdefault_;
 }
 
 

@@ -223,6 +223,43 @@ inline float lin2log (float x) // fixed Slope 0.75, a & 1/log(b) precalculated
     return logf_neon((x + a) / a) * b;
 }
 
+
+inline float bpm2msec(float bpm)
+{
+    return 60000.0f / bpm;
+}
+
+
+inline float bpm2sec(float bpm)
+{
+    return 60.f / bpm;
+}
+
+
+inline int bpm2samples(float bpm, float sampleRate)
+{
+    return (int)((60.0f / bpm) * sampleRate);
+}
+
+
+inline float msec2bpm(float msec)
+{
+    return 60000.0f / msec;
+}
+
+
+inline float sec2bpm(float sec)
+{
+    return 60.0f / sec;
+}
+
+
+inline float samples2bpm(uint samples, float sampleRate)
+{
+    return (60.0f * sampleRate) / samples;
+}
+
+
 /**
  * @brief Rounds a floating-point number to one decimal place.
  *

@@ -4,9 +4,10 @@
 // ********************************************************************************
 
 Effect::Effect(AudioParameterGroup* engineParameters_,
-                const unsigned int numParameters_, const String parameterGroupName_,
+                const unsigned int numParameters_, const String name_,
                 const float sampleRate_, const unsigned int blockSize_)
-    : parameters(parameterGroupName_, AudioParameterGroup::Type::EFFECT, numParameters_)
+    : id(name_)
+    , parameters(name_, AudioParameterGroup::Type::EFFECT, numParameters_)
     , engineParameters(engineParameters_)
     , sampleRate(sampleRate_)
     , blockSize(blockSize_)
@@ -40,8 +41,6 @@ void Reverb::updateAudioBlock()
 void Reverb::initializeParameters()
 {
     using namespace GrainmotherReverb;
-    
-    rt_printf("Reverb Parameters initializing!\n");
     
     // parameters controlled by potentiometers/sliders (index 0...7)
     for (unsigned int n = 0; n < NUM_POTENTIOMETERS; ++n)
@@ -122,8 +121,6 @@ void Granulator::updateAudioBlock()
 void Granulator::initializeParameters()
 {
     using namespace GrainmotherGranulator;
-    
-    rt_printf("Granulator Parameters initializing!\n");
     
     // parameters controlled by potentiometers/sliders (index 0...7)
     for (unsigned int n = 0; n < NUM_POTENTIOMETERS; ++n)

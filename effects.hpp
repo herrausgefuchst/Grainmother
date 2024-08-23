@@ -30,7 +30,7 @@ public:
      * @param blockSize_ The audio block size
      */
     Effect(AudioParameterGroup* engineParameters_, 
-           const unsigned int numParameters_, const String parameterGroupName_,
+           const unsigned int numParameters_, const String name_,
            const float sampleRate_, const unsigned int blockSize_);
 
     /**
@@ -71,8 +71,11 @@ public:
      * @return A pointer to the AudioParameter.
      */
     AudioParameter* getParameter(String id_) { return parameters.getParameter(id_); }
+    
+    String getId() const { return id; }
 
 protected:
+    String id;
     float sampleRate = 44100.f; /**< The sample rate for the effect */
     unsigned int blockSize = 128; /**< The block size for the effect */
     AudioParameterGroup parameters; /**< The group of parameters specific to this effect */

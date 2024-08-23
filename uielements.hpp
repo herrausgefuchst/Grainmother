@@ -143,7 +143,11 @@ public:
      * @param guidefault_ Default value for the GUI.
      * @param analogdefault_ Default value for analog input.
      */
-    void setup(const int index_, const String name_, const float guidefault_ = 0.f, const float analogdefault_ = 0.f);
+    void setup(const int index_, const String name_, const float guidefault_ = 0.f);
+    
+    
+    void setAnalogDefault(const float analogDefault_) { analogCache = analogDefault_; }
+    
     
     /**
      * @brief Updates the potentiometer with new GUI and analog values.

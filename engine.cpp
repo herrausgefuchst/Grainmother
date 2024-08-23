@@ -59,6 +59,10 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
             "2->1->3",
             "1->3->2"
         }, ParameterTypes::CHOICE);
+        
+        engineParameters.addParameter(15u, engineParameterID[ENUM2INT(EngineParameters::TEMPOSET)],
+                                      engineParameterName[ENUM2INT(EngineParameters::TEMPOSET)],
+                                      { "Current Effect", "All Effects" }, ParameterTypes::CHOICE);
     }
     
     // Effects
@@ -262,6 +266,7 @@ void UserInterface::initializeUIElements()
 void UserInterface::initializeMenu()
 {
     menu.addPage<Menu::ParameterPage>("effect_order", engine->getParameter("effect_order"));
+    menu.addPage<Menu::ParameterPage>("tempo_set", engine->getParameter("tempo_set"));
     
     menu.addPage<Menu::ParameterPage>("reverb_lowcut", engine->getParameter("reverb", "reverb_lowcut"));
     menu.addPage<Menu::ParameterPage>("reverb_multfreq", engine->getParameter("reverb", "reverb_multfreq"));
@@ -358,13 +363,16 @@ void UserInterface::initializeListeners()
     // Paraneter Tempo -> Metronome
     engine->getParameter("tempo")->addListener(&metronome);
     
+    // Parameter Tempo -> UserInterface
+    engine->getParameter("tempo")->onChange.push_back([this] { setNewTempo(); });
+    
     // Metronome -> LED
     metronome.onTic = [this] { led[LED_TEMPO].blinkOnce(); };
     
     // Menu -> Display
     menu.onPageChange = [this] { display.menuPageChanged(menu.getCurrentPage()); };
     
-    // UserInterface -> Menu
+    // Menu -> UserInterface
     menu.addListener(this);
     
     // Menu -> LEDs
@@ -410,6 +418,12 @@ void UserInterface::globalSettingChanged(Menu::Page* page_)
 }
 
 
+void UserInterface::presetChanged()
+{
+    settingTempoIsOnHold = true;
+}
+
+
 void UserInterface::effectOrderChanged()
 {
     rt_printf("Effect Order will be changed!\n");
@@ -447,6 +461,70 @@ void UserInterface::setEffectEditFocus()
     
     // notify button-led that the parameter changed
     led[LED_ACTION].parameterChanged(effect->getParameter(NUM_POTENTIOMETERS));
+}
+
+
+void UserInterface::setNewTempo()
+{
+    if (!settingTempoIsOnHold)
+    {
+        float tempoBpm = engine->getParameter("tempo")->getValueAsFloat();
+        
+        String temposet = engine->getParameter("engine", "tempo_set")->getPrintValueAsString();
+        
+        // only current Effect
+        if (temposet == "Current Effect")
+        {
+            int effectIndex = engine->getParameter("effect_edit_focus")->getValueAsInt();
+            
+            auto effect = engine->getEffect(effectIndex);
+            
+            if (effect->getId() == "reverb")
+            {
+                auto predelay = engine->getParameter("reverb", "reverb_predelay");
+                
+                // * 8.f : fit ranges of bpm to ranges of predelay
+                predelay->setValue(bpm2msec(tempoBpm * 8.f), false);
+                
+                potentiometer[predelay->getIndex()].decouple(predelay->getNormalizedValue());
+            }
+            
+            else if (effect->getId() == "granulator")
+            {
+                auto grainlength = engine->getParameter("granulator", "gran_grainlength");
+                
+                // * 16.f : fit ranges of bpm to ranges of predelay
+                grainlength->setValue(bpm2msec(tempoBpm * 16.f), false);
+                
+                potentiometer[grainlength->getIndex()].decouple(grainlength->getNormalizedValue());
+            }
+            
+            // TODO: add Resonator
+    //        else if
+        }
+        
+        // all effects
+        else if (temposet == "All Effects")
+        {
+            auto predelay = engine->getParameter("reverb", "reverb_predelay");
+            auto grainlength = engine->getParameter("granulator", "gran_grainlength");
+            //TODO: add Resonator
+            
+            engine->getParameter("reverb", "reverb_predelay")->setValue(bpm2msec(tempoBpm * 8.f), false);
+            engine->getParameter("granulator", "gran_grainlength")->setValue(bpm2msec(tempoBpm * 16.f), false);
+            //TODO: add Resonator
+            
+            int effectIndex = engine->getParameter("effect_edit_focus")->getValueAsInt();
+            
+            if (effectIndex == 0) potentiometer[predelay->getIndex()].decouple(predelay->getNormalizedValue());
+            else if (effectIndex == 1) potentiometer[grainlength->getIndex()].decouple(grainlength->getNormalizedValue());
+            else /*TODO: add Resonator*/;
+        }
+        
+        else engine_rt_error("couldn't find temposet option with name" + temposet, __FILE__, __LINE__, false);
+    }
+    
+    else settingTempoIsOnHold = false;
 }
 
 
@@ -620,8 +698,6 @@ void Metronome::setTempoSamples(const uint tempoSamples_)
     tempoSamples = tempoSamples_;
     
     counter = tempoSamples_;
-    
-    rt_printf("tempo in samples = %i", tempoSamples);
 }
 
 

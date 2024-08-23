@@ -23,21 +23,21 @@ void Menu::Page::down()
 
 void Menu::Page::enter()
 {
-    // default behaviour: return to parent page if connected
-    if (parent) menu.setCurrentPage(parent);
-    
     // call notify-function if connected
     if (onEnter) onEnter();
+    
+    // default behaviour: return to parent page if connected
+    if (parent) menu.setCurrentPage(parent);
 }
 
 
 void Menu::Page::exit()
 {
-    // default behaviour: return to parent page if connected
-    if (parent) menu.setCurrentPage(parent);
-    
     // call notify-function if connected
     if (onExit) onExit();
+    
+    // default behaviour: return to parent page if connected
+    if (parent) menu.setCurrentPage(parent);
 }
 
 
@@ -284,13 +284,19 @@ void Menu::initializePages()
     addPage<NavigationPage>("global_settings", "Global Settings", std::initializer_list<Page*>{
         getPage("midi_in_channel"),
         getPage("midi_out_channel"),
-        getPage("pot_behaviour")
+        getPage("pot_behaviour"),
+        getPage("tempo_set")
+    });
+    
+    addPage<NavigationPage>("preset_settings", "Preset Settings", std::initializer_list<Page *>{
+        getPage("effect_order"),
+        getPage("reverb_additionalParameters"),
+        getPage("tempo_set")
     });
     
     // Overall Menu
     addPage<NavigationPage>("menu", "Menu", std::initializer_list<Page*>{
-        getPage("effect_order"),
-        getPage("reverb_additionalParameters"),
+        getPage("preset_settings"),
         getPage("global_settings")
     });
     
@@ -330,10 +336,14 @@ void Menu::initializePageHierarchy()
     getPage("midi_out_channel")->addParent(getPage("global_settings"));
     getPage("pot_behaviour")->addParent(getPage("global_settings"));
     
-    // Overall Menu
-    getPage("global_settings")->addParent(getPage("menu"));
+    // Preset Settings
     getPage("reverb_additionalParameters")->addParent(getPage("menu"));
     getPage("effect_order")->addParent(getPage("menu"));
+    getPage("tempo_set")->addParent(getPage("preset_settings"));
+    
+    // Overall Menu
+    getPage("global_settings")->addParent(getPage("menu"));
+    getPage("preset_settings")->addParent(getPage("menu"));
 
     // Home screen
     getPage("save_preset")->addParent(getPage("load_preset"));
@@ -366,7 +376,10 @@ void Menu::initializePageActions()
     // Save Page
     // - enter: save preset
     Page* savePage = getPage("save_preset");
-    savePage->onEnter = [this] { savePreset(); };
+    savePage->onEnter = [this] {
+        getPage("load_preset")->setCurrentChoice(getPage("save_preset")->getCurrentChoice()+1);
+        savePreset();
+    };
     
     // Global Settings
     // - enter: notify listeners
@@ -576,10 +589,13 @@ void Menu::buttonReleased (UIElement* _uielement)
 
 void Menu::loadPreset()
 {
+    for (auto i : listeners) i->presetChanged();
+    
     // extract parametergroups (order is fixed!)
     auto engine = programParameters[0];
     auto effect1= programParameters[1];
     auto effect2 = programParameters[2];
+    //TODO: add third effect
 //    auto effect3 = programParameters[3];
     
     // console print yes or no? (developping)
@@ -598,14 +614,12 @@ void Menu::loadPreset()
     for (unsigned int n = 0; n < effect2->getNumParametersInGroup(); ++n)
         effect2->getParameter(n)->setValue((float)JSONpresets[index]["effect2"][n], withPrint);
     
+    //TODO: add third effect
 //    for (unsigned int n = 0; n < effect3->getNumParametersInGroup(); ++n)
 //        effect3->getParameter(n)->setValue((float)JSONpresets[index]["effect3"][n], withPrint);
     
     // last used preset is now the current one
     lastUsedPresetIndex = index;
-    
-    // update Display Catch
-//    display.setPresetCatch(index, JSONpresets[index]["name"]);
 
     #ifdef CONSOLE_PRINT
     consoleprint("Loaded preset with name " + getPage("load_preset")->getCurrentPrintValue() + " from JSON!", __FILE__, __LINE__);
@@ -630,6 +644,7 @@ void Menu::savePreset()
     auto engine = programParameters[0];
     auto effect1= programParameters[1];
     auto effect2 = programParameters[2];
+    //TODO: add third effect
 //    auto effect3 = programParameters[3];
     
     // save Data to JSON
@@ -642,6 +657,7 @@ void Menu::savePreset()
     for (unsigned int n = 0; n < effect2->getNumParametersInGroup(); ++n)
         JSONpresets[index]["effect2"][n] = effect2->getParameter(n)->getPrintValueAsFloat();
     
+    //TODO: add third effect
 //    for (unsigned int n = 0; n < effect3->getNumParametersInGroup(); ++n)
 //        JSONpresets[index]["effect3"][n] = effect3->getParameter(n)->getPrintValueAsFloat();
 

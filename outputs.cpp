@@ -1,5 +1,6 @@
 #include "outputs.hpp"
 
+//#define CONSOLE_PRINT
 
 // MARK: - DISPLAY-CATCH
 // ********************************************************************************
@@ -156,7 +157,7 @@ void Display::setup(Menu::Page* presetPage_)
 #endif
 }
 
-bool Display::update(const bool withConsole_)
+bool Display::update()
 {
     bool needsRefreshment = false;
     
@@ -167,7 +168,9 @@ bool Display::update(const bool withConsole_)
         oscTransmitter.send();
 #endif
         
-        if (withConsole_) displayCache.print();
+#ifdef CONSOLE_PRINT
+        displayCache.print();
+#endif
         
         newMessageCache = false;
         resetDisplayCounter = DISPLAY_AUTOHOMESCREEN;
@@ -442,7 +445,7 @@ void LED::alert()
     // Save the previous state.
     // Avoid overwriting the previous state if ALERT is called repeatedly.
     // This could cause the system to get stuck in ALERT.
-    if (state != ALERT) lastState = state;
+    if (state != ALERT && state != BLINKONCE) lastState = state;
     
     // set state
     state = ALERT;

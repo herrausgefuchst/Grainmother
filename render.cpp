@@ -56,6 +56,8 @@ bool setup (BelaContext *context, void *userData)
     
     engine.setup(context->audioSampleRate, context->audioFrames);
     
+    for (uint n = 0; n < NUM_POTENTIOMETERS; ++n)
+        userinterface.potentiometer[n].setAnalogDefault(analogRead(context, 0, HARDWARE_PIN_POTENTIOMETER[n]));
     userinterface.setup(&engine, context->audioSampleRate);
     
     return true;
@@ -89,7 +91,7 @@ void render (BelaContext *context, void *userData)
     {
         displayBlockCtr = DISPLAY_BLOCKS_PER_FRAME;
         
-        userinterface.display.update(true);
+        userinterface.display.update();
 //        if(userinterface.display.update(false))
 //            Bela_scheduleAuxiliaryTask(taskUpdateGUIDisplay);
     }

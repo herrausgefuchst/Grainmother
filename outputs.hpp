@@ -52,7 +52,7 @@ public:
     
     void setup(Menu::Page* presetPage_);
                 
-    bool update(const bool withConsole_ = false);
+    bool update();
     
     void parameterCalledDisplay(AudioParameter* param_) override;
     void menuPageChanged(Menu::Page* page_);

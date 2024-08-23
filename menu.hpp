@@ -173,6 +173,8 @@ public:
         virtual void globalSettingChanged(Page* page_) {}
         
         virtual void effectOrderChanged() {}
+        
+        virtual void presetChanged() {}
     };
 
     void addListener(Listener* listener_) { listeners.push_back(listener_); }

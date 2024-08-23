@@ -178,6 +178,8 @@ public:
     
     void globalSettingChanged(Menu::Page* page_) override;
     
+    void presetChanged() override;
+    
     void effectOrderChanged() override;
         
 private:
@@ -186,6 +188,7 @@ private:
     void initializeListeners();
     
     void setEffectEditFocus();
+    void setNewTempo();
     
     void nudgeUIParameter(const int direction_);
     
@@ -200,6 +203,7 @@ private:
     Menu menu;
     TempoTapper tempoTapper; /**< The tempo tapper instance */
     Metronome metronome;
+    bool settingTempoIsOnHold = false;
     
     AudioParameter* scrollingParameter = nullptr;
     int scrollingDirection;
