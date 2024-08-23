@@ -429,6 +429,17 @@ inline String getDateAsString()
     return day + "/" + month + "/" + year;
 }
 
+
+inline String trimWhiteSpace(const String& str)
+{
+    size_t first = str.find_first_not_of(' ');
+    if (first == std::string::npos)
+        return "";
+    size_t last = str.find_last_not_of(' ');
+    return str.substr(first, last - first + 1);
+}
+
+
 /** @} */
 
 /**

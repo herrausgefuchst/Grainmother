@@ -28,6 +28,8 @@ StereoFloat Reverb::processAudioSamples(const StereoFloat input_)
 {
     StereoFloat effect = input_;
     
+//    rt_printf("processing effect %s\n", id.c_str());
+    
     return effect;
 }
 
@@ -113,6 +115,8 @@ StereoFloat Granulator::processAudioSamples(const StereoFloat input_)
 
     StereoFloat effect = input_;
     
+//    rt_printf("processing effect %s\n", id.c_str());
+    
     return effect;
 }
 
@@ -168,6 +172,8 @@ StereoFloat Resonator::processAudioSamples(const StereoFloat input_)
 {
     // process ramps
     // ...
+    
+//    rt_printf("processing effect %s\n", id.c_str());
 
     StereoFloat effect = input_;
     

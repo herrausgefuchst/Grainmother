@@ -1,5 +1,7 @@
 #include "engine.hpp"
 
+#define CONSOLE_PRINT
+
 // =======================================================================================
 // MARK: - AUDIO ENGINE
 // =======================================================================================
@@ -55,19 +57,19 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
         (16u, engineParameterID[ENUM2INT(EngineParameters::EFFECTORDER)],
          engineParameterName[ENUM2INT(EngineParameters::EFFECTORDER)],
          std::initializer_list<String>{
-            "1->2->3",
-            "2 | 3->1",
-            "1 | 3->2",
-            "1 | 2->3",
-            "3->1 | 2",
-            "2->1 | 3",
-            "1->2 | 3",
+            "1 - 2 - 3",
+            "2 | 3 - 1",
+            "1 | 3 - 2",
+            "1 | 2 - 3",
+            "3 - 1 | 2",
+            "2 - 1 | 3",
+            "1 - 2 | 3",
             "1 | 2 | 3",
-            "3->2->1",
-            "3->1->2",
-            "2->3->1",
-            "2->1->3",
-            "1->3->2"});
+            "3 - 2 - 1",
+            "3 - 1 - 2",
+            "2 - 3 - 1",
+            "2 - 1 - 3",
+            "1 - 3 - 2"});
         
         // set tempo to?
         engineParameters.addParameter<ChoiceParameter>
@@ -77,34 +79,49 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     }
     
     // Effects
-    effects.at(0) = std::make_unique<Reverb>(&engineParameters, GrainmotherReverb::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
-    effects.at(1) = std::make_unique<Granulator>(&engineParameters, GrainmotherGranulator::NUM_PARAMETERS, "granulator", sampleRate, blockSize);
-    effects.at(2) = std::make_unique<Resonator>(&engineParameters, 8, "resonator", sampleRate, blockSize);
+    effects[0] = new Reverb(&engineParameters, GrainmotherReverb::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
+    effects[1] = new Granulator(&engineParameters, GrainmotherGranulator::NUM_PARAMETERS, "granulator", sampleRate, blockSize);
+    effects[2] = new Resonator(&engineParameters, 8, "resonator", sampleRate, blockSize);
     
-    effects.at(0)->setup();
-    effects.at(1)->setup();
+    effects[0]->setup();
+    effects[1]->setup();
     
     // add all Parameters to a vector of AudioParameterGroups which holds all Program Parameters
     programParameters.at(0) = (&engineParameters);
     for (unsigned int n = 1; n < NUM_EFFECTS+1; ++n)
-        programParameters.at(n) = effects.at(n-1)->getEffectParameterGroup();
+        programParameters.at(n) = effects[n-1]->getEffectParameterGroup();
 }
 
-StereoFloat AudioEngine::processAudioSamples(const StereoFloat input_)
+StereoFloat AudioEngine::processAudioSamples(StereoFloat input_)
 {
-    // Effects
-    StereoFloat output = input_;
-//    if (getParameter(AudioParameterGroup::ENGINE, BYPASS)->getValueAsInt() == ButtonParameter::UP)
-//    {
-//        if (engineParameters.getParameter(BEATREPEAT)->getValueAsInt() == ButtonParameter::DOWN)
-//            output = effects[Effect::BEATREPEAT]->process(output);
-//
-//        if (engineParameters.getParameter(GRANULATOR)->getValueAsInt() == ButtonParameter::DOWN)
-//            output = effects[Effect::GRANULATOR]->process(output);
-//
-//        if (engineParameters.getParameter(DELAY)->getValueAsInt() == ButtonParameter::DOWN)
-//            output = effects[Effect::DELAY]->process(output);
-//    }
+    StereoFloat output = {0.f, 0.f};
+    
+    static uint processedEffects = 0;
+    
+    for (uint m = 0; m < NUM_EFFECTS; ++m)
+    {
+        for (uint n = 0; n < NUM_EFFECTS; ++n)
+        {
+            if (processFunction[m][n])
+            {
+//                rt_printf("%i, %i = ", m, n);
+                output += processFunction[m][n](input_) * parallelWeight[m];
+                
+                if (++processedEffects == NUM_EFFECTS) break;
+            }
+        }
+        
+        if (processedEffects == NUM_EFFECTS) break;
+        
+        else
+        {
+            input_ = output;
+            
+            output = { 0.f, 0.f };
+        }
+    }
+    
+    processedEffects = 0;
     
     return output;
     
@@ -113,18 +130,103 @@ StereoFloat AudioEngine::processAudioSamples(const StereoFloat input_)
 
 void AudioEngine::updateAudioBlock()
 {
-//    if (getParameter(AudioParameterGroup::ENGINE, BYPASS)->getValueAsInt() == ButtonParameter::UP)
-//    {
-//        if (engineParameters.getParameter(BEATREPEAT)->getValueAsInt() == ButtonParameter::DOWN)
-//            effects[Effect::BEATREPEAT]->processBlock();
-//
-//        if (engineParameters.getParameter(GRANULATOR)->getValueAsInt() == ButtonParameter::DOWN)
-//            effects[Effect::GRANULATOR]->processBlock();
-//
-//        if (engineParameters.getParameter(DELAY)->getValueAsInt() == ButtonParameter::DOWN)
-//            effects[Effect::DELAY]->processBlock();
-//    }
+    for (uint n = 0; n < NUM_EFFECTS; ++n)
+        effects[n]->updateAudioBlock();
 }
+
+
+void AudioEngine::setEffectOrder()
+{
+    // clear the effect order array
+    for (uint n = 0; n < 3; ++n)
+        for (uint m = 0; m < 3; ++m)
+            processFunction[n][m] = nullptr;
+    
+    // retrieve the current choice of effect order
+    String effectOrder = getParameter("effect_order")->getPrintValueAsString();
+    
+    // Split the effectOrder string into parallel segments
+    std::stringstream stringStream(effectOrder);
+    
+    std::string segment;
+    
+    uint row = 0;
+    
+    // split string into the rows = into every series processing
+    while (std::getline(stringStream, segment, '-'))
+    {
+        // Split the segment string into parallel segments
+        std::stringstream segmentSegment(segment);
+        
+        std::string effectID;
+        
+        uint col = 0;
+
+        // split string into the columns of rows = into every parallel processing
+        while (std::getline(segmentSegment, effectID, '|'))
+        {
+            // trim any whitespace from the extracted effect ID string
+            effectID = trimWhiteSpace(effectID);
+            
+            // effectID shouldnt be empty or any other than a digit
+            if (!effectID.empty() && std::all_of(effectID.begin(), effectID.end(), ::isdigit))
+            {
+                // effect index is one less than the effect ID
+                uint effectIndex = std::stoi(effectID) - 1;
+                
+                // check if effect Index is in valid range
+                if (effectIndex >= 0 && effectIndex < NUM_EFFECTS)
+                {
+                    // insert the process function of this effect to the precise array slot
+//                    processFunction[row][col] = std::bind(&Effect::processAudioSamples, effect[effectIndex], std::placeholders::_1);
+                    processFunction[row][col] = [this, effectIndex](StereoFloat input) {
+                        return effects[effectIndex]->processAudioSamples(input);
+                    };
+                    
+                    // increment column for the next parallel effect
+                    ++col;
+                } 
+                else
+                {
+                    engine_rt_error("Effect index out of range: " + TOSTRING(effectIndex), __FILE__, __LINE__, true);
+                }
+            } 
+            else 
+            {
+                engine_rt_error("Invalid effect id: " + effectID, __FILE__, __LINE__, true);
+            }
+        }
+        // increment row for the next series effect(s)
+        ++row;
+    }
+    
+    for(int i = 0; i < 3; ++i) 
+    {
+        uint numParallelEffects = 0;
+        
+        for(int j = 0; j < 3; ++j)
+        {
+            if (processFunction[i][j] != nullptr)
+            {
+                #ifdef CONSOLE_PRINT
+                std::cout << "processFunction[" << i << "][" << j << "] is set.\n";
+                #endif
+                
+                ++numParallelEffects;
+            }
+            else
+            {
+                #ifdef CONSOLE_PRINT
+                std::cout << "processFunction[" << i << "][" << j << "] is nullptr.\n";
+                #endif
+            }
+        }
+        
+        if (numParallelEffects > 0) parallelWeight[i] = 1.f / (float)numParallelEffects;
+        else parallelWeight[i] = 0.f;
+    }
+}
+
 
 AudioParameter* AudioEngine::getParameter(const String parameterID_)
 {
@@ -195,13 +297,10 @@ AudioParameter* AudioEngine::getParameter(const String& paramGroup_, const uint 
 
 Effect* AudioEngine::getEffect(const unsigned int index_)
 {
-    if (index_ > effects.size()-1)
+    if (index_ > NUM_EFFECTS-1)
         engine_rt_error("Audio Engine holds no Effect with Index " + TOSTRING(index_), __FILE__, __LINE__, true);
     
-    if (effects.size() == 0)
-        engine_rt_error("Audio Engine holds no Effects", __FILE__, __LINE__, true);
-    
-    auto effect = effects.at(index_).get();
+    auto effect = effects[index_];
     
     if (!effect)
         engine_rt_error("Audio Engine can't find effect", __FILE__, __LINE__, true);
@@ -387,6 +486,9 @@ void UserInterface::initializeListeners()
     // Parameter Tempo -> UserInterface
     engine->getParameter("tempo")->onChange.push_back([this] { setNewTempo(); });
     
+    // Parameter Effect Order -> UserInterface
+    engine->getParameter("effect_order")->onChange.push_back([this] { effectOrderChanged(); });
+    
     // Metronome -> LED
     metronome.onTic = [this] { led[LED_TEMPO].blinkOnce(); };
     
@@ -446,8 +548,7 @@ void UserInterface::presetChanged()
 
 void UserInterface::effectOrderChanged()
 {
-    rt_printf("Effect Order will be changed!\n");
-    // TODO: effect order algorithm
+    engine->setEffectOrder();
     
     alertLEDs(LED::BLINKONCE);
 }
@@ -484,8 +585,8 @@ void UserInterface::setEffectEditFocus()
     
     // calculate the indexi of the focussed effect led and the others
     int focussedEffectLedIndex = focus->getValueAsInt() + LED_FX1;
-    int secondEffectLedIndex;
-    int thirdEffectLedIndex;
+    int secondEffectLedIndex = LED_FX2;
+    int thirdEffectLedIndex = LED_FX3;
     
     switch (focussedEffectLedIndex) 
     {

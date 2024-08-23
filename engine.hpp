@@ -12,6 +12,8 @@
 // MARK: - AUDIO ENGINE
 // =======================================================================================
 
+typedef std::function<StereoFloat(StereoFloat)> ProcessFunctionPointer;
+
 /**
  * @class AudioEngine
  * @brief A class that manages audio processing, effects, and parameters.
@@ -48,12 +50,16 @@ public:
      * @param input_ The stereo input to process.
      * @return The processed stereo output.
      */
-    StereoFloat processAudioSamples(const StereoFloat input_);
+    StereoFloat processAudioSamples(StereoFloat input_);
 
     /**
      * @brief update function, should be called blockwise
      */
     void updateAudioBlock();
+    
+    
+    void setEffectOrder();
+    
     
     /**
      * @brief Retrieves an audio parameter by its ID.
@@ -91,10 +97,13 @@ public:
     Effect* getEffect(const unsigned int index_);
         
 private:
-    std::array<std::unique_ptr<Effect>, NUM_EFFECTS> effects; /**< Array of unique pointers to effects */
+    Effect* effects[NUM_EFFECTS]; /**< Array of unique pointers to effects */
     std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programParameters; /**< Array of program parameter groups */
     AudioParameterGroup engineParameters; /**< Parameters specific to the audio engine */
-        
+    
+    ProcessFunctionPointer processFunction[3][3];
+    float parallelWeight[NUM_EFFECTS] = { 0.f, 0.f, 0.f };
+    
     float sampleRate; /**< Sample rate */
     unsigned int blockSize; /**< Block size */
 };
@@ -140,6 +149,7 @@ public:
 // =======================================================================================
 // MARK: - METRONOME
 // =======================================================================================
+
 
 class Metronome : public AudioParameter::Listener
 {

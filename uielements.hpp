@@ -141,7 +141,6 @@ public:
      * @param index_ The index of the potentiometer.
      * @param name_ The name of the potentiometer.
      * @param guidefault_ Default value for the GUI.
-     * @param analogdefault_ Default value for analog input.
      */
     void setup(const int index_, const String name_, const float guidefault_ = 0.f);
     

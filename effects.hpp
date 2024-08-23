@@ -25,7 +25,7 @@ public:
      * @brief Constructs an Effect with specified engine parameters and name.
      * @param engineParameters_ Pointer to the AudioParameterGroup containing engine parameters.
      * @param numParameters_ the number of parameters for this effect
-     * @param parameterGroupName_ The name of the effect parameter group.
+     * @param name_ The name of the effect parameter group.
      * @param sampleRate_ The sample rate
      * @param blockSize_ The audio block size
      */
