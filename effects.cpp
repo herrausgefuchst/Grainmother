@@ -4,7 +4,7 @@
 // ********************************************************************************
 
 Effect::Effect(AudioParameterGroup* engineParameters_,
-                const unsigned int numParameters_, const String name_,
+                const unsigned int numParameters_, const String& name_,
                 const float sampleRate_, const unsigned int blockSize_)
     : id(name_)
     , parameters(name_, numParameters_)
@@ -12,6 +12,14 @@ Effect::Effect(AudioParameterGroup* engineParameters_,
     , sampleRate(sampleRate_)
     , blockSize(blockSize_)
 {}
+
+
+void Effect::parameterChanged(AudioParameter *param_)
+{
+    // TODO: no safety guards here
+    engage(param_->getValueAsInt());
+}
+
 
 // MARK: - BEATREPEAT
 // ********************************************************************************

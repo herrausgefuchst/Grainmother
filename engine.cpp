@@ -10,6 +10,7 @@ AudioEngine::AudioEngine()
     : engineParameters("engine", NUM_ENGINEPARAMETERS)
 {}
 
+
 void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
 {
     // Member Variables
@@ -92,41 +93,47 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
         programParameters.at(n) = effects[n-1]->getEffectParameterGroup();
 }
 
+
 StereoFloat AudioEngine::processAudioSamples(StereoFloat input_)
 {
     StereoFloat output = {0.f, 0.f};
     
-    static uint processedEffects = 0;
+    uint catchedEffects = 0;
     
     for (uint m = 0; m < NUM_EFFECTS; ++m)
     {
+        uint processedEffects = 0;
+        
         for (uint n = 0; n < NUM_EFFECTS; ++n)
         {
             if (processFunction[m][n])
             {
-//                rt_printf("%i, %i = ", m, n);
-                output += processFunction[m][n](input_) * parallelWeight[m];
+                if (effects[processIndex[m][n]]->engaged)
+                {
+                    ++processedEffects;
+                    
+                    output += processFunction[m][n](input_) * parallelWeight[m];
+                }
                 
-                if (++processedEffects == NUM_EFFECTS) break;
+                if (++catchedEffects == NUM_EFFECTS) break;
             }
         }
         
-        if (processedEffects == NUM_EFFECTS) break;
+        if (catchedEffects == NUM_EFFECTS) break;
         
         else
         {
-            input_ = output;
+            if (processedEffects > 0) input_ = output;
             
             output = { 0.f, 0.f };
         }
     }
     
-    processedEffects = 0;
-    
     return output;
     
     // TODO: order of effects
 }
+
 
 void AudioEngine::updateAudioBlock()
 {
@@ -137,10 +144,15 @@ void AudioEngine::updateAudioBlock()
 
 void AudioEngine::setEffectOrder()
 {
-    // clear the effect order array
+    // clear the effect order array and the effect index array
     for (uint n = 0; n < 3; ++n)
+    {
         for (uint m = 0; m < 3; ++m)
+        {
             processFunction[n][m] = nullptr;
+            processIndex[n][m] = -1;
+        }
+    }
     
     // retrieve the current choice of effect order
     String effectOrder = getParameter("effect_order")->getPrintValueAsString();
@@ -161,7 +173,7 @@ void AudioEngine::setEffectOrder()
         std::string effectID;
         
         uint col = 0;
-
+        
         // split string into the columns of rows = into every parallel processing
         while (std::getline(segmentSegment, effectID, '|'))
         {
@@ -178,20 +190,22 @@ void AudioEngine::setEffectOrder()
                 if (effectIndex >= 0 && effectIndex < NUM_EFFECTS)
                 {
                     // insert the process function of this effect to the precise array slot
-//                    processFunction[row][col] = std::bind(&Effect::processAudioSamples, effect[effectIndex], std::placeholders::_1);
                     processFunction[row][col] = [this, effectIndex](StereoFloat input) {
                         return effects[effectIndex]->processAudioSamples(input);
                     };
                     
+                    // insert the process effect index to the precise array slot
+                    processIndex[row][col] = effectIndex;
+                    
                     // increment column for the next parallel effect
                     ++col;
-                } 
+                }
                 else
                 {
                     engine_rt_error("Effect index out of range: " + TOSTRING(effectIndex), __FILE__, __LINE__, true);
                 }
-            } 
-            else 
+            }
+            else
             {
                 engine_rt_error("Invalid effect id: " + effectID, __FILE__, __LINE__, true);
             }
@@ -200,6 +214,12 @@ void AudioEngine::setEffectOrder()
         ++row;
     }
     
+    recalculateParallelWeighting();
+}
+
+
+void AudioEngine::recalculateParallelWeighting()
+{
     for(int i = 0; i < 3; ++i) 
     {
         uint numParallelEffects = 0;
@@ -209,22 +229,24 @@ void AudioEngine::setEffectOrder()
             if (processFunction[i][j] != nullptr)
             {
                 #ifdef CONSOLE_PRINT
-                std::cout << "processFunction[" << i << "][" << j << "] is set.\n";
+                consoleprint("processFunction[" + TOSTRING(i) + "][" + TOSTRING(j)
+                             + "] is set to processIndex[" + TOSTRING(processIndex[i][j]) + "]",
+                             __FILE__, __LINE__);
                 #endif
                 
-                ++numParallelEffects;
-            }
-            else
-            {
-                #ifdef CONSOLE_PRINT
-                std::cout << "processFunction[" << i << "][" << j << "] is nullptr.\n";
-                #endif
+                if (effects[processIndex[i][j]]->engaged) ++numParallelEffects;
             }
         }
         
         if (numParallelEffects > 0) parallelWeight[i] = 1.f / (float)numParallelEffects;
         else parallelWeight[i] = 0.f;
     }
+    
+    #ifdef CONSOLE_PRINT
+    consoleprint("parallel Weights are set to " + TOSTRING(parallelWeight[0]) + ", "
+                 + TOSTRING(parallelWeight[1]) + ", " + TOSTRING(parallelWeight[2]),
+                 __FILE__, __LINE__);
+    #endif
 }
 
 
@@ -243,6 +265,7 @@ AudioParameter* AudioEngine::getParameter(const String parameterID_)
     
     return parameter;
 }
+
 
 AudioParameter* AudioEngine::getParameter(const unsigned int paramgroup_, const unsigned int paramindex_)
 {
@@ -321,6 +344,8 @@ void UserInterface::setup(AudioEngine* engine_, const float sampleRate_)
     initializeUIElements();
     
     initializeMenu();
+
+    initializeListeners();
     
     display.setup(menu.getPage("load_preset"));
     
@@ -338,7 +363,7 @@ void UserInterface::setup(AudioEngine* engine_, const float sampleRate_)
     else if (focus == 1) led[LED_FX2].parameterChanged(effecteditfocus);
     else if (focus == 2) led[LED_FX3].parameterChanged(effecteditfocus);
     
-    initializeListeners();
+    engine->setEffectOrder();
 }
 
 
@@ -389,9 +414,9 @@ void UserInterface::initializeMenu()
 void UserInterface::initializeListeners()
 {
 //    // Buttons -> Parameters
-    button[ButtonID::FX1].addListener(engine->getParameter("effect1_bypass"));
-    button[ButtonID::FX2].addListener(engine->getParameter("effect2_bypass"));
-    button[ButtonID::FX3].addListener(engine->getParameter("effect3_bypass"));
+    button[ButtonID::FX1].addListener(engine->getParameter("effect1_engaged"));
+    button[ButtonID::FX2].addListener(engine->getParameter("effect2_engaged"));
+    button[ButtonID::FX3].addListener(engine->getParameter("effect3_engaged"));
     button[ButtonID::BYPASS].addListener(engine->getParameter("global_bypass"));
 
     // Buttons -> Menu
@@ -470,9 +495,9 @@ void UserInterface::initializeListeners()
     
     // Parameters -> LEDs
     engine->getParameter("global_bypass")->addListener(&led[LED_BYPASS]);
-    engine->getParameter("effect1_bypass")->addListener(&led[LED_FX1]);
-    engine->getParameter("effect2_bypass")->addListener(&led[LED_FX2]);
-    engine->getParameter("effect3_bypass")->addListener(&led[LED_FX3]);
+    engine->getParameter("effect1_engaged")->addListener(&led[LED_FX1]);
+    engine->getParameter("effect2_engaged")->addListener(&led[LED_FX2]);
+    engine->getParameter("effect3_engaged")->addListener(&led[LED_FX3]);
     engine->getParameter((uint)ParameterGroupID::REVERB, NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
     engine->getParameter((uint)ParameterGroupID::GRANULATOR, NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
     //TODO: add Resonator
@@ -488,6 +513,16 @@ void UserInterface::initializeListeners()
     
     // Parameter Effect Order -> UserInterface
     engine->getParameter("effect_order")->onChange.push_back([this] { effectOrderChanged(); });
+    
+    // Parameters FX Bypass -> Effect
+    engine->getParameter("effect1_engaged")->addListener(engine->getEffect(0));
+    engine->getParameter("effect2_engaged")->addListener(engine->getEffect(1));
+    engine->getParameter("effect3_engaged")->addListener(engine->getEffect(2));
+    
+    // Parameters FX Bypass -> AudioEngine: recalculate the parral weighting
+    engine->getParameter("effect1_engaged")->onChange.push_back([this] {engine->recalculateParallelWeighting(); });
+    engine->getParameter("effect2_engaged")->onChange.push_back([this] {engine->recalculateParallelWeighting(); });
+    engine->getParameter("effect3_engaged")->onChange.push_back([this] {engine->recalculateParallelWeighting(); });
     
     // Metronome -> LED
     metronome.onTic = [this] { led[LED_TEMPO].blinkOnce(); };

@@ -66,9 +66,9 @@ enum class EngineParameters {
 static const String engineParameterName[NUM_ENGINEPARAMETERS] {
     "Tempo",
     "Global Bypass",
-    "Effect 1 Bypass",
-    "Effect 2 Bypass",
-    "Effect 3 Bypass",
+    "Effect 1 Engaged",
+    "Effect 2 Engaged",
+    "Effect 3 Engaged",
     "Effect Edit Focus",
     "Effect Order",
     "Set Tempo To"
@@ -77,9 +77,9 @@ static const String engineParameterName[NUM_ENGINEPARAMETERS] {
 static const String engineParameterID[NUM_ENGINEPARAMETERS] {
     "tempo",
     "global_bypass",
-    "effect1_bypass",
-    "effect2_bypass",
-    "effect3_bypass",
+    "effect1_engaged",
+    "effect2_engaged",
+    "effect3_engaged",
     "effect_edit_focus",
     "effect_order",
     "tempo_set"

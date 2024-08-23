@@ -61,6 +61,9 @@ public:
     void setEffectOrder();
     
     
+    void recalculateParallelWeighting();
+    
+    
     /**
      * @brief Retrieves an audio parameter by its ID.
      * @param parameterID_ The ID of the parameter to retrieve.
@@ -102,6 +105,7 @@ private:
     AudioParameterGroup engineParameters; /**< Parameters specific to the audio engine */
     
     ProcessFunctionPointer processFunction[3][3];
+    int processIndex[3][3];
     float parallelWeight[NUM_EFFECTS] = { 0.f, 0.f, 0.f };
     
     float sampleRate; /**< Sample rate */

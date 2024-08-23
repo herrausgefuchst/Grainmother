@@ -13,7 +13,7 @@
  * @class Effect
  * @brief A base class representing an audio effect, with setup and processing capabilities.
  */
-class Effect
+class Effect : public AudioParameter::Listener
 {
 public:
     /**
@@ -30,7 +30,7 @@ public:
      * @param blockSize_ The audio block size
      */
     Effect(AudioParameterGroup* engineParameters_, 
-           const unsigned int numParameters_, const String name_,
+           const unsigned int numParameters_, const String& name_,
            const float sampleRate_, const unsigned int blockSize_);
 
     /**
@@ -52,6 +52,13 @@ public:
      */
     virtual void updateAudioBlock() = 0;
 
+    
+    void engage(bool engaged_) { engaged = engaged_; }
+    
+    
+    void parameterChanged(AudioParameter *param_) override;
+    
+    
     /**
      * @brief Gets the parameter group associated with the effect.
      * @return A pointer to the AudioParameterGroup for the effect.
@@ -80,6 +87,9 @@ protected:
     unsigned int blockSize = 128; /**< The block size for the effect */
     AudioParameterGroup parameters; /**< The group of parameters specific to this effect */
     AudioParameterGroup* engineParameters = nullptr; /**< Pointer to engine-wide parameters */
+    
+public:
+    bool engaged = true;
 };
 
 // MARK: - BEATREPEAT
