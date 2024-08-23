@@ -225,8 +225,6 @@ void UserInterface::setup(AudioEngine* engine_, const float sampleRate_)
     
     display.setup(menu.getPage("load_preset"));
     
-    initializeListeners();
-    
     // Tempo Tapper
     tempoTapper.setup(engine->getParameter("tempo")->getMin(), engine->getParameter("tempo")->getMax(), sampleRate_);
     
@@ -240,6 +238,8 @@ void UserInterface::setup(AudioEngine* engine_, const float sampleRate_)
     if (focus == 0) led[LED_FX1].parameterChanged(effecteditfocus);
     else if (focus == 1) led[LED_FX2].parameterChanged(effecteditfocus);
     else if (focus == 2) led[LED_FX3].parameterChanged(effecteditfocus);
+    
+    initializeListeners();
 }
 
 
@@ -342,13 +342,23 @@ void UserInterface::initializeListeners()
     {
         potentiometer[n].onTouch = [this, n] 
         {
-            int focus = engine->getParameter("effect_edit_focus")->getValueAsInt();
-        
-            auto effect = engine->getEffect(focus);
+            static bool initializing = true;
+            static uint numInitCallsLeft = NUM_POTENTIOMETERS;
             
-            AudioParameter* connectedParam = effect->getParameter(n);
+            if (!initializing)
+            {
+                int focus = engine->getParameter("effect_edit_focus")->getValueAsInt();
             
-            display.parameterCalledDisplay(connectedParam);
+                auto effect = engine->getEffect(focus);
+                
+                AudioParameter* connectedParam = effect->getParameter(n);
+                
+                display.parameterCalledDisplay(connectedParam);
+            }
+            else
+            {
+                if (--numInitCallsLeft == 0) initializing = false;
+            }
         };
     }
     
@@ -700,9 +710,7 @@ bool TempoTapper::tapTempo()
     isCounting = true;
     
     tapCounter = 0;
-    
-    rt_printf("new tap received!\n");
-    
+        
     return newTempoDetected;
 }
 

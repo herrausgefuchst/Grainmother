@@ -1,6 +1,6 @@
 #include "outputs.hpp"
 
-//#define CONSOLE_PRINT
+#define CONSOLE_PRINT
 
 // =======================================================================================
 // MARK: - DISPLAY-CACHE
@@ -154,6 +154,7 @@ void Display::DisplayCache::printToConsole()
     for (unsigned int n = 0; n < DISPLAY_NUM_ROWS; ++n)
         rt_printf("%s \n", rows[n].c_str());
     
+    
     rt_printf("\n");
 }
 
@@ -190,7 +191,7 @@ bool Display::update()
         
 #ifdef CONSOLE_PRINT
         // print to console
-        displayCache.print();
+        displayCache.printToConsole();
 #endif
         
         // reset flag for new message cache
@@ -224,7 +225,7 @@ bool Display::update()
 }
 
 void Display::parameterCalledDisplay(AudioParameter* param_)
-{
+{  
     // determine what type of parameter has changed
     // and create corresponding message
     if (instanceof<SlideParameter>(param_)) creatSlideParameterMessage(param_);
