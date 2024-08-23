@@ -285,7 +285,6 @@ void Menu::initializePages()
         getPage("midi_in_channel"),
         getPage("midi_out_channel"),
         getPage("pot_behaviour"),
-        getPage("tempo_set")
     });
     
     addPage<NavigationPage>("preset_settings", "Preset Settings", std::initializer_list<Page *>{
@@ -337,8 +336,8 @@ void Menu::initializePageHierarchy()
     getPage("pot_behaviour")->addParent(getPage("global_settings"));
     
     // Preset Settings
-    getPage("reverb_additionalParameters")->addParent(getPage("menu"));
-    getPage("effect_order")->addParent(getPage("menu"));
+    getPage("reverb_additionalParameters")->addParent(getPage("preset_settings"));
+    getPage("effect_order")->addParent(getPage("preset_settings"));
     getPage("tempo_set")->addParent(getPage("preset_settings"));
     
     // Overall Menu

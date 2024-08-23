@@ -428,14 +428,13 @@ void UserInterface::globalSettingChanged(Menu::Page* page_)
 {
     if (page_->getID() == "pot_behaviour")
     {
-        rt_printf("Pot Behaviour will be changed!\n");
         Potentiometer::setPotBevaviour(INT2ENUM(page_->getCurrentChoice(), PotBehaviour));
     }
     
     //TODO: midi in
     //TODO: midi out
     
-    alertLEDs(LED::BLINKONCE);
+    alertLEDs(LED::ALERT);
 }
 
 

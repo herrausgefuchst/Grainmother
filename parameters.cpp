@@ -305,6 +305,12 @@ void SlideParameter::setNormalizedValue(float value_, const bool withPrint_)
             break;
     }
     
+    #ifdef CONSOLE_PRINT
+    consoleprint("AudioParameter(Slide) '" + name + "' received new value: "
+                 + TOSTRING(printValue),
+                 __FILE__, __LINE__);
+    #endif
+    
     // set print/ramp value
     setRampValue(printValue);
     
@@ -503,7 +509,6 @@ void ButtonParameter::toggle()
     #ifdef CONSOLE_PRINT
     consoleprint("AudioParameter(Button) '" + name
                  + "' received Click of button "
-                 + TOSTRING(button->getIndex())
                  + ", toggle: " + TOSTRING(value)
                  + ", print: " + getPrintValueAsString()
                  , __FILE__, __LINE__);
@@ -588,7 +593,6 @@ void ToggleParameter::buttonClicked(UIElement* uielement_)
     #ifdef CONSOLE_PRINT
     consoleprint("AudioParameter(Button) '" + name
                  + "' received Click of button "
-                 + TOSTRING(button->getIndex())
                  + ", toggle: " + TOSTRING(value)
                  + ", print: " + getPrintValueAsString()
                  , __FILE__, __LINE__);

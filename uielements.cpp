@@ -109,13 +109,16 @@ void Potentiometer::update(const float guivalue_, const float analogvalue_)
         {
             setValue(value);
         }
-        // 2. Pot behavior is JUMP (only if inputFocus is already set).
-        else if (potBehaviour == PotBehaviour::JUMP && inputFocus != InputSource::NONE)
+        // 2. Pot behavior is JUMP
+        else if (potBehaviour == PotBehaviour::JUMP)
         {
             setValue(value);
             
             // set input source to analog
             inputFocus = InputSource::ANALOG;
+            
+            // notify listeners (i.e. LEDs)
+            for (auto i : listeners) i->potCatchedValue();
         }
         // 3. Pot behavior is CATCH, and the new value is within tolerance of the current value.
         else if (isClose(value, current, POT_CATCHING_TOLERANCE))
