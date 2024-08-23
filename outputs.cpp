@@ -175,6 +175,15 @@ void Display::setup(Menu::Page* presetPage_)
 #ifdef BELA_CONNECTED
     oscTransmitter.setup(7562, "192.168.7.2");
 #endif
+    
+    // create the first message
+    createPresetMessage();
+    
+    // set flag for new message detected
+    newMessageCache = true;
+    
+    // set the state for duration to permanent
+    stateDuration = PERMANENT;
 }
 
 bool Display::update()
