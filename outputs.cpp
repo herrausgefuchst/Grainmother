@@ -6,36 +6,47 @@
 // MARK: - DISPLAY-CACHE
 // =======================================================================================
 
-inline void Display::DisplayCache::newMessage(const String& message_)
+
+void Display::DisplayCache::newMessage(const String& message_)
 {
     message = message_;
     clear();
 }
 
-void Display::DisplayCache::add(const float value_) {
+
+void Display::DisplayCache::add(const float value_) 
+{
     floats.push_back(value_);
 }
 
-void Display::DisplayCache::add(const int value_) {
+
+void Display::DisplayCache::add(const int value_) 
+{
     ints.push_back(value_);
 }
 
-void Display::DisplayCache::add(const String& value_) {
+
+void Display::DisplayCache::add(const String& value_)
+{
     strings.push_back(value_);
 }
 
-void Display::DisplayCache::add(String* value_, const size_t size_) {
+
+void Display::DisplayCache::add(String* value_, const size_t size_) 
+{
     for (unsigned int n = 0; n < size_; ++n)
         strings.push_back(value_[n]);
 }
 
-inline void Display::DisplayCache::clear()
+
+void Display::DisplayCache::clear()
 {
     strings.clear();
     ints.clear();
     floats.clear();
     rows.clear();
 }
+
 
 void Display::DisplayCache::createRows()
 {
@@ -137,7 +148,8 @@ void Display::DisplayCache::createRows()
     }
 }
 
-void Display::DisplayCache::print()
+
+void Display::DisplayCache::printToConsole()
 {
     for (unsigned int n = 0; n < DISPLAY_NUM_ROWS; ++n)
         rt_printf("%s \n", rows[n].c_str());
@@ -149,6 +161,10 @@ void Display::DisplayCache::print()
 // =======================================================================================
 // MARK: - DISPLAY
 // =======================================================================================
+
+
+const uint Display::DISPLAY_AUTOHOMESCREEN = 48;
+const uint Display::DISPLAY_NUM_ROWS = 10;
 
 
 void Display::setup(Menu::Page* presetPage_)
@@ -164,37 +180,44 @@ bool Display::update()
 {
     bool needsRefreshment = false;
     
+    // new message in the cache?
     if (newMessageCache)
     {
-        
 #ifdef BELA_CONNECTED
+        // send to Osc Reveceiver Program
         oscTransmitter.send();
 #endif
         
 #ifdef CONSOLE_PRINT
+        // print to console
         displayCache.print();
 #endif
         
+        // reset flag for new message cache
         newMessageCache = false;
+        
+        // Resets the display frame counter
         resetDisplayCounter = DISPLAY_AUTOHOMESCREEN;
+        
+        // return true
         needsRefreshment = true;
     }
     
-    else
+    // if the time of a temporary display view has ran out
+    // return to showing the home page (the current preset page)
+    else if (stateDuration == TEMPORARY && --resetDisplayCounter == 0)
     {
-        if (stateDuration == TEMPORARY)
-        {
-            if (--resetDisplayCounter == 0)
-            {
-                displayPreset();
-                
-                newMessageCache = true;
-                
-                tempParameter = nullptr;
-                
-                stateDuration = PERMANENT;
-            }
-        }
+        // create the preset message
+        createPresetMessage();
+        
+        // set flag for new message cache
+        newMessageCache = true;
+        
+        // clear the pointer to the temporary shown parameter
+        tempParameter = nullptr;
+        
+        // set state
+        stateDuration = PERMANENT;
     }
     
     return needsRefreshment;
@@ -202,18 +225,54 @@ bool Display::update()
 
 void Display::parameterCalledDisplay(AudioParameter* param_)
 {
-    if (instanceof<SlideParameter>(param_)) displaySlideParameter(param_);
-    else if (instanceof<ChoiceParameter>(param_)) displayChoiceParameter(param_);
-    else if (instanceof<ButtonParameter>(param_)) displayButtonParameter(param_);
+    // determine what type of parameter has changed
+    // and create corresponding message
+    if (instanceof<SlideParameter>(param_)) creatSlideParameterMessage(param_);
+    else if (instanceof<ChoiceParameter>(param_)) createChoiceParameterMessage(param_);
+    else if (instanceof<ButtonParameter>(param_)) createButtonParameterMessage(param_);
     
+    // set flag for a new message cache
     newMessageCache = true;
     
+    // Set the state duration for the display view.
+    // All AudioParameters that have a coupled UIElement have an index <= NUM_POTENTIOMETERS.
+    // These should be temporary. All other parameters (i.e. menu-controlled parameters or tempo)
+    // should be set to a permanent view.
     stateDuration = (param_->getIndex() > NUM_POTENTIOMETERS) ? PERMANENT : TEMPORARY;
     
+    // save the pointer to the parameter
     tempParameter = param_;
 }
 
-void Display::displaySlideParameter(AudioParameter* param_)
+void Display::menuPageChanged(Menu::Page* page_)
+{
+    // handle special cases
+    // - the page is the home page: create a preset message
+    if (page_->getID() == "load_preset")
+    {
+        createPresetMessage();
+    }
+    // - the page is a menu-controlled-parameter page:
+    // get its connected parameter, and create a parameter message with it
+    else if (instanceof<Menu::ParameterPage>(page_))
+    {
+        Menu::ParameterPage* page = static_cast<Menu::ParameterPage*>(page_);
+        parameterCalledDisplay(page->getParameter());
+    }
+    // - all other menu pages have the same message type
+    else
+    {
+        createMenuPageMessage(page_);
+    }
+    
+    // set flag for new message detected
+    newMessageCache = true;
+    
+    // set the state for duration to permanent
+    stateDuration = PERMANENT;
+}
+
+void Display::creatSlideParameterMessage(AudioParameter* param_)
 {
     SlideParameter* parameter = static_cast<SlideParameter*>(param_);
     
@@ -234,6 +293,7 @@ void Display::displaySlideParameter(AudioParameter* param_)
     oscTransmitter.add(parameter->getPrintValueAsFloat());
     oscTransmitter.add(parameter->getNormalizedValue());
 #endif
+    
     // order of cache elements
     // 1. name of parameter
     // 2. suffix of parameter (unit)
@@ -254,7 +314,7 @@ void Display::displaySlideParameter(AudioParameter* param_)
     displayCache.createRows();
 }
 
-void Display::displayChoiceParameter(AudioParameter* param_)
+void Display::createChoiceParameterMessage(AudioParameter* param_)
 {
     ChoiceParameter* parameter = static_cast<ChoiceParameter*>(param_);
     
@@ -270,6 +330,7 @@ void Display::displayChoiceParameter(AudioParameter* param_)
     oscTransmitter.add(parameter->getName());
     oscTransmitter.add(choices[index]);
 #endif
+    
     // order of cache elements
     // 1. name of parameter
     // 2. an array of choice names, size of array
@@ -283,7 +344,7 @@ void Display::displayChoiceParameter(AudioParameter* param_)
     displayCache.createRows();
 }
 
-void Display::displayButtonParameter(AudioParameter* param_)
+void Display::createButtonParameterMessage(AudioParameter* param_)
 {
     // order of cache elements
     // 1. name of parameter
@@ -303,25 +364,7 @@ void Display::displayButtonParameter(AudioParameter* param_)
     displayCache.createRows();
 }
 
-void Display::menuPageChanged(Menu::Page* page_)
-{
-    if (page_->getID() == "load_preset")
-    {
-        displayPreset();
-    }
-    else if (instanceof<Menu::ParameterPage>(page_))
-    {
-        Menu::ParameterPage* page = static_cast<Menu::ParameterPage*>(page_);
-        parameterCalledDisplay(page->getParameter());
-    }
-    else
-        displayMenuPage(page_);
-    
-    newMessageCache = true;
-    stateDuration = PERMANENT;
-}
-
-void Display::displayMenuPage(Menu::Page* page_)
+void Display::createMenuPageMessage(Menu::Page* page_)
 {
     size_t currentChoice = page_->getCurrentChoice();
     String* choiceNames = page_->getChoiceNames();
@@ -348,7 +391,7 @@ void Display::displayMenuPage(Menu::Page* page_)
     displayCache.createRows();
 }
 
-void Display::displayPreset()
+void Display::createPresetMessage()
 {
 #ifdef BELA_CONNECTED
     oscTransmitter.newMessage("/preset");

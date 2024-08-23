@@ -1,9 +1,7 @@
 #ifndef display_hpp
 #define display_hpp
 
-#include "parameters.hpp"
 #include "menu.hpp"
-#include "functions.h"
 
 #ifdef BELA_CONNECTED
 #include <libraries/OscSender/OscSender.h>
@@ -13,75 +11,157 @@
 // MARK: - DISPLAY
 // =======================================================================================
 
-// display should be printable to:
-// 1. OLED Display (via OscSender class of BELA)
-// 2. GUI (via update() function, returns bool, if yes, vector of String with corresponding rows can be taken from DisplayCache
-// 3. CONSOLE (via update() function, _withConsole indicates if the Displaycatch should be printed
-
-static const int DISPLAY_AUTOHOMESCREEN = 48; // x * DISPLAY_FRAMERATE
-static const int DISPLAY_NUM_ROWS = 10;
-
+/**
+ * @class Display
+ * @brief Manages the display output across various platforms such as OLED and Console.
+ *
+ * The `Display` class is responsible for handling and updating display content that can be rendered on
+ * multiple platforms:
+ * 1. **OLED Display**: Managed via the `OscSender` class (specific to BELA).
+ * 3. **Console**: The display content can be printed to the console if `CONSOLE_PRINT` is defined.
+ *
+ * The display automatically returns to the home screen after a set duration (`DISPLAY_AUTOHOMESCREEN`).
+ * It also manages different states, such as `PERMANENT` and `TEMPORARY`, for how long content should be displayed.
+ */
 class Display : public AudioParameter::Listener
 {
 public:
+    /**
+     * @enum StateDuration
+     * @brief Defines the duration type of a display state.
+     * - `PERMANENT`: The display state remains until manually changed.
+     * - `TEMPORARY`: The display state will revert after a certain time.
+     */
     enum StateDuration { PERMANENT, TEMPORARY };
     
+    /**
+     * @struct DisplayCache
+     * @brief Caches display content, allowing it to be formatted and retrieved as needed.
+     *
+     * The `DisplayCache` struct stores messages and values that are to be displayed. It allows adding
+     * different types of data (e.g., float, int, string), creating rows for display, and clearing or printing
+     * the cache. The cache can be used to update the display across different platforms.
+     */
     struct DisplayCache
     {
-        inline void newMessage(const String& message_);
+        /**
+         * @brief Stores a new message in the display cache.
+         * @param message_ The message to be stored.
+         */
+        void newMessage(const String& message_);
         
+        /** @brief Adds a float value to the display cache. */
         void add(const float value_);
+        
+        /** @brief Adds an int value to the display cache. */
         void add(const int value_);
+        
+        /** @brief Adds a string value to the display cache. */
         void add(const String& value_);
+        
+        /**
+         * @brief Adds an array of strings to the display cache.
+         * @param value_ Pointer to the array of strings.
+         * @param size_ The number of strings in the array.
+         */
         void add(String* value_, const size_t size_);
         
+        /** @brief Creates rows from the cached data for display. */
         void createRows();
-        inline void clear();
-        void print();
         
-        String message;
-        std::vector<String> strings;
-        std::vector<float> floats;
-        std::vector<int> ints;
-        std::vector<String> rows;
-
+        /** @brief Clears the display cache. */
+        void clear();
+        
+        /** @brief Prints the current cache content to the console. */
+        void printToConsole();
+        
+        String message;               /**< The current message stored in the cache. */
+        std::vector<String> strings;  /**< Cached strings to be displayed. */
+        std::vector<float> floats;    /**< Cached float values to be displayed. */
+        std::vector<int> ints;        /**< Cached int values to be displayed. */
+        std::vector<String> rows;     /**< Formatted rows ready for display. */
     } displayCache;
     
+    /** Constructor for the Display class. */
     Display() {}
     
+    /** Destructor for the Display class. */
     ~Display() {}
     
+    /**
+     * @brief Sets up the display with the specified preset page.
+     * @param presetPage_ The menu page to associate with the display.
+     */
     void setup(Menu::Page* presetPage_);
                 
+    /**
+     * @brief Updates the display content.
+     * @return True if the display content was updated, otherwise false.
+     */
     bool update();
     
+    /**
+     * @brief Handles display updates when a parameter is called.
+     * @param param_ Pointer to the parameter that triggered the display update.
+     */
     void parameterCalledDisplay(AudioParameter* param_) override;
+    
+    /**
+     * @brief Handles display updates when the menu page changes.
+     * @param page_ Pointer to the new menu page.
+     */
     void menuPageChanged(Menu::Page* page_);
     
-    void displaySlideParameter(AudioParameter* param_);
-    void displayChoiceParameter(AudioParameter* param_);
-    void displayButtonParameter(AudioParameter* param_);
-    void displayMenuPage(Menu::Page* page_);
-    void displayPreset();
-    
+    /** @brief Resets the display counter, causing the display to stay active for the duration of `DISPLAY_AUTOHOMESCREEN`. */
     void refreshResetDisplayCounter() { resetDisplayCounter = DISPLAY_AUTOHOMESCREEN; }
     
+    /** @brief Gets the current display state duration. @return The current state duration. */
     StateDuration getStateDuration() const { return stateDuration; }
     
+    /** @brief Gets the current temporary parameter being displayed. @return Pointer to the temporary parameter. */
     AudioParameter* getTemporaryParameter() const { return tempParameter; }
     
 private:
+    /**
+     * @brief Displays content related to a slide parameter.
+     * @param param_ Pointer to the slide parameter.
+     */
+    void creatSlideParameterMessage(AudioParameter* param_);
+    
+    /**
+     * @brief Displays content related to a choice parameter.
+     * @param param_ Pointer to the choice parameter.
+     */
+    void createChoiceParameterMessage(AudioParameter* param_);
+    
+    /**
+     * @brief Creates and displays a message related to a button parameter.
+     * @param param_ Pointer to the button parameter.
+     */
+    void createButtonParameterMessage(AudioParameter* param_);
+
+    /** @brief Creates and displays a message for the current preset. */
+    void createPresetMessage();
+
+    /**
+     * @brief Creates and displays a message for the specified menu page.
+     * @param page_ Pointer to the menu page.
+     */
+    void createMenuPageMessage(Menu::Page* page_);
+    
 #ifdef BELA_CONNECTED
-    OscSender oscTransmitter;
+    OscSender oscTransmitter; /**< Handles OSC transmission for OLED display on BELA. */
 #endif
-    StateDuration stateDuration = TEMPORARY;
+    StateDuration stateDuration = TEMPORARY;  /**< The duration type of the current display state. */
     
-    AudioParameter* tempParameter = nullptr;
+    AudioParameter* tempParameter = nullptr;  /**< Pointer to the parameter being temporarily displayed. */
+    Menu::Page* presetPage = nullptr;         /**< Pointer to the current preset menu page. */
     
-    unsigned int resetDisplayCounter = 0;
-    bool newMessageCache = false;
+    unsigned int resetDisplayCounter = 0;     /**< Counter for determining when to reset to the home screen. */
+    bool newMessageCache = false;             /**< Flag indicating if there is a new message in the cache. */
     
-    Menu::Page* presetPage = nullptr;
+    static const uint DISPLAY_AUTOHOMESCREEN; /**< Duration before auto return to home screen, in frames. */
+    static const uint DISPLAY_NUM_ROWS;       /**< Number of rows the display can show. */
 };
 
 #endif /* display_hpp */
