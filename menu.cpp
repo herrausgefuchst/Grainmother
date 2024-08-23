@@ -556,7 +556,7 @@ void Menu::buttonPressed (UIElement* _uielement)
                 if (isoftype<ParameterPage>(currentPage))
                 {
                     ParameterPage* page = static_cast<ParameterPage*>(currentPage);
-                    page->getParameter()->setDefault();
+                    page->getParameter()->setDefaultValue();
                 }
             }
             default:

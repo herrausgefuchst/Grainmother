@@ -5,7 +5,7 @@
 // =======================================================================================
 
 AudioEngine::AudioEngine() 
-    : engineParameters("engine", AudioParameterGroup::Type::ENGINE, NUM_ENGINEPARAMETERS)
+    : engineParameters("engine", NUM_ENGINEPARAMETERS)
 {}
 
 void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
@@ -17,34 +17,44 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     // engine parameters
     {
         // tempo
-        engineParameters.addParameter(0u, engineParameterID[ENUM2INT(EngineParameters::TEMPO)],
-                                      engineParameterName[ENUM2INT(EngineParameters::TEMPO)],
-                                      " bpm", 30.f, 300.f, 1.f, 120.f, sampleRate);
+        engineParameters.addParameter<SlideParameter>
+        (0u, engineParameterID[ENUM2INT(EngineParameters::TEMPO)],
+         engineParameterName[ENUM2INT(EngineParameters::TEMPO)],
+         " bpm", 30.f, 300.f, 1.f, 120.f, sampleRate);
 
         // global bypass
-        engineParameters.addParameter(11u, engineParameterID[ENUM2INT(EngineParameters::GLOBALBYPASS)],
-                                      engineParameterName[ENUM2INT(EngineParameters::GLOBALBYPASS)],
-                                      ButtonParameter::COUPLED, { "OFF", "ON" });
+        engineParameters.addParameter<ButtonParameter>
+        (11u, engineParameterID[ENUM2INT(EngineParameters::GLOBALBYPASS)],
+         engineParameterName[ENUM2INT(EngineParameters::GLOBALBYPASS)],
+         std::initializer_list<String>{ "OFF", "ON" });
 
         // effect bypasses
-        engineParameters.addParameter(12u, engineParameterID[ENUM2INT(EngineParameters::EFFECT1BYPASS)],
-                                      engineParameterName[ENUM2INT(EngineParameters::EFFECT1BYPASS)],
-                                      { "OFF", "ON" }, ParameterTypes::TOGGLE);
-        engineParameters.addParameter(13u, engineParameterID[ENUM2INT(EngineParameters::EFFECT2BYPASS)],
-                                      engineParameterName[ENUM2INT(EngineParameters::EFFECT2BYPASS)],
-                                      { "OFF", "ON" }, ParameterTypes::TOGGLE);
-        engineParameters.addParameter(14u, engineParameterID[ENUM2INT(EngineParameters::EFFECT3BYPASS)],
-                                      engineParameterName[ENUM2INT(EngineParameters::EFFECT3BYPASS)],
-                                      { "OFF", "ON" }, ParameterTypes::TOGGLE);
+        engineParameters.addParameter<ToggleParameter>
+        (12u, engineParameterID[ENUM2INT(EngineParameters::EFFECT1BYPASS)],
+         engineParameterName[ENUM2INT(EngineParameters::EFFECT1BYPASS)],
+         std::initializer_list<String>{ "OFF", "ON" });
+        
+        engineParameters.addParameter<ToggleParameter>
+        (13u, engineParameterID[ENUM2INT(EngineParameters::EFFECT2BYPASS)],
+         engineParameterName[ENUM2INT(EngineParameters::EFFECT2BYPASS)],
+         std::initializer_list<String>{ "OFF", "ON" });
+        
+        engineParameters.addParameter<ToggleParameter>
+        (14u, engineParameterID[ENUM2INT(EngineParameters::EFFECT3BYPASS)],
+         engineParameterName[ENUM2INT(EngineParameters::EFFECT3BYPASS)],
+         std::initializer_list<String>{ "OFF", "ON" });
 
         // effect edit focus
-        engineParameters.addParameter(15u, engineParameterID[ENUM2INT(EngineParameters::EFFECTEDITFOCUS)],
-                                      engineParameterName[ENUM2INT(EngineParameters::EFFECTEDITFOCUS)],
-                                      { "Reverb", "Granulator", "Resonator" }, ParameterTypes::CHOICE);
+        engineParameters.addParameter<ChoiceParameter>
+        (15u, engineParameterID[ENUM2INT(EngineParameters::EFFECTEDITFOCUS)],
+         engineParameterName[ENUM2INT(EngineParameters::EFFECTEDITFOCUS)],
+         std::initializer_list<String>{ "Reverb", "Granulator", "Resonator" });
         
         // effect order
-        engineParameters.addParameter(16u, engineParameterID[ENUM2INT(EngineParameters::EFFECTORDER)],
-                                      engineParameterName[ENUM2INT(EngineParameters::EFFECTORDER)], {
+        engineParameters.addParameter<ChoiceParameter>
+        (16u, engineParameterID[ENUM2INT(EngineParameters::EFFECTORDER)],
+         engineParameterName[ENUM2INT(EngineParameters::EFFECTORDER)],
+         std::initializer_list<String>{
             "1->2->3",
             "2 | 3->1",
             "1 | 3->2",
@@ -57,12 +67,13 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
             "3->1->2",
             "2->3->1",
             "2->1->3",
-            "1->3->2"
-        }, ParameterTypes::CHOICE);
+            "1->3->2"});
         
-        engineParameters.addParameter(15u, engineParameterID[ENUM2INT(EngineParameters::TEMPOSET)],
-                                      engineParameterName[ENUM2INT(EngineParameters::TEMPOSET)],
-                                      { "Current Effect", "All Effects" }, ParameterTypes::CHOICE);
+        // set tempo to?
+        engineParameters.addParameter<ChoiceParameter>
+        (15u, engineParameterID[ENUM2INT(EngineParameters::TEMPOSET)],
+         engineParameterName[ENUM2INT(EngineParameters::TEMPOSET)],
+         std::initializer_list<String>{ "Current Effect", "All Effects" });
     }
     
     // Effects
@@ -397,7 +408,7 @@ void UserInterface::updateNonAudioTasks()
 
     if (scrollingParameter)
     {
-        scrollingParameter->scroll(scrollingDirection);
+        scrollingParameter->nudgeValue(scrollingDirection);
         potentiometer[scrollingParameter->getIndex()].decouple(scrollingParameter->getNormalizedValue());
     }
 }
@@ -580,7 +591,7 @@ void UserInterface::setDefaultUIParameter()
         
         if (param)
         {
-            param->setDefault();
+            param->setDefaultValue();
             
             potentiometer[param->getIndex()].decouple(param->getNormalizedValue());
         }

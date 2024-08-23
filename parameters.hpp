@@ -2,18 +2,10 @@
 #define parameters_hpp
 
 #include "uielements.hpp"
-#include "helpers.hpp"
 
 // =======================================================================================
 // MARK: - AUDIO PARAMETER
 // =======================================================================================
-
-enum class ParameterTypes {
-    CHOICE,
-    SLIDE,
-    BUTTON,
-    TOGGLE
-};
 
 /**
  * @class AudioParameter
@@ -27,22 +19,19 @@ enum class ParameterTypes {
 class AudioParameter : public UIElement::Listener
 {
 public:
-    /**
-     * @brief Deleted default constructor to enforce parameterized construction.
-     */
+    /** Deleted default constructor to enforce parameterized construction. */
     AudioParameter() = delete;
 
     /**
-     * @brief Constructs an AudioParameter with a specified ID and name.
+     * Constructs an AudioParameter with a specified index, ID, and name.
+     * @param index_ The index of the parameter.
      * @param id_ The ID of the parameter.
      * @param name_ The name of the parameter.
      */
-    AudioParameter(const uint index_, const String id_, const String name_)
+    AudioParameter(const uint index_, const String& id_, const String& name_)
         : index(index_), id(id_), name(name_) {}
 
-    /**
-     * @brief Virtual destructor for AudioParameter.
-     */
+    /** Virtual destructor for AudioParameter. */
     virtual ~AudioParameter() {}
 
     /**
@@ -52,22 +41,24 @@ public:
     class Listener
     {
     public:
-        /**
-         * @brief Virtual destructor for Listener.
-         */
+        /** Virtual destructor for Listener. */
         virtual ~Listener() {}
 
         /**
-         * @brief Called when the parameter value changes.
+         * Called when the parameter value changes.
          * @param param_ Pointer to the changed parameter.
          */
         virtual void parameterChanged(AudioParameter* param_) {}
         
+        /** 
+         * Called when the display is requested.
+         * @param param_ Pointer to the changed parameter.
+         */
         virtual void parameterCalledDisplay(AudioParameter* param_) {}
     };
 
     /**
-     * @brief Adds a listener to the parameter.
+     * Adds a listener to the parameter.
      * @param listener_ Pointer to the listener to add.
      */
     void addListener(AudioParameter::Listener* listener_)
@@ -76,7 +67,7 @@ public:
     }
 
     /**
-     * @brief Notifies all listeners of a parameter change.
+     * Notifies all listeners of a parameter change.
      * @param withPrint_ Whether to print the change or not.
      */
     virtual void notifyListeners(const bool withPrint_);
@@ -86,117 +77,73 @@ public:
     std::vector<std::function<void()>> onPress;   /**< List of functions to call on press */
     std::vector<std::function<void()>> onRelease; /**< List of functions to call on release */
 
-    /**
-     * @brief Processes the parameter ramp (can be overridden).
-     */
+    /** Processes the parameter ramp (can be overridden). */
     virtual void processRamp() {}
 
     /**
-     * @brief Sets the parameter value (float version).
+     * Sets the parameter value (float version).
      * @param value_ The new value.
-     * @param withPrint_ Whether to print new value to display
+     * @param withPrint_ Whether to print the new value to display.
      */
     virtual void setValue(const float value_, const bool withPrint_ = true) {}
 
     /**
-     * @brief Sets the parameter value (int version).
+     * Sets the parameter value (int version).
      * @param value_ The new value.
-     * @param withPrint_ Whether to print new value to display
+     * @param withPrint_ Whether to print the new value to display.
      */
     virtual void setValue(const int value_, const bool withPrint_ = true) {}
 
-    
-    virtual void setDefault() {}
-    
-    
-    /**
-     * @brief Nudges the parameter value by a given direction.
-     * @param direction_ The direction to nudge the value.
-     */
-    virtual void nudgeValue(const int direction_) { rt_printf("nudging value\n"); }
-
-    void scroll(const int direction_) { nudgeValue(direction_); }
+    /** Sets the parameter to its default value. */
+    virtual void setDefaultValue() {}
     
     /**
-     * @brief Gets the name of the parameter.
-     * @return The name of the parameter.
+     * Nudges the parameter value by a given direction.
+     * @param direction_ The direction to nudge the value (negativ values = down, 0 and positiv values = up)
      */
-    String getName() const { return name; }
-
-    /**
-     * @brief Gets the ID of the parameter.
-     * @return The ID of the parameter.
-     */
-    String getParameterID() const { return id; }
-
+    virtual void nudgeValue(const int direction_) {}
     
+    /** Gets the index of the parameter. */
     uint getIndex() const { return index; }
     
-    
-    /**
-     * @brief Gets the current value of the parameter as a float.
-     * @return The float value.
-     */
+    /** Gets the ID of the parameter. @return The ID of the parameter. */
+    String getID() const { return id; }
+
+    /** Gets the name of the parameter. @return The name of the parameter. */
+    String getName() const { return name; }
+
+    /** Gets the current value of the parameter as a float. @return The float value. */
     virtual float getValueAsFloat() const = 0;
 
-    /**
-     * @brief Gets the current value of the parameter as an int.
-     * @return The int value.
-     */
+    /** Gets the current value of the parameter as an int. @return The int value. */
     virtual int getValueAsInt() const = 0;
-    
-    /**
-     * @brief Gets the printable value of the parameter as a float.
-     * @return The printable float value.
-     */
+
+    /** Gets the printable value of the parameter as a float. @return The printable float value. */
     virtual float getPrintValueAsFloat() const = 0;
 
-    /**
-     * @brief Gets the printable value of the parameter as an int.
-     * @return The printable int value.
-     */
-    virtual int getPrintValueAsInt() const = 0;
-
-    /**
-     * @brief Gets the printable value of the parameter as a string.
-     * @return The printable string value.
-     */
+    /** Gets the printable value of the parameter as a string. @return The printable string value. */
     virtual String getPrintValueAsString() const = 0;
 
-    /**
-     * @brief Gets the normalized value of the parameter.
-     * @return The normalized value.
-     */
+    /** Gets the normalized value of the parameter. @return The normalized value. */
     virtual float getNormalizedValue() const { return 0.f; }
 
-    /**
-     * @brief Gets the minimum value of the parameter.
-     * @return The minimum value.
-     */
+    /** Gets the minimum value of the parameter. @return The minimum value. */
     virtual float getMin() const { return -1.f; }
 
-    /**
-     * @brief Gets the maximum value of the parameter.
-     * @return The maximum value.
-     */
+    /** Gets the maximum value of the parameter. @return The maximum value. */
     virtual float getMax() const { return -1.f; }
 
-    /**
-     * @brief Gets the step size of the parameter.
-     * @return The step size.
-     */
-    virtual float getStep() const { return -1.f; }
+    /** Gets the nudgeStep size of the parameter. @return The nudge step size. */
+    virtual float getNudgeStep() const { return -1.f; }
 
-    /**
-     * @brief Gets the range of the parameter.
-     * @return The range.
-     */
+    /** Gets the range of the parameter. @return The range. */
     virtual float getRange() const { return -1.f; }
     
 protected:
     std::vector<Listener*> listeners; /**< List of listeners observing this parameter */
-    const uint index;
-    const String id, name; /**< The ID and name of the parameter */
+    const uint index; /**< The index of the parameter */
+    const String id; /**< The ID of the parameter */
+    const String name; /**< The name of the parameter */
 };
 
 
@@ -206,36 +153,46 @@ protected:
 
 /**
  * @class ChoiceParameter
- * @brief A class representing a parameter with multiple choice options.
+ * @brief Represents a parameter with multiple choice options.
  */
 class ChoiceParameter : public AudioParameter
 {
 public:
     /**
-     * @brief Constructs a ChoiceParameter with a specified ID, name, number of choices, and choice names.
+     * @brief Constructs a ChoiceParameter with a specified index, ID, name, choice names, and number of choices.
+     * @param index_ The index of the parameter.
      * @param id_ The ID of the parameter.
      * @param name_ The name of the parameter.
-     * @param numChoices_ The number of choices available.
      * @param choiceNames_ Pointer to an array of choice names.
+     * @param numChoices_ The number of choices available.
      */
-    ChoiceParameter(const uint index_, const String id_, const String name_, const String* choiceNames_, const unsigned int numChoices_);
-
+    ChoiceParameter(const uint index_, const String& id_, const String& name_, 
+                    const String* choiceNames_, const unsigned int numChoices_);
+    
     /**
-     * @brief Destructor for ChoiceParameter.
+     * @brief Constructs a ChoiceParameter with a specified index, ID, name, and an initializer list of choice names.
+     * @param index_ The index of the parameter.
+     * @param id_ The ID of the parameter.
+     * @param name_ The name of the parameter.
+     * @param toggleStateNames_ An initializer list of choice names.
      */
+    ChoiceParameter(const uint index_, const String& id_, const String& name_, 
+                    std::initializer_list<String> toggleStateNames_);
+
+    /** Destructor for ChoiceParameter. */
     ~ChoiceParameter() {}
-        
+
     /**
      * @brief Sets the value of the parameter (int version).
      * @param value_ The new value.
-     * @param withPrint_ Whether to print new value to display
+     * @param withPrint_ Whether to print the new value to display.
      */
     void setValue(const int value_, const bool withPrint_ = true) override;
 
     /**
      * @brief Sets the value of the parameter (float version).
      * @param value_ The new value.
-     * @param withPrint_ Whether to print new value to display
+     * @param withPrint_ Whether to print the new value to display.
      */
     void setValue(const float value_, const bool withPrint_ = true) override;
 
@@ -251,30 +208,31 @@ public:
      */
     void buttonClicked(UIElement* uielement_) override;
     
+    /** Nudges the parameter value in the specified direction. */
     void nudgeValue(const int direction_) override;
 
+    /** @brief Gets the current value as a float. @return The float value of the current choice. */
     float getValueAsFloat() const override { return static_cast<float>(getValueAsInt()); }
+    
+    /** @brief Gets the printable value as a float. @return The printable float value of the current choice. */
     float getPrintValueAsFloat() const override { return getValueAsFloat(); }
+    
+    /** @brief Gets the current value as an int. @return The int value of the current choice. */
     int getValueAsInt() const override { return choice; }
-    int getPrintValueAsInt() const override { return getValueAsInt(); }
+    
+    /** @brief Gets the printable value as a string. @return The printable string value of the current choice. */
     String getPrintValueAsString() const override { return choiceNames[choice]; }
 
-    /**
-     * @brief Gets the number of choices available.
-     * @return The number of choices.
-     */
-    unsigned int getNumChoices() const { return numChoices; }
+    /** @brief Gets the number of choices available. @return The number of choices. */
+    size_t getNumChoices() const { return numChoices; }
 
-    /**
-     * @brief Gets the names of the available choices.
-     * @return Pointer to an array of choice names.
-     */
+    /** @brief Gets the names of the available choices. @return Pointer to an array of choice names. */
     String* getChoiceNames() const { return choiceNames.get(); }
-    
+
 private:
-    const unsigned int numChoices = 0; /**< Number of choices available */
-    unsigned int choice = 0; /**< The current choice */
-    std::unique_ptr<String[]> choiceNames; /**< Array of choice names */
+    const size_t numChoices = 0; /**< The number of choices available. */
+    unsigned int choice = 0; /**< The current choice. */
+    std::unique_ptr<String[]> choiceNames; /**< Array of choice names. */
 };
 
 
@@ -285,97 +243,131 @@ private:
 
 /**
  * @class SlideParameter
- * @brief A class representing a parameter with a sliding scale, supporting linear and frequency scaling.
+ * @brief Represents a parameter with a sliding scale, supporting linear and frequency scaling.
  *
- * the SlideParameter includes a ramp for the print value
- *
+ * The SlideParameter includes a ramp for the print value.
  */
 class SlideParameter : public AudioParameter
 {
 public:
     /**
      * @enum Scaling
-     * @brief Enumeration for the type of scaling applied to the parameter.
+     * @brief Defines the type of scaling applied to the parameter.
      */
     enum Scaling { LIN, FREQ };
     
     /**
      * @brief Constructs a SlideParameter with specified attributes.
+     * @param index_ The index of the parameter.
      * @param id_ The ID of the parameter.
      * @param name_ The name of the parameter.
-     * @param unit_ The unit of measurement for the parameter.
+     * @param suffix_ The unit of measurement for the parameter.
      * @param min_ The minimum value of the parameter.
      * @param max_ The maximum value of the parameter.
      * @param nudgeStep_ The step size for the parameter.
      * @param default_ The default value of the parameter.
+     * @param sampleRate_ The sample rate for the parameter.
      * @param scaling_ The scaling type (linear or frequency).
-     * @param ramptimeMs_ The ramp time in milliseconds for changes
+     * @param ramptimeMs_ The ramp time in milliseconds for changes.
      */
-    SlideParameter(const uint index_, const String id_, const String name_, const String unit_,
-                   const float min_, const float max_, const float nudgeStep_,
+    SlideParameter(const uint index_, const String& id_, const String& name_, 
+                   const String& suffix_, const float min_, const float max_,
+                   const float nudgeStep_,
                    const float default_,
                    const float sampleRate_,
                    const Scaling scaling_ = LIN,
                    const float ramptimeMs_ = 0.f);
 
-    /**
-     * @brief Destructor for SlideParameter.
-     */
+    /** Destructor for SlideParameter. */
     ~SlideParameter() {}
     
+    /** Processes the parameter ramp. */
     void processRamp() override;
     
+    /** Handles potentiometer changes from a UI element. */
     void potChanged(UIElement* uielement_) override;
     
+    /**
+     * @brief Sets the value of the parameter (float version).
+     * @param value_ The new value.
+     * @param withPrint_ Whether to print the new value to display.
+     */
     void setValue(float value_, const bool withPrint_ = true) override;
+    
+    /**
+     * @brief Sets the value of the parameter (int version).
+     * @param value_ The new value.
+     * @param withPrint_ Whether to print the new value to display.
+     */
     void setValue(const int value_, const bool withPrint_ = true) override;
     
+    /** Sets the scaling type of the parameter. */
     void setScaling(const Scaling scaling_) { scaling = scaling_; }
+    
+    /** Sets the ramp time in milliseconds. */
     void setRampTimeMs(const float rampTimeMs_) { ramptimeMs = rampTimeMs_; }
     
     /**
-     * @brief Sets the normalized value of the parameter.
+     * @brief Sets the normalized value of the parameter (0..1)
      * @param value_ The normalized value to set.
      * @param withPrint_ Whether to notify listeners.
      */
     void setNormalizedValue(const float value_, const bool withPrint_ = true);
     
-    void setDefault() override;
+    /** Sets the parameter to its default value. */
+    void setDefaultValue() override;
 
+    /** Nudges the parameter value in the specified direction. */
     void nudgeValue(const int direction_) override;
 
+    /** @brief Gets the current value as a float. @return The float value of the parameter. */
     float getValueAsFloat() const override { return value(); }
+    
+    /** @brief Gets the printable value as a float. @return The printable float value of the parameter. */
     float getPrintValueAsFloat() const override { return value.getTarget(); }
+    
+    /** @brief Gets the normalized value of the parameter. (0...1) @return The normalized value. */
     float getNormalizedValue() const override { return normalizedValue; }
+    
+    /** @brief Gets the current value as an int. @return The int value of the parameter. */
     int getValueAsInt() const override { return static_cast<int>(getValueAsFloat()); }
-    int getPrintValueAsInt() const override { return static_cast<int>(getPrintValueAsFloat()); }
 
-    /**
-     * @brief Gets the unit of measurement for the parameter.
-     * @return The unit as a string.
-     */
-    String getUnit() const { return unit; }
+    /** @brief Gets the suffix (unit of measurement) for the parameter. @return The unit as a string. */
+    String getSuffix() const { return suffix; }
 
+    /** @brief Gets the printable value as a string. @return The printable string value of the parameter. */
     String getPrintValueAsString() const override { return TOSTRING(value.getTarget()); }
     
+    /** @brief Gets the minimum value of the parameter. @return The minimum value. */
     float getMin() const override { return min; }
+    
+    /** @brief Gets the maximum value of the parameter. @return The maximum value. */
     float getMax() const override { return max; }
-    float getStep() const override { return nudgeStep; }
+    
+    /** @brief Gets the nudge step size of the parameter. @return The nudge step size. */
+    float getNudgeStep() const override { return nudgeStep; }
+    
+    /** @brief Gets the range of the parameter. @return The range. */
     float getRange() const override { return range; }
     
 private:
+    /**
+     * @brief Sets the ramp value with an option to use the ramp.
+     * @param value_ The value to set.
+     * @param withRamp_ Whether to use the ramp.
+     */
     void setRampValue(const float value_, const bool withRamp_ = true);
     
-    const String unit;
-    const float min;
-    const float max;
-    const float defaultValue;
-    float nudgeStep;
-    const float range;
-    float ramptimeMs;
-    Scaling scaling;
-    RampLinear value;
-    float normalizedValue;
+    const String suffix;             /**< The unit of measurement for the parameter. */
+    const float min;                 /**< The minimum value of the parameter. */
+    const float max;                 /**< The maximum value of the parameter. */
+    const float defaultValue;        /**< The default value of the parameter. */
+    float nudgeStep;                 /**< The nudge step size of the parameter. */
+    const float range;               /**< The range of the parameter. */
+    float ramptimeMs;                /**< The ramp time in milliseconds. */
+    Scaling scaling;                 /**< The scaling type (linear or frequency). */
+    RampLinear value;                /**< The current value, managed with a ramp. */
+    float normalizedValue;           /**< The normalized value of the parameter. */
 };
 
 
@@ -383,77 +375,86 @@ private:
 // MARK: - BUTTON PARAMETER
 // =======================================================================================
 
-// TODO: clean this up, the type parameter splitted into different parameter type classes!
-
 /**
  * @class ButtonParameter
- * @brief A class representing a button-based parameter with different interaction types.
+ * @brief Represents a parameter that can toggle between states, typically used for buttons.
  *
- * This class defines the interaction types for various buttons. The interaction types
- * include TOGGLE, MOMENTARY, and combinations of these. The configuration specifies
- * whether the button supports short press (TOGGLE), long press (MOMENTARY), or both.
+ * reacts on Clicks, Presses and Releases of a Button
  *
- * ### Button Interaction Summary:
- * | Button       | Short Press  | Long Press                          |
- * |--------------|--------------|-------------------------------------|
- * | FX 1..3      | TOGGLE       | No                                  |
- * | ACTION       | TOGGLE       | MOMENTARY                           |
- * | TEMPO        | No           | MOMENTARY (no ButtonParameter connected) |
- * | BYPASS       | TOGGLE       | MOMENTARY                           |
- * | MENUs        | No           | MOMENTARY (no ButtonParameter connected) |
- *
- * "No" indicates that the parameter does not need to save a value.
- * Therefore, three interaction types are defined:
- * 1. **TOGGLE only**: Button toggles its state with short presses.
- * 2. **MOMENTARY only**: Button activates only while pressed (long press).
- * 3. **Coupled**: Button supports both TOGGLE (short press) and MOMENTARY (long press) interactions.
- * 
  */
 class ButtonParameter : public AudioParameter
 {
 public:
     /**
-     * @enum Type
-     * @brief Enumeration for the type of button interaction (e.g., TOGGLE, MOMENTARY, COUPLED).
+     * @enum ToggleState
+     * @brief Represents the toggle state of the button (INACTIVE, ACTIVE).
      */
-    enum Type { TOGGLE, MOMENTARY, COUPLED };
+    enum ToggleState { INACTIVE, ACTIVE };
 
     /**
-     * @enum ToggleSte
-     * @brief Enumeration for the toggle state (UP, DOWN).
-     */
-    enum ToggleState { UP, DOWN };
-    
-    /**
-     * @brief Constructs a ButtonParameter with a specified ID, name, and interaction type.
+     * @brief Constructs a ButtonParameter with a specified index, ID, name, and optional toggle state names.
+     * @param index_ The index of the parameter.
      * @param id_ The ID of the parameter.
      * @param name_ The name of the parameter.
-     * @param type_ The type of button interaction.
+     * @param toggleStateNames_ Pointer to an array of toggle state names (optional).
      */
-    ButtonParameter(const uint index_, const String id_, const String name_, const Type type_, const String* toggleStateNames_ = nullptr);
-
+    ButtonParameter(const uint index_, const String& id_, const String& name_, 
+                    const String* toggleStateNames_ = nullptr);
+    
     /**
-     * @brief Destructor for ButtonParameter.
+     * @brief Constructs a ButtonParameter with a specified index, ID, name, and an initializer list of toggle state names.
+     * @param index_ The index of the parameter.
+     * @param id_ The ID of the parameter.
+     * @param name_ The name of the parameter.
+     * @param toggleStateNames_ An initializer list of toggle state names.
      */
+    ButtonParameter(const uint index_, const String& id_, const String& name_, 
+                    std::initializer_list<String> toggleStateNames_);
+
+    /** Destructor for ButtonParameter. */
     ~ButtonParameter() {}
         
+    /** Handles button clicks from a UI element. */
     void buttonClicked(UIElement* uielement_) override;
+    
+    /** Handles button presses from a UI element. */
     void buttonPressed(UIElement* uielement_) override;
+    
+    /** Handles button releases from a UI element. */
     void buttonReleased(UIElement* uielement_) override;
         
+    /**
+     * @brief Sets the value of the button parameter (float version).
+     * @param value_ The new value.
+     * @param withPrint_ Whether to print the new value to display.
+     */
     void setValue(const float value_, const bool withPrint_ = true) override;
+    
+    /**
+     * @brief Sets the value of the button parameter (int version).
+     * @param value_ The new value.
+     * @param withPrint_ Whether to print the new value to display.
+     */
     void setValue(const int value_, const bool withPrint_ = true) override;
 
+    /** @brief Gets the current value as a float. @return The float value of the parameter. */
     float getValueAsFloat() const override { return static_cast<float>(getValueAsInt()); }
+    
+    /** @brief Gets the printable value as a float. @return The printable float value of the parameter. */
     float getPrintValueAsFloat() const override { return getValueAsFloat(); }
+    
+    /** @brief Gets the current value as an int. @return The int value of the parameter. */
     int getValueAsInt() const override { return value; }
-    int getPrintValueAsInt() const override { return getValueAsInt(); }
+    
+    /** @brief Gets the printable value as a string. @return The printable string value of the parameter. */
     String getPrintValueAsString() const override;
     
 private:
-    const Type type;
-    ToggleState value = UP;
-    std::unique_ptr<String[]> toggleStateNames;
+    /** Toggles the button state between INACTIVE and ACTIVE. */
+    void toggle();
+    
+    ToggleState value = INACTIVE;                 /**< The current toggle state of the button. */
+    std::unique_ptr<String[]> toggleStateNames;   /**< Array of toggle state names. */
 };
 
 
@@ -462,32 +463,79 @@ private:
 // =======================================================================================
 
 
+/**
+ * @class ToggleParameter
+ * @brief Represents a parameter that toggles between states, typically used for Buttons
+ *
+ * pretty much the same as ButtonParameter, but this type can only toggle on button clicks
+ */
 class ToggleParameter : public AudioParameter
 {
 public:
+    /**
+     * @enum ToggleState
+     * @brief Represents the toggle state of the parameter (INACTIVE, ACTIVE).
+     */
     enum ToggleState { INACTIVE, ACTIVE };
     
-    ToggleParameter(const uint index_, const String id_, const String name_, const String* toggleStateNames_ = nullptr);
+    /**
+     * @brief Constructs a ToggleParameter with a specified index, ID, name, and optional toggle state names.
+     * @param index_ The index of the parameter.
+     * @param id_ The ID of the parameter.
+     * @param name_ The name of the parameter.
+     * @param toggleStateNames_ Pointer to an array of toggle state names (optional).
+     */
+    ToggleParameter(const uint index_, const String& id_, const String& name_, 
+                    const String* toggleStateNames_ = nullptr);
     
+    /**
+     * @brief Constructs a ToggleParameter with a specified index, ID, name, and an initializer list of toggle state names.
+     * @param index_ The index of the parameter.
+     * @param id_ The ID of the parameter.
+     * @param name_ The name of the parameter.
+     * @param toggleStateNames_ An initializer list of toggle state names.
+     */
+    ToggleParameter(const uint index_, const String& id_, const String& name_, 
+                    std::initializer_list<String> toggleStateNames_);
+    
+    /** Destructor for ToggleParameter. */
     ~ToggleParameter() {}
         
+    /** Handles button clicks from a UI element. */
     void buttonClicked(UIElement* uielement_) override;
+    
+    /** Handles button presses from a UI element. */
     void buttonPressed(UIElement* uielement_) override;
         
+    /**
+     * @brief Sets the value of the toggle parameter (float version).
+     * @param value_ The new value.
+     * @param withPrint_ Whether to print the new value to display.
+     */
     void setValue(const float value_, const bool withPrint_ = true) override;
+    
+    /**
+     * @brief Sets the value of the toggle parameter (int version).
+     * @param value_ The new value.
+     * @param withPrint_ Whether to print the new value to display.
+     */
     void setValue(const int value_, const bool withPrint_ = true) override;
 
+    /** @brief Gets the current value as a float. @return The float value of the parameter. */
     float getValueAsFloat() const override { return static_cast<float>(getValueAsInt()); }
+    
+    /** @brief Gets the printable value as a float. @return The printable float value of the parameter. */
     float getPrintValueAsFloat() const override { return getValueAsFloat(); }
     
+    /** @brief Gets the current value as an int. @return The int value of the parameter. */
     int getValueAsInt() const override { return value; }
-    int getPrintValueAsInt() const override { return getValueAsInt(); }
     
+    /** @brief Gets the printable value as a string. @return The printable string value of the parameter. */
     String getPrintValueAsString() const override;
     
 private:
-    ToggleState value = INACTIVE;
-    std::unique_ptr<String[]> toggleStateNames;
+    ToggleState value = INACTIVE;                 /**< The current toggle state of the parameter. */
+    std::unique_ptr<String[]> toggleStateNames;   /**< Array of toggle state names. */
 };
 
 
@@ -497,88 +545,62 @@ private:
 
 /**
  * @class AudioParameterGroup
- * @brief A class representing a group of audio parameters, organized by type.
+ * @brief Manages and organizes a group of audio parameters by type.
  *
- * The `AudioParameterGroup` class allows you to manage and organize audio parameters
- * by grouping them together. This class supports different types of parameters,
- * such as sliders, buttons, and choices, and enables easy retrieval and management.
+ * The `AudioParameterGroup` class allows for the efficient management and organization
+ * of audio parameters by grouping them together. This class supports various types of
+ * parameters, such as sliders, buttons, and choices, and provides easy methods for
+ * adding, retrieving, and managing these parameters within the group.
  */
 class AudioParameterGroup
 {
 public:
-    /**
-     * @enum Type
-     * @brief Types of parameter groups, indicating their purpose.
-     */
-    // TODO: do we really neeed this?
-    enum class Type { ENGINE, EFFECT };
-    
-    /**
-     * @brief Deleted default constructor to enforce parameterized construction.
-     */
+    /** Deleted default constructor to enforce parameterized construction. */
     AudioParameterGroup() = delete;
 
     /**
-     * @brief Constructs an AudioParameterGroup with a specified name and type.
-     * @param id_ The name of the parameter group.
-     * @param type_ The type of the parameter group (ENGINE or EFFECT).
+     * @brief Constructs an AudioParameterGroup with a specified ID and size.
+     * @param id_ The ID of the parameter group.
+     * @param size_ The number of parameters that the group can hold.
      */
-    AudioParameterGroup(const String id_, const Type type_, const size_t size_);
+    AudioParameterGroup(const String id_, const size_t size_);
 
-    /**
-     * @brief Destructor for AudioParameterGroup.
-     */
+    /** Destructor for AudioParameterGroup. */
     ~AudioParameterGroup();
         
     /**
-     * @brief Adds a slider parameter to the group.
+     * @brief Adds a parameter to the group.
+     *
+     * This template function allows you to add different types of parameters to the group.
+     * @tparam ParameterType The type of the parameter to add.
+     * @tparam Args The types of arguments to forward to the parameter's constructor.
+     * @param index_ The index of the parameter within the group.
      * @param id_ The ID of the parameter.
      * @param name_ The name of the parameter.
-     * @param unit_ The unit of measurement for the parameter.
-     * @param min_ The minimum value of the parameter.
-     * @param max_ The maximum value of the parameter.
-     * @param nudgeStep_ The step size for the parameter.
-     * @param default_ The default value of the parameter.
-     * @param sampleRate_ the sample rate
-     * @param scaling_ The scaling type for the parameter (linear or frequency).
-     * @param ramptimeMs_ The ramp time in milliseconds for value changes.
+     * @param args_ The arguments to forward to the parameter's constructor.
      */
-    void addParameter(const uint index_, const String id_, const String name_, const String unit_,
-                      const float min_, const float max_,
-                      const float nudgeStep_, const float default_,
-                      const float sampleRate_,
-                      const SlideParameter::Scaling scaling_ = SlideParameter::Scaling::LIN,
-                      const float ramptimeMs_ = 0.f);
+    template<typename ParameterType, typename... Args>
+    void addParameter(const uint index_, const String& id_, const String& name_, Args&&... args_)
+    {
+        int nextFreeIndex = 0;
 
-    /**
-     * @brief Adds a button parameter to the group.
-     * @param id_ The ID of the parameter.
-     * @param name_ The name of the parameter.
-     * @param type_ The button type (e.g., TOGGLE, MOMENTARY).
-     * @param toggleStateNames_ the print Strings of the two toggle states (optional)
-     */
-    void addParameter(const uint index_, const String id_, const String name_,
-                      const ButtonParameter::Type type_, const String* toggleStateNames_ = nullptr);
+        // search for the next free slot in the vector
+        while (parameterGroup[nextFreeIndex] != nullptr)
+        {
+            ++nextFreeIndex;
+            
+            // return if no free slot is found
+            if (nextFreeIndex >= parameterGroup.size())
+            {
+                engine_rt_error("This AudioParameterGroup (" + id + ") is already full!",
+                                __FILE__, __LINE__, false);
+                return;
+            }
+        }
 
-    void addParameter(const uint index_, const String id_, const String name_,
-                      const ButtonParameter::Type type_, std::initializer_list<String> toggleStateNames_);
-    
-    /**
-     * @brief Adds a choice parameter to the group.
-     * @param id_ The ID of the parameter.
-     * @param name_ The name of the parameter.
-     * @param numChoices_ The number of choices available.
-     * @param array_ A pointer to an array of choice names.
-     */
-    void addParameter(const uint index_, const String id_, const String name_, const String* array_, const int numChoices_);
-
-    /**
-     * @brief Adds a choice parameter to the group using an initializer list.
-     * @param id_ The ID of the parameter.
-     * @param name_ The name of the parameter.
-     * @param choices_ A list of choices for the parameter.
-     */
-    void addParameter(const uint index_, const String id_, const String name_, std::initializer_list<String> choices_, ParameterTypes type_);
+        // if a free slot is found, create a new parameter with specified type and arguments
+        parameterGroup[nextFreeIndex] = new ParameterType(index_, id_, name_, std::forward<Args>(args_)...);
+    }
     
     /**
      * @brief Retrieves a parameter by its index within the group.
@@ -594,24 +616,15 @@ public:
      */
     AudioParameter* getParameter(const String id_);
     
-    /**
-     * @brief Gets the name of the parameter group.
-     * @return The name of the parameter group.
-     */
+    /** @brief Gets the ID of the parameter group. @return The ID of the parameter group. */
     String getID() const { return id; }
 
-    /**
-     * @brief Gets the number of parameters in the group.
-     * @return The number of parameters in the group.
-     */
+    /** @brief Gets the number of parameters in the group. @return The number of parameters in the group. */
     size_t getNumParametersInGroup() const { return parameterGroup.size(); }
     
 private:
-    int getNextFreeGroupIndex();
-    
-    const String id; /**< Name of the parameter group */
-    const Type type; /**< Type of the parameter group (ENGINE or EFFECT) */
-    std::vector<AudioParameter*> parameterGroup; /**< array containing the parameters in the group */
+    const String id; /**< The ID of the parameter group. */
+    std::vector<AudioParameter*> parameterGroup; /**< A vector containing the parameters in the group. */
 };
 
 #endif /* parameters_hpp */

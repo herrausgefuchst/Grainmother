@@ -227,7 +227,7 @@ void Display::displaySlideParameter(AudioParameter* param_)
     else oscTransmitter.newMessage("/parameterChange_unipolar");
     
     oscTransmitter.add(parameter->getName());
-    oscTransmitter.add(parameter->getUnit());
+    oscTransmitter.add(parameter->getSuffix());
     oscTransmitter.add(parameter->getPrintValueAsFloat());
     oscTransmitter.add(parameter->getNormalizedValue());
 #endif
@@ -244,7 +244,7 @@ void Display::displaySlideParameter(AudioParameter* param_)
     else displayCache.newMessage("/parameterChange_unipolar");
     
     displayCache.add(parameter->getName());
-    displayCache.add(parameter->getUnit());
+    displayCache.add(parameter->getSuffix());
     displayCache.add(parameter->getMin());
     displayCache.add(parameter->getMax());
     displayCache.add(parameter->getPrintValueAsFloat());
@@ -395,7 +395,7 @@ void LED::parameterChanged(AudioParameter* param_)
     
     // - Choice but not EffectEditFocus:
     else if (instanceof<ChoiceParameter>(param_)
-             && param_->getParameterID() != "effect_edit_focus")
+             && param_->getID() != "effect_edit_focus")
     {
         // cast to a ChoiceParameter
         ChoiceParameter* param = static_cast<ChoiceParameter*>(param_);
@@ -405,7 +405,7 @@ void LED::parameterChanged(AudioParameter* param_)
     }
     
     // - EffectEditFocus:
-    else if (param_->getParameterID() == "effect_edit_focus")
+    else if (param_->getID() == "effect_edit_focus")
     {
         // check if this LED is an EffectLED
         // TODO: rather do this via a std::function?

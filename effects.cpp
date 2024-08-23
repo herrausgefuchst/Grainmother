@@ -7,7 +7,7 @@ Effect::Effect(AudioParameterGroup* engineParameters_,
                 const unsigned int numParameters_, const String name_,
                 const float sampleRate_, const unsigned int blockSize_)
     : id(name_)
-    , parameters(name_, AudioParameterGroup::Type::EFFECT, numParameters_)
+    , parameters(name_, numParameters_)
     , engineParameters(engineParameters_)
     , sampleRate(sampleRate_)
     , blockSize(blockSize_)
@@ -44,30 +44,31 @@ void Reverb::initializeParameters()
     
     // parameters controlled by potentiometers/sliders (index 0...7)
     for (unsigned int n = 0; n < NUM_POTENTIOMETERS; ++n)
-        parameters.addParameter(n, parameterID[n],
-                                parameterName[n],
-                                parameterSuffix[n],
-                                parameterMin[n],
-                                parameterMax[n],
-                                parameterStep[n],
-                                parameterInitialValue[n],
-                                sampleRate);
+        parameters.addParameter<SlideParameter>(n, parameterID[n],
+                                                parameterName[n],
+                                                parameterSuffix[n],
+                                                parameterMin[n],
+                                                parameterMax[n],
+                                                parameterStep[n],
+                                                parameterInitialValue[n],
+                                                sampleRate);
     
     // parameter controlled by the Action-Button (index 8)
-    parameters.addParameter(NUM_POTENTIOMETERS, parameterID[NUM_POTENTIOMETERS],
-                            parameterName[NUM_POTENTIOMETERS],
-                            reverbTypeNames, NUM_TYPES);
+    parameters.addParameter<ChoiceParameter>(NUM_POTENTIOMETERS,
+                                             parameterID[NUM_POTENTIOMETERS],
+                                             parameterName[NUM_POTENTIOMETERS],
+                                             reverbTypeNames, NUM_TYPES);
     
     // parameters controlled by menu (index 9...11)
     for (unsigned int n = NUM_POTENTIOMETERS+1; n < NUM_PARAMETERS; ++n)
-        parameters.addParameter(n, parameterID[n],
-                                parameterName[n],
-                                parameterSuffix[n],
-                                parameterMin[n],
-                                parameterMax[n],
-                                parameterStep[n],
-                                parameterInitialValue[n],
-                                sampleRate);
+        parameters.addParameter<SlideParameter>(n, parameterID[n],
+                                                parameterName[n],
+                                                parameterSuffix[n],
+                                                parameterMin[n],
+                                                parameterMax[n],
+                                                parameterStep[n],
+                                                parameterInitialValue[n],
+                                                sampleRate);
     
     // special cases: scaling and ramps:
     static_cast<SlideParameter*>(parameters.getParameter("reverb_highcut"))->setScaling(SlideParameter::Scaling::FREQ);
@@ -124,31 +125,31 @@ void Granulator::initializeParameters()
     
     // parameters controlled by potentiometers/sliders (index 0...7)
     for (unsigned int n = 0; n < NUM_POTENTIOMETERS; ++n)
-        parameters.addParameter(n, parameterID[n],
-                                parameterName[n],
-                                parameterSuffix[n],
-                                parameterMin[n],
-                                parameterMax[n],
-                                parameterStep[n],
-                                parameterInitialValue[n],
-                                sampleRate);
+        parameters.addParameter<SlideParameter>(n, parameterID[n],
+                                                parameterName[n],
+                                                parameterSuffix[n],
+                                                parameterMin[n],
+                                                parameterMax[n],
+                                                parameterStep[n],
+                                                parameterInitialValue[n],
+                                                sampleRate);
     
     // parameter controlled by the Action-Button (index 8)
-    parameters.addParameter(NUM_POTENTIOMETERS, parameterID[NUM_POTENTIOMETERS],
-                            parameterName[NUM_POTENTIOMETERS],
-                            ButtonParameter::Type::COUPLED,
-                            {"Off", "On"});
+    parameters.addParameter<ButtonParameter>(NUM_POTENTIOMETERS,
+                                             parameterID[NUM_POTENTIOMETERS],
+                                             parameterName[NUM_POTENTIOMETERS],
+                                             std::initializer_list<String>{"Off", "On"});
     
     // parameters controlled by menu (index 9...11)
     for (unsigned int n = NUM_POTENTIOMETERS+1; n < NUM_PARAMETERS; ++n)
-        parameters.addParameter(n, parameterID[n],
-                                parameterName[n],
-                                parameterSuffix[n],
-                                parameterMin[n],
-                                parameterMax[n],
-                                parameterStep[n],
-                                parameterInitialValue[n],
-                                sampleRate);
+        parameters.addParameter<SlideParameter>(n, parameterID[n],
+                                                parameterName[n],
+                                                parameterSuffix[n],
+                                                parameterMin[n],
+                                                parameterMax[n],
+                                                parameterStep[n],
+                                                parameterInitialValue[n],
+                                                sampleRate);
     
     // special cases: scaling and ramps:
     static_cast<SlideParameter*>(parameters.getParameter("gran_density"))->setScaling(SlideParameter::Scaling::FREQ);
