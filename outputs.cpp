@@ -2,8 +2,9 @@
 
 //#define CONSOLE_PRINT
 
-// MARK: - DISPLAY-CATCH
-// ********************************************************************************
+// =======================================================================================
+// MARK: - DISPLAY-CACHE
+// =======================================================================================
 
 inline void Display::DisplayCache::newMessage(const String& message_)
 {
@@ -144,8 +145,10 @@ void Display::DisplayCache::print()
     rt_printf("\n");
 }
 
+
+// =======================================================================================
 // MARK: - DISPLAY
-// ********************************************************************************
+// =======================================================================================
 
 
 void Display::setup(Menu::Page* presetPage_)
@@ -360,8 +363,9 @@ void Display::displayPreset()
 }
 
 
+// =======================================================================================
 // MARK: - LED
-// ********************************************************************************
+// =======================================================================================
 
 
 const uint LED::BLINKING_RATE = 10;
@@ -403,27 +407,6 @@ void LED::parameterChanged(AudioParameter* param_)
         // set value to a ratio: parameter value / number of choices
         value = 0.3f + 0.7f * ((param->getValueAsFloat() + 1.f) / (float)param->getNumChoices());
     }
-    
-    // - EffectEditFocus:
-    else if (param_->getID() == "effect_edit_focus")
-    {
-        // check if this LED is an EffectLED
-        // TODO: rather do this via a std::function?
-        if ((param_->getValueAsInt() == 0 && id == "effect1")
-            || (param_->getValueAsInt() == 1 && id == "effect2")
-            || (param_->getValueAsInt() == 2 && id == "effect3"))
-        {
-            // set state VALUEFOCUS
-            // if we are still in alert mode, set the state the LED returns to afterwards
-            if (state == ALERT) lastState = VALUEFOCUS;
-            
-            // else set the state
-            else state = VALUEFOCUS;
-        }
-        
-        // TODO: do we need this?
-        else state = VALUE;
-    }
 }
 
 
@@ -443,8 +426,8 @@ void LED::alert()
     rateCounter = ALERT_RATE;
     
     // Save the previous state.
-    // Avoid overwriting the previous state if ALERT is called repeatedly.
-    // This could cause the system to get stuck in ALERT.
+    // Avoid overwriting the previous state if ALERT or BLINKONCE is called repeatedly.
+    // This could cause the system to get stuck in these states
     if (state != ALERT && state != BLINKONCE) lastState = state;
     
     // set state
@@ -454,21 +437,46 @@ void LED::alert()
 
 void LED::blinkOnce()
 {
-    // prevent blinking if the current state is alert.
-    if (state != ALERT)
+    // prevent blinking if the current state is ALERT or BLINKONCE.
+    if (state != ALERT && state != BLINKONCE)
     {
-        // set blink value based on the current value (turn on if value > 0).
+        // set blink value based on the current value
+        // always the opposite of the current value
         blinkValue = value > 0.f ? 0.f : 1.f;
         
         // reset the counter for the duration of one blink.
         rateCounter = BLINKING_RATE;
         
         // save the current state before changing it.
-        if (state != BLINKONCE) lastState = state;
+        // overwrite saftey is done before (see also: alert())
+        lastState = state;
         
         // update the state to indicate a single blink.
         state = BLINKONCE;
     }
+}
+
+
+void LED::setState(State state_)
+{
+    if (state_ == VALUEFOCUS)
+    {
+        // set state VALUEFOCUS
+        // if we are still in alert or blinkonce mode, set the state the LED returns to afterwards
+        if (state == ALERT || state == BLINKONCE) lastState = VALUEFOCUS;
+        
+        // else set the state
+        else state = VALUEFOCUS;
+    }
+    
+    else if (state_ == VALUE)
+        state = VALUE;
+    
+    else if (state_ == ALERT)
+        alert();
+    
+    else if (state_ == BLINKONCE)
+        blinkOnce();
 }
 
 
@@ -487,6 +495,12 @@ float LED::getValue()
 
         case VALUEFOCUS:
         {
+            // effect led can have a value (0 or 1 = bypass on or off)
+            // and a blink function. depending on the value we return
+            // either a softer or stronger blink effect
+            if (value > 0.5f) output = 0.68f * value + 0.32f * blinkValue;
+            else output = 0.08f * blinkValue + 0.42f;
+            
             // switch the blink value if the time of one blink ran out
             if (--rateCounter == 0)
             {
@@ -494,17 +508,14 @@ float LED::getValue()
                 
                 blinkValue = !blinkValue;
             }
-            
-            // effect led can have a value (0 or 1 = bypass on or off)
-            // and a blink function. depending on the value we return
-            // either a softer or stronger blink effect
-            if (value > 0.5f) output = 0.68f * value + 0.32f * blinkValue;
-            else output = 0.08f * blinkValue + 0.42f;
             break;
         }
             
         case ALERT:
         {
+            // return the blink value
+            output = blinkValue;
+            
             // switch the blink value if the time of one blink ran out
             if (--rateCounter == 0)
             {
@@ -519,10 +530,6 @@ float LED::getValue()
                 
                 rateCounter = ALERT_RATE;
             }
-            
-            // return the blink value
-            output = blinkValue;
-            
             break;
         }
             
@@ -540,13 +547,12 @@ float LED::getValue()
                 
                 rateCounter = BLINKING_RATE;
             }
-            
             break;
         }
 
         default: 
         {
-            rt_printf("no valid LED state!\n");
+            engine_rt_error("no valid LED state!\n", __FILE__, __LINE__, false);
             break;
         }
     }

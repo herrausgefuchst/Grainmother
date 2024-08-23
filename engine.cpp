@@ -470,8 +470,34 @@ void UserInterface::setEffectEditFocus()
     // focus corresponding effect parameter
     button[ButtonID::ACTION].focusListener(effect->getParameter(NUM_POTENTIOMETERS));
     
-    // notify button-led that the parameter changed
+    // notify action-button-led that the parameter changed
     led[LED_ACTION].parameterChanged(effect->getParameter(NUM_POTENTIOMETERS));
+    
+    // calculate the indexi of the focussed effect led and the others
+    int focussedEffectLedIndex = focus->getValueAsInt() + LED_FX1;
+    int secondEffectLedIndex;
+    int thirdEffectLedIndex;
+    
+    switch (focussedEffectLedIndex) 
+    {
+        case LED_FX1:
+            secondEffectLedIndex = LED_FX2;
+            thirdEffectLedIndex = LED_FX3;
+            break;
+        case LED_FX2:
+            secondEffectLedIndex = LED_FX1;
+            thirdEffectLedIndex = LED_FX3;
+            break;
+        case LED_FX3:
+            secondEffectLedIndex = LED_FX1;
+            thirdEffectLedIndex = LED_FX2;
+            break;
+    }
+    
+    // set the led state: focussed = VALUEFOCUS, non-focussed = VALUE
+    led[focussedEffectLedIndex].setState(LED::State::VALUEFOCUS);
+    led[secondEffectLedIndex].setState(LED::State::VALUE);
+    led[thirdEffectLedIndex].setState(LED::State::VALUE);
 }
 
 
