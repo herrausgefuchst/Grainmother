@@ -12,18 +12,13 @@
 
 void UIElement::addListener (Listener* listener_)
 {
-    listeners.push_back(listener_);
+    listener = listener_;
 }
 
 
-void UIElement::focusListener (Listener* listener_)
+void UIElement::swapListener(Listener* listener_)
 {
-    // ! connected parameter must always be first listener !
-    if (listeners.size() == 0)
-        listeners.push_back(listener_);
-    
-    else
-        listeners[0] = listener_;
+    listener = listener_;
 }
 
 
@@ -118,7 +113,7 @@ void Potentiometer::update(const float guivalue_, const float analogvalue_)
             inputFocus = InputSource::ANALOG;
             
             // notify listeners (i.e. LEDs)
-            for (auto i : listeners) i->potCatchedValue();
+            if (onCatch) onCatch();
         }
         // 3. Pot behavior is CATCH, and the new value is within tolerance of the current value.
         else if (isClose(value, current, POT_CATCHING_TOLERANCE))
@@ -129,13 +124,13 @@ void Potentiometer::update(const float guivalue_, const float analogvalue_)
             inputFocus = InputSource::ANALOG;
             
             // notify listeners (i.e. LEDs)
-            for (auto i : listeners) i->potCatchedValue();
+            if (onCatch) onCatch();
         }
         // if nothing of this is true, at least call any connected function
         // that should react on a touch (i.e. display)
         else
         {
-            onTouch();
+            if (onTouch) onTouch();
         }
     }
     #endif // USING_ANALOG_INS
@@ -161,9 +156,9 @@ void Potentiometer::setNewMIDIMessage(const float midivalue_)
 }
 
 
-void Potentiometer::notifyListeners(const int specifier_)
+void Potentiometer::notifyListener(const int specifier_)
 {
-    for (auto i : listeners) i->potChanged(this);
+    if (listener) listener->potChanged(this);
 }
 
 
@@ -177,7 +172,7 @@ void Potentiometer::setValue(const float value_)
     last = current;
     current = value_;
     
-    notifyListeners();
+    notifyListener();
 }
 
 
@@ -267,10 +262,10 @@ void Button::update(const unsigned int guivalue_, const unsigned int analogvalue
             if (phase == HIGH)
             {
                 // if the last action was a long press, this action is a release
-                if (lastAction == LONGPRESS) notifyListeners(RELEASE);
+                if (lastAction == LONGPRESS) notifyListener(RELEASE);
                 
                 // else: this action is a click
-                else notifyListeners(CLICK);
+                else notifyListener(CLICK);
                 
                 // reset state variable
                 state = NO_ACTION;
@@ -294,7 +289,7 @@ void Button::update(const unsigned int guivalue_, const unsigned int analogvalue
             // if time ran out and no other change was detected, this action is a long press
             if (stateCounter <= 0)
             {
-                notifyListeners(LONGPRESS);
+                notifyListener(LONGPRESS);
                 
                 // reset state variable
                 state = NO_ACTION;
@@ -314,22 +309,22 @@ void Button::update(const unsigned int guivalue_, const unsigned int analogvalue
 }
 
 
-void Button::notifyListeners(const int specifier_)
+void Button::notifyListener(const int specifier_)
 {
     if (specifier_ == CLICK)
     {
-        for (auto i : onClick) i();
-        for (auto i : listeners) i->buttonClicked(this);
+        if (onClick) onClick();
+        if (listener) listener->buttonClicked(this);
     }
     else if (specifier_ == LONGPRESS)
     {
-        for (auto i : onPress) i();
-        for (auto i : listeners) i->buttonPressed(this);
+        if (onPress) onPress();
+        if (listener) listener->buttonPressed(this);
     }
     else if (specifier_ == RELEASE)
     {
-        for (auto i : onRelease) i();
-        for (auto i : listeners) i->buttonReleased(this);
+        if (onRelease) onRelease();
+        if (listener) listener->buttonReleased(this);
     }
     
     #ifdef CONSOLE_PRINT

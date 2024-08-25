@@ -182,7 +182,7 @@ private:
  * - ALERT: LED blinks a set number of times to indicate an alert (e.g., preset change), then reverts to the previous state.
  * - BLINKONCE: LED blinks once and then returns to the previous state.
  */
-class LED : public UIElement::Listener, public AudioParameter::Listener
+class LED : public AudioParameter::Listener
 {
 public:
     /**
@@ -233,9 +233,6 @@ public:
      * @param param_ Pointer to the changed parameter.
      */
     void parameterChanged(AudioParameter* param_) override;
-    
-    /** @brief Called when the connected Potentiometer catches a value. */
-    void potCatchedValue() override;
     
 private:
     uint index;

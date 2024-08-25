@@ -383,13 +383,13 @@ void Menu::initializePageActions()
     // Global Settings
     // - enter: notify listeners
     getPage("midi_in_channel")->onEnter = [this] {
-        for (auto i : listeners) i->globalSettingChanged(currentPage);
+        if (onGlobalSettingChange) onGlobalSettingChange(currentPage);
     };
     getPage("midi_out_channel")->onEnter = [this] {
-        for (auto i : listeners) i->globalSettingChanged(currentPage);
+        if (onGlobalSettingChange) onGlobalSettingChange(currentPage);
     };
     getPage("pot_behaviour")->onEnter = [this] {
-        for (auto i : listeners) i->globalSettingChanged(currentPage);
+        if (onGlobalSettingChange) onGlobalSettingChange(currentPage);
     };
     
     // Menu
@@ -398,7 +398,7 @@ void Menu::initializePageActions()
     
     // Effect Order
     // - notify engine to change algorithm if enter
-    getPage("effect_order")->onEnter = [this] { for (auto i : listeners) i->effectOrderChanged(); };
+    getPage("effect_order")->onEnter = [this] { if (onEffectOrderChange) onEffectOrderChange(); };
 }
 
 
@@ -587,8 +587,6 @@ void Menu::buttonReleased (UIElement* _uielement)
 
 void Menu::loadPreset()
 {
-    for (auto i : listeners) i->presetChanged();
-    
     // extract parametergroups (order is fixed!)
     auto engine = programParameters[0];
     auto effect1= programParameters[1];
@@ -621,7 +619,7 @@ void Menu::loadPreset()
     #endif
     
     // notify listeners
-    for (auto i : onLoadMessage) i();
+    if (onPresetLoad) onPresetLoad();
 }
 
 
@@ -661,7 +659,7 @@ void Menu::savePreset()
     #endif
     
     // notify listeners
-    for (auto i : onSaveMessage) i();
+    if (onPresetSave) onPresetSave();
 }
 
 

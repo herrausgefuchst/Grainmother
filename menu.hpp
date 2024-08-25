@@ -165,25 +165,25 @@ public:
     void buttonPressed(UIElement* uielement_) override;
     void buttonReleased(UIElement* uielement_) override;
         
-    class Listener
-    {
-    public:
-        virtual ~Listener() {}
-        
-        virtual void globalSettingChanged(Page* page_) {}
-        
-        virtual void effectOrderChanged() {}
-        
-        virtual void presetChanged() {}
-    };
+//    class Listener
+//    {
+//    public:
+//        virtual ~Listener() {}
+//        
+//        virtual void globalSettingChanged(Page* page_) {}
+//        
+//        virtual void effectOrderChanged() {}
+//        
+//        virtual void presetChanged() {}
+//    };
 
-    void addListener(Listener* listener_) { listeners.push_back(listener_); }
+//    void addListener(Listener* listener_) { listeners.push_back(listener_); }
     
-    std::vector<std::function<void()>> onSaveMessage;
-    std::vector<std::function<void()>> onLoadMessage;
+    std::function<void()> onPresetSave;
+    std::function<void()> onPresetLoad;
     std::function<void()> onPageChange;
     std::function<void()> onEffectOrderChange;
-    std::function<void()> onGlobalSettingChange;
+    std::function<void(Page* page_)> onGlobalSettingChange;
     
 private:
     void initializePages();
@@ -201,7 +201,7 @@ protected:
     
 private:
     std::vector<Page*> pages;
-    std::vector<Listener*> listeners;
+//    std::vector<Listener*> listeners;
 
     json JSONpresets;
     json JSONglobals;

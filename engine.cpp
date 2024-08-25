@@ -430,8 +430,6 @@ void UserInterface::initializeMenu()
 
 void UserInterface::initializeListeners()
 {
-    // TODO: kill vectors of listeners and lambdas
-    
     // BUTTON ACTIONS
     // ==================================================================================
 
@@ -449,16 +447,14 @@ void UserInterface::initializeListeners()
 
     // The Tempo Tapper is triggered when the Tempo button is clicked.
     // It checks for a new tempo and updates the Tempo Parameter accordingly.
-    button[BUTTON_TEMPO].onClick.push_back([this] {
-        evaluateNewTempo();
-    });
+    button[BUTTON_TEMPO].onClick = [this] { evaluateNewTempo(); };
 
     // The display will react and show the Tempo Parameter when the Tempo button is 
     // long-pressed. This automatically sets the display to the TEMPORARY state,
     // enabling tempo nudging and scrolling.
-    button[BUTTON_TEMPO].onPress.push_back([this] {
+    button[BUTTON_TEMPO].onPress = [this] {
         display.parameterCalledDisplay(engine->getParameter("tempo"));
-    });
+    };
 
     // UI Parameters will be nudged or scrolled when a Direction Button is clicked
     // or pressed. The current UI Parameter will be reset to its default value
@@ -466,33 +462,32 @@ void UserInterface::initializeListeners()
     // These lambda functions are called before the button listener notification.
     // They temporarily suspend the usual Menu Button actions until nudging,
     // scrolling, or resetting to default is complete.
-    button[BUTTON_UP].onClick.push_back([this] { nudgeUIParameter(1); });
-    button[BUTTON_DOWN].onClick.push_back([this] { nudgeUIParameter(-1); });
+    button[BUTTON_UP].onClick = [this] { nudgeUIParameter(1); };
+    button[BUTTON_DOWN].onClick = [this] { nudgeUIParameter(-1); };
 
-    button[BUTTON_UP].onPress.push_back([this] { startScrollingUIParameter(1); });
-    button[BUTTON_DOWN].onPress.push_back([this] { startScrollingUIParameter(-1); });
+    button[BUTTON_UP].onPress = [this] { startScrollingUIParameter(1); };
+    button[BUTTON_DOWN].onPress = [this] { startScrollingUIParameter(-1); };
 
-    button[BUTTON_UP].onRelease.push_back([this] { stopScrollingUIParameter(); });
-    button[BUTTON_DOWN].onRelease.push_back([this] { stopScrollingUIParameter(); });
+    button[BUTTON_UP].onRelease = [this] { stopScrollingUIParameter(); };
+    button[BUTTON_DOWN].onRelease = [this] { stopScrollingUIParameter(); };
 
-    button[BUTTON_ENTER].onPress.push_back([this] { setUIParameterToDefault(); });
+    button[BUTTON_ENTER].onPress = [this] { setUIParameterToDefault(); };
 
     // On long presses of the FX buttons, the Effect Edit Focus Parameter is set.
     // When this parameter changes, the potentiometers need to update their assigned parameter.
     // The Action Button and LEDs should also update to reflect the corresponding states:
     // VALUE or VALUEFOCUS.
-    button[BUTTON_FX1].onPress.push_back([this] {
-        engine->getParameter("effect_edit_focus")->setValue(0); });
-    button[BUTTON_FX2].onPress.push_back([this] {
-        engine->getParameter("effect_edit_focus")->setValue(1); });
-    button[BUTTON_FX3].onPress.push_back([this] {
-        engine->getParameter("effect_edit_focus")->setValue(2); });
+    button[BUTTON_FX1].onPress = [this] {
+        engine->getParameter("effect_edit_focus")->setValue(0); };
+    button[BUTTON_FX2].onPress = [this] {
+        engine->getParameter("effect_edit_focus")->setValue(1); };
+    button[BUTTON_FX3].onPress = [this] {
+        engine->getParameter("effect_edit_focus")->setValue(2); };
 
     engine->getParameter("effect_edit_focus")->onChange.push_back([this] { setEffectEditFocus(); });
 
     // Set the current effect edit focus.
-    // This needs to be done here because the parameters must be the first listeners of the potentiometer!
-    // TODO: Confirm if this is still necessary.
+    // Adds the parameters of the currently focused effect as listeners to the potentiometers.
     setEffectEditFocus();
     
     
@@ -500,10 +495,9 @@ void UserInterface::initializeListeners()
     // ==================================================================================
     
     // If a potentiometer reaches its cached value, the Action parameter LED blinks once.
-    // TODO: This could be implemented with a lambda function, allowing the potentiometers to have only one listener: the parameter.
     for (uint n = 0; n < NUM_POTENTIOMETERS; ++n)
-        potentiometer[n].addListener(&led[LED_ACTION]);
-
+        potentiometer[n].onCatch = [this] { alertLEDs(LED::State::BLINKONCE); };
+        
     // When a potentiometer is touched, the display shows its associated parameter.
     for (uint n = 0; n < NUM_POTENTIOMETERS; ++n)
         potentiometer[n].onTouch = [this, n] { displayTouchedParameter(n); };
@@ -560,15 +554,19 @@ void UserInterface::initializeListeners()
     // The display reacts to a page change in the Menu.
     menu.onPageChange = [this] { display.menuPageChanged(menu.getCurrentPage()); };
 
-    // TODO: Consider using a lambda function
     // For certain settings stored in the Menu (such as global settings, preset changes,
     // and effect order changes), the user interface must respond.
-    menu.addListener(this);
+    menu.onPresetLoad = [this] { presetChanged(); };
 
-    // The LEDs flash when a preset is loaded or saved.
-    menu.onLoadMessage.push_back([this] { alertLEDs(LED::ALERT); });
-    menu.onSaveMessage.push_back([this] { alertLEDs(LED::ALERT); });
-
+    // The LEDs flash when a preset is saved.
+    menu.onPresetSave = [this] { alertLEDs(LED::ALERT); };
+    
+    // when a global setting changed, call the corresponding code
+    menu.onGlobalSettingChange = [this](Menu::Page* page) { globalSettingChanged(page); };
+    
+    // when the effect order changed, call the engine's effect order algorithm and LEDs blink
+    menu.onEffectOrderChange = [this] { effectOrderChanged(); };
+    
     
     // OTHER ACTIONS
     // ==================================================================================
@@ -633,6 +631,9 @@ void UserInterface::presetChanged()
     // respond to a tempo change. This flag temporarily disables that behavior,
     // ensuring the effect parameters remain at the values specified by the preset.
     settingTempoIsOnHold = true;
+    
+    // let the LEDs alert
+    alertLEDs(LED::ALERT);
 }
 
 
@@ -658,7 +659,7 @@ void UserInterface::setEffectEditFocus()
     for (unsigned int n = 0; n < NUM_POTENTIOMETERS; n++)
     {
         // focus the corresponding effect parameter
-        potentiometer[n].focusListener(effect->getParameter(n));
+        potentiometer[n].swapListener(effect->getParameter(n));
         
         // retrieve the current normalized value of the parameter
         float normalizedValue = effect->getParameter(n)->getNormalizedValue();
@@ -670,7 +671,7 @@ void UserInterface::setEffectEditFocus()
     
     // for the effect button: 
     // focus corresponding effect parameter
-    button[BUTTON_ACTION].focusListener(effect->getParameter(NUM_POTENTIOMETERS));
+    button[BUTTON_ACTION].swapListener(effect->getParameter(NUM_POTENTIOMETERS));
     
     // notify action-button-led that the parameter changed
     led[LED_ACTION].parameterChanged(effect->getParameter(NUM_POTENTIOMETERS));

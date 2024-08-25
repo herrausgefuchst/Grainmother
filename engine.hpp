@@ -173,7 +173,7 @@ private:
 // =======================================================================================
 
 
-class UserInterface : public Menu::Listener
+class UserInterface
 {
 public:
     void setup(AudioEngine* engine_, const float sampleRate_);
@@ -182,11 +182,11 @@ public:
     
     void updateNonAudioTasks();
     
-    void globalSettingChanged(Menu::Page* page_) override;
+    void globalSettingChanged(Menu::Page* page_);
     
-    void presetChanged() override;
+    void presetChanged();
     
-    void effectOrderChanged() override;
+    void effectOrderChanged();
         
 private:
     void initializeUIElements();

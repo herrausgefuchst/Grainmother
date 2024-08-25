@@ -463,13 +463,6 @@ void LED::parameterChanged(AudioParameter* param_)
 }
 
 
-void LED::potCatchedValue()
-{
-    // TODO: rather do this in a std::function?
-    blinkOnce();
-}
-
-
 void LED::alert()
 {
     // reset blink value

@@ -40,9 +40,7 @@ public:
          * @param uielement_ Pointer to the UIElement that triggered the event.
          */
         virtual void potChanged(UIElement* uielement_) {}
-        
-        virtual void potCatchedValue() {};
-
+    
         /**
          * @brief Called when a button is clicked.
          * @param uielement_ Pointer to the UIElement that triggered the event.
@@ -71,24 +69,24 @@ public:
     /**
      * @brief Focuses a listener for the UIElement.
      *
-     * clears the existing list of listeners and adds only the one passed listener to the list.
+     * clears the existing listener and swaps it with the passed in listener.
      *
      * @param listener_ Pointer to the Listener to focus.
      */
-    void focusListener(Listener* listener_);
+    void swapListener(Listener* listener_);
 
     /**
      * @brief Notifies all listeners of an event.
      * @param specifier_ An optional specifier for the event. Default is -1.
      */
-    virtual void notifyListeners(const int specifier_ = -1) = 0;
+    virtual void notifyListener(const int specifier_ = -1) = 0;
 
     // getters
     const int getIndex() const { return index; }
     const String getID() const { return id; }
 
 protected:
-    std::vector<Listener*> listeners; /**< List of listeners attached to the UIElement */
+    Listener* listener; /**< List of listeners attached to the UIElement */
     unsigned int index; /**< Index of the UIElement */
     String id; /**< Name of the UIElement */
 };
@@ -165,7 +163,7 @@ public:
      * @brief Notifies all listeners of an event.
      * @param specifier_ An optional specifier for the event. Default is -1.
      */
-    void notifyListeners(const int specifier_ = -1) override;
+    void notifyListener(const int specifier_ = -1) override;
 
     /**
      * @brief Sets a new value for the potentiometer.
@@ -185,8 +183,8 @@ public:
     float getValue() const { return current; }
     float getLastValue() const { return last; }
     
-    std::vector<std::function<void()>> onChange; /**< List of functions to call on value change */
     std::function<void()> onTouch;
+    std::function<void()> onCatch;
     
 private:
     float current = 0.f; /**< Current value of the potentiometer */
@@ -265,11 +263,11 @@ public:
      * @brief Notifies all listeners of an event.
      * @param specifier_ An optional specifier for the event.
      */
-    void notifyListeners(const int specifier_) override;
+    void notifyListener(const int specifier_) override;
 
-    std::vector<std::function<void()>> onClick; /**< List of functions to call on button click */
-    std::vector<std::function<void()>> onPress; /**< List of functions to call on button press */
-    std::vector<std::function<void()>> onRelease; /**< List of functions to call on button release */
+    std::function<void()> onClick; /**< List of functions to call on button click */
+    std::function<void()> onPress; /**< List of functions to call on button press */
+    std::function<void()> onRelease; /**< List of functions to call on button release */
     
     /**
      * @brief Gets the current phase of the button.
@@ -277,11 +275,11 @@ public:
      */
     Phase getPhase() const { return phase; }
     
-    void clickButton() { notifyListeners(0); }
+    void clickButton() { notifyListener(0); }
     
-    void pressButton() { notifyListeners(1); }
+    void pressButton() { notifyListener(1); }
     
-    void releaseButton() { notifyListeners(2); }
+    void releaseButton() { notifyListener(2); }
     
 private:
     Phase phase = HIGH; /**< Current phase of the button */
