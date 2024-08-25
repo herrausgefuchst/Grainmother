@@ -361,8 +361,8 @@ private:
     const String suffix;             /**< The unit of measurement for the parameter. */
     const float min;                 /**< The minimum value of the parameter. */
     const float max;                 /**< The maximum value of the parameter. */
-    const float defaultValue;        /**< The default value of the parameter. */
     float nudgeStep;                 /**< The nudge step size of the parameter. */
+    const float defaultValue;        /**< The default value of the parameter. */
     const float range;               /**< The range of the parameter. */
     float ramptimeMs;                /**< The ramp time in milliseconds. */
     Scaling scaling;                 /**< The scaling type (linear or frequency). */

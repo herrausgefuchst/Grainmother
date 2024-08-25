@@ -280,6 +280,10 @@ public:
     
     void clickButton() { notifyListeners(0); }
     
+    void pressButton() { notifyListeners(1); }
+    
+    void releaseButton() { notifyListeners(2); }
+    
 private:
     Phase phase = HIGH; /**< Current phase of the button */
     Phase analogCache = HIGH; /**< Cached analog value */

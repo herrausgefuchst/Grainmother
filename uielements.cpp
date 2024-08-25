@@ -3,7 +3,7 @@
 #define USING_ANALOG_INS
 //#define USING_GUI
 
-//#define CONSOLE_PRINT
+#define CONSOLE_PRINT
 
 // =======================================================================================
 // MARK: - UIELEMENT
@@ -335,7 +335,7 @@ void Button::notifyListeners(const int specifier_)
     #ifdef CONSOLE_PRINT
     String message = specifier_ == 0 ? "CLICK" : "LONGPRESS";
     if (specifier_ == 2) message = "RELEASE";
-    consoleprint("Button " + name + " notifies Listeners with message: " + message, __FILE__, __LINE__);
+    consoleprint("Button " + id + " notifies Listeners with message: " + message, __FILE__, __LINE__);
     #endif
     
     lastAction = INT2ENUM(specifier_, Action);

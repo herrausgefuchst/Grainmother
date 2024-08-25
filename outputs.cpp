@@ -605,7 +605,7 @@ float LED::getValue()
 
         default: 
         {
-            engine_rt_error("no valid LED state!\n", __FILE__, __LINE__, false);
+            engine_rt_error("no valid LED state! LED index: " + TOSTRING(index) + ", state: " + TOSTRING(state), __FILE__, __LINE__, false);
             break;
         }
     }

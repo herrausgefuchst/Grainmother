@@ -1,6 +1,6 @@
 #include "menu.hpp"
 
-//#define CONSOLE_PRINT
+#define CONSOLE_PRINT
 
 // =======================================================================================
 // MARK: - MENU::PAGE

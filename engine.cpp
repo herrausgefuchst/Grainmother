@@ -177,7 +177,7 @@ void AudioEngine::setEffectOrder()
             if (!effectID.empty() && std::all_of(effectID.begin(), effectID.end(), ::isdigit))
             {
                 // effect index is one less than the effect ID
-                uint effectIndex = std::stoi(effectID) - 1;
+                int effectIndex = std::stoi(effectID) - 1;
                 
                 // check if effect Index is in valid range
                 if (effectIndex >= 0 && effectIndex < NUM_EFFECTS)
@@ -601,10 +601,13 @@ void UserInterface::updateNonAudioTasks()
         
         // since the parameter changed, the potentiometer needs to be decoupled
         // and refreshed with the new normalized value
-        uint paramIndex = scrollingParameter->getIndex();
-        float normalizedValue = scrollingParameter->getNormalizedValue();
-        
-        potentiometer[paramIndex].decouple(normalizedValue);
+        if (scrollingParameter->getIndex() < NUM_POTENTIOMETERS)
+        {
+            uint paramIndex = scrollingParameter->getIndex();
+            float normalizedValue = scrollingParameter->getNormalizedValue();
+            
+            potentiometer[paramIndex].decouple(normalizedValue);
+        }
     }
 }
 
@@ -796,7 +799,8 @@ void UserInterface::nudgeUIParameter(const int direction_)
             
             // Decouple the corresponding potentiometer and update its cache to reflect 
             // the new normalized value.
-            potentiometer[param->getIndex()].decouple(param->getNormalizedValue());
+            if (param->getIndex() < NUM_POTENTIOMETERS)
+                potentiometer[param->getIndex()].decouple(param->getNormalizedValue());
         }
     }
 }
@@ -807,6 +811,8 @@ void UserInterface::startScrollingUIParameter(const int direction_)
     // If the display is in TEMPORARY state, it holds a pointer to the currently shown parameter.
     if (display.getStateDuration() == Display::TEMPORARY)
     {
+        std::cout << "state of display: temporary" << std::endl;
+        
         // Set the menu on hold to bypass the usual behavior of the Menu buttons.
         menu.onHold = true;
 
@@ -825,6 +831,8 @@ void UserInterface::startScrollingUIParameter(const int direction_)
             
         // Save the scrolling direction in this object.
         scrollingDirection = direction_;
+        
+        std::cout << "state of display: temporary" << std::endl;
     }
 }
 
@@ -861,7 +869,8 @@ void UserInterface::setUIParameterToDefault()
             
             // Decouple the corresponding potentiometer and update its cache to reflect
             // the new normalized value.
-            potentiometer[param->getIndex()].decouple(param->getNormalizedValue());
+            if (param->getIndex() < NUM_POTENTIOMETERS)
+                potentiometer[param->getIndex()].decouple(param->getNormalizedValue());
         }
     }
 }

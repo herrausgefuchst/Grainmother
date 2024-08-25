@@ -7,10 +7,10 @@ Effect::Effect(AudioParameterGroup* engineParameters_,
                 const unsigned int numParameters_, const String& name_,
                 const float sampleRate_, const unsigned int blockSize_)
     : id(name_)
-    , parameters(name_, numParameters_)
-    , engineParameters(engineParameters_)
     , sampleRate(sampleRate_)
     , blockSize(blockSize_)
+    , parameters(name_, numParameters_)
+    , engineParameters(engineParameters_)
 {}
 
 
