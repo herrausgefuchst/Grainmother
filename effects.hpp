@@ -7,8 +7,6 @@
 // MARK: - EFFECT
 // ********************************************************************************
 
-//    enum Types { BEATREPEAT, GRANULATOR, DELAY };
-
 /**
  * @class Effect
  * @brief A base class representing an audio effect, with setup and processing capabilities.
