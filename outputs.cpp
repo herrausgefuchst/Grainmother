@@ -248,7 +248,7 @@ void Display::parameterCalledDisplay(AudioParameter* param_)
     // All AudioParameters that have a coupled UIElement have an index <= NUM_POTENTIOMETERS.
     // These should be temporary. All other parameters (i.e. menu-controlled parameters or tempo)
     // should be set to a permanent view.
-    stateDuration = (param_->getIndex() > NUM_POTENTIOMETERS) ? PERMANENT : TEMPORARY;
+    stateDuration = (param_->getIndex() >= NUM_UIPARAMS) ? PERMANENT : TEMPORARY;
     
     // save the pointer to the parameter
     tempParameter = param_;
@@ -426,9 +426,9 @@ const uint LED::ALERT_RATE = 23;
 const uint LED::NUM_BLINKS = 4;
 
 
-void LED::setup(const String& id_)
+void LED::setup(const uint index_, const String& id_)
 {
-    // set ID
+    index = index_;
     id = id_;
     
     // setup counter for the time of one blink

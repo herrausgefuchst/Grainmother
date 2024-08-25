@@ -497,24 +497,24 @@ void Menu::buttonClicked (UIElement* _uielement)
         // TODO: index/id could be more understandable and clear
         switch (button->getIndex())
         {
-            case ButtonID::UP:
+            case BUTTON_UP:
             {
                 currentPage->up();
 
                 break;
             }
-            case ButtonID::DOWN:
+            case BUTTON_DOWN:
             {
                 currentPage->down();
                 
                 break;
             }
-            case ButtonID::EXIT:
+            case BUTTON_EXIT:
             {
                 currentPage->exit();
                 break;
             }
-            case ButtonID::ENTER:
+            case BUTTON_ENTER:
             {
                 currentPage->enter();
                 break;
@@ -535,22 +535,22 @@ void Menu::buttonPressed (UIElement* _uielement)
 
         switch (button->getIndex())
         {
-            case ButtonID::UP:
-            case ButtonID::DOWN:
+            case BUTTON_UP:
+            case BUTTON_DOWN:
             {
                 if (isoftype<ParameterPage>(currentPage))
                 {
                     isScrolling = true;
-                    scrollDirection = (button->getIndex() == ButtonID::UP) ? UP : DOWN;
+                    scrollDirection = (button->getIndex() == BUTTON_UP) ? UP : DOWN;
                 }
                 break;
             }
-            case ButtonID::EXIT:
+            case BUTTON_EXIT:
             {
                 if (currentPage->getID() == "load_preset") loadPreset();
                 break;
             }
-            case ButtonID::ENTER:
+            case BUTTON_ENTER:
             {
                 if (isoftype<ParameterPage>(currentPage))
                 {
@@ -573,8 +573,8 @@ void Menu::buttonReleased (UIElement* _uielement)
 
         switch (button->getIndex())
         {
-            case ButtonID::UP:
-            case ButtonID::DOWN:
+            case BUTTON_UP:
+            case BUTTON_DOWN:
             {
                 isScrolling = false;
             }
@@ -596,22 +596,19 @@ void Menu::loadPreset()
     auto effect2 = programParameters[2];
     //TODO: add third effect
 //    auto effect3 = programParameters[3];
-    
-    // console print yes or no? (developping)
-    bool withPrint = true;
 
     // get the index of the currently selected preset
     size_t index = getPage("load_preset")->getCurrentChoice();
     
-    // load and set parameters from JSON file
+    // load and set parameters from JSON file (without display notification)
     for (unsigned int n = 0; n < engine->getNumParametersInGroup(); ++n)
-        engine->getParameter(n)->setValue((float)JSONpresets[index]["engine"][n], withPrint);
+        engine->getParameter(n)->setValue((float)JSONpresets[index]["engine"][n], false);
     
     for (unsigned int n = 0; n < effect1->getNumParametersInGroup(); ++n)
-        effect1->getParameter(n)->setValue((float)JSONpresets[index]["effect1"][n], withPrint);
+        effect1->getParameter(n)->setValue((float)JSONpresets[index]["effect1"][n], false);
     
     for (unsigned int n = 0; n < effect2->getNumParametersInGroup(); ++n)
-        effect2->getParameter(n)->setValue((float)JSONpresets[index]["effect2"][n], withPrint);
+        effect2->getParameter(n)->setValue((float)JSONpresets[index]["effect2"][n], false);
     
     //TODO: add third effect
 //    for (unsigned int n = 0; n < effect3->getNumParametersInGroup(); ++n)

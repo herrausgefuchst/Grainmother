@@ -205,7 +205,7 @@ public:
      * @brief Sets up the LED with a specific ID.
      * @param id_ The ID to associate with this LED.
      */
-    void setup(const String& id_);
+    void setup(const uint index_, const String& id_);
 
     /**
      * @brief Sets the value that the LED represents.
@@ -225,6 +225,9 @@ public:
     /** @brief Retrieves the current value represented by the LED. @return The current value. */
     float getValue();
     
+    uint getIndex() { return index; }
+    String getID() { return id; }
+    
     /**
      * @brief Called when the connected parameter changes.
      * @param param_ Pointer to the changed parameter.
@@ -235,6 +238,7 @@ public:
     void potCatchedValue() override;
     
 private:
+    uint index;
     String id; /**< The ID associated with this LED. */
     
     float value = 0.f;      /**< The current value represented by the LED. */

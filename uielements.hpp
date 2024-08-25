@@ -85,12 +85,12 @@ public:
 
     // getters
     const int getIndex() const { return index; }
-    const String getName() const { return name; }
+    const String getID() const { return id; }
 
 protected:
     std::vector<Listener*> listeners; /**< List of listeners attached to the UIElement */
     unsigned int index; /**< Index of the UIElement */
-    String name; /**< Name of the UIElement */
+    String id; /**< Name of the UIElement */
 };
 
 
@@ -139,10 +139,10 @@ public:
     /**
      * @brief sets up a Potentiometer with specified parameters.
      * @param index_ The index of the potentiometer.
-     * @param name_ The name of the potentiometer.
+     * @param id_ The name of the potentiometer.
      * @param guidefault_ Default value for the GUI.
      */
-    void setup(const int index_, const String name_, const float guidefault_ = 0.f);
+    void setup(const int index_, const String& id_, const float guidefault_ = 0.f);
     
     
     void setAnalogDefault(const float analogDefault_) { analogCache = analogDefault_; }
@@ -249,11 +249,11 @@ public:
     /**
      * @brief Sets up a Button with the specified parameters.
      * @param index_ The index of the button.
-     * @param name_ The name of the button.
+     * @param id_ The name of the button.
      * @param guidefault_ Default GUI value for the button.
      * @param analogdefault_ Default analog value for the button.
      */
-    void setup(const int index_, const String name_, const Phase guidefault_ = HIGH, const Phase analogdefault_ = HIGH);
+    void setup(const int index_, const String& id_, const Phase guidefault_ = HIGH, const Phase analogdefault_ = HIGH);
     
     /**
      * @brief Updates the button state with new GUI and analog values.
@@ -277,6 +277,8 @@ public:
      * @return The current phase.
      */
     Phase getPhase() const { return phase; }
+    
+    void clickButton() { notifyListeners(0); }
     
 private:
     Phase phase = HIGH; /**< Current phase of the button */

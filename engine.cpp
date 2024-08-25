@@ -6,8 +6,9 @@
 // MARK: - AUDIO ENGINE
 // =======================================================================================
 
-AudioEngine::AudioEngine() 
-    : engineParameters("engine", NUM_ENGINEPARAMETERS)
+
+AudioEngine::AudioEngine()
+    : engineParameters("engine", Engine::NUM_PARAMETERS)
 {}
 
 
@@ -19,44 +20,39 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     
     // engine parameters
     {
+        using namespace Engine;
+        
         // tempo
         engineParameters.addParameter<SlideParameter>
-        (0u, engineParameterID[ENUM2INT(EngineParameters::TEMPO)],
-         engineParameterName[ENUM2INT(EngineParameters::TEMPO)],
+        (UIPARAM_SEPCIAL, parameterID[TEMPO], parameterName[TEMPO],
          " bpm", 30.f, 300.f, 1.f, 120.f, sampleRate);
 
         // global bypass
         engineParameters.addParameter<ButtonParameter>
-        (11u, engineParameterID[ENUM2INT(EngineParameters::GLOBALBYPASS)],
-         engineParameterName[ENUM2INT(EngineParameters::GLOBALBYPASS)],
+        (MENUPARAMETER, parameterID[GLOBAL_BYPASS], parameterName[GLOBAL_BYPASS],
          std::initializer_list<String>{ "OFF", "ON" });
 
         // effect bypasses
         engineParameters.addParameter<ToggleParameter>
-        (12u, engineParameterID[ENUM2INT(EngineParameters::EFFECT1BYPASS)],
-         engineParameterName[ENUM2INT(EngineParameters::EFFECT1BYPASS)],
+        (MENUPARAMETER, parameterID[EFFECT1_ENGAGED], parameterName[EFFECT1_ENGAGED],
          std::initializer_list<String>{ "OFF", "ON" });
         
         engineParameters.addParameter<ToggleParameter>
-        (13u, engineParameterID[ENUM2INT(EngineParameters::EFFECT2BYPASS)],
-         engineParameterName[ENUM2INT(EngineParameters::EFFECT2BYPASS)],
+        (MENUPARAMETER, parameterID[EFFECT2_ENGAGED], parameterName[EFFECT2_ENGAGED],
          std::initializer_list<String>{ "OFF", "ON" });
         
         engineParameters.addParameter<ToggleParameter>
-        (14u, engineParameterID[ENUM2INT(EngineParameters::EFFECT3BYPASS)],
-         engineParameterName[ENUM2INT(EngineParameters::EFFECT3BYPASS)],
+        (MENUPARAMETER, parameterID[EFFECT3_ENGAGED], parameterName[EFFECT3_ENGAGED],
          std::initializer_list<String>{ "OFF", "ON" });
 
         // effect edit focus
         engineParameters.addParameter<ChoiceParameter>
-        (15u, engineParameterID[ENUM2INT(EngineParameters::EFFECTEDITFOCUS)],
-         engineParameterName[ENUM2INT(EngineParameters::EFFECTEDITFOCUS)],
+        (MENUPARAMETER, parameterID[EFFECT_EDIT_FOCUS], parameterName[EFFECT_EDIT_FOCUS],
          std::initializer_list<String>{ "Reverb", "Granulator", "Resonator" });
         
         // effect order
         engineParameters.addParameter<ChoiceParameter>
-        (16u, engineParameterID[ENUM2INT(EngineParameters::EFFECTORDER)],
-         engineParameterName[ENUM2INT(EngineParameters::EFFECTORDER)],
+        (MENUPARAMETER, parameterID[EFFECT_ORDER], parameterName[EFFECT_ORDER],
          std::initializer_list<String>{
             "1 - 2 - 3",
             "2 | 3 - 1",
@@ -74,8 +70,7 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
         
         // set tempo to?
         engineParameters.addParameter<ChoiceParameter>
-        (15u, engineParameterID[ENUM2INT(EngineParameters::TEMPOSET)],
-         engineParameterName[ENUM2INT(EngineParameters::TEMPOSET)],
+        (MENUPARAMETER, parameterID[TEMPO_SET], parameterName[TEMPO_SET],
          std::initializer_list<String>{ "Current Effect", "All Effects" });
     }
     
@@ -130,8 +125,6 @@ StereoFloat AudioEngine::processAudioSamples(StereoFloat input_)
     }
     
     return output;
-    
-    // TODO: order of effects
 }
 
 
@@ -339,67 +332,90 @@ Effect* AudioEngine::getEffect(const unsigned int index_)
 
 void UserInterface::setup(AudioEngine* engine_, const float sampleRate_)
 {
+    // Save a pointer to the AudioEngine instance in this object.
     engine = engine_;
-  
+
+    // Initialize all buttons, potentiometers, and LEDs.
     initializeUIElements();
-    
+
+    // Connect the LEDs to their corresponding parameters.
+    // This must be done before the menu is initialized. When the first
+    // preset is loaded, the parameters will be set, and the LEDs should reflect their
+    // values at startup.
+    engine->getParameter("global_bypass")->addListener(&led[LED_BYPASS]);
+    engine->getParameter("effect1_engaged")->addListener(&led[LED_FX1]);
+    engine->getParameter("effect2_engaged")->addListener(&led[LED_FX2]);
+    engine->getParameter("effect3_engaged")->addListener(&led[LED_FX3]);
+    engine->getParameter("reverb", NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
+    engine->getParameter("granulator", NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
+    // TODO: Add Resonator
+    engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX1]);
+    engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX2]);
+    engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX3]);
+
+    // Set up the menu object.
+    // This includes configuring the entire page architecture and hierarchy, setting up JSON,
+    // and loading the first preset (based on the JSON value: lastUsedPreset).
     initializeMenu();
 
+    // Connect all components that need to listen to each other. This function is essential
+    // for the interaction between the UI, Parameters, Outputs (LEDs, Display), and the
+    // Audio Engine.
+    // Listeners (except for LEDs) will be initialized after the first preset is loaded,
+    // ensuring the initial parameter set does not affect the entire interface.
     initializeListeners();
-    
+
+    // Set up the display: establish the OSC connection for the OLED display and set the
+    // initial page to be displayed on startup.
     display.setup(menu.getPage("load_preset"));
-    
-    // Tempo Tapper
+
+    // Configure the tempo tapper.
     tempoTapper.setup(engine->getParameter("tempo")->getMin(), engine->getParameter("tempo")->getMax(), sampleRate_);
-    
+
+    // Configure the metronome.
     metronome.setup(sampleRate_, engine->getParameter("tempo")->getValueAsFloat());
 
+    // Let the LEDs blink! Setup is complete!
     alertLEDs(LED::State::ALERT);
-    
-    // need to tell the effect LEDs which effect is currently focused
-    AudioParameter* effecteditfocus = engine->getParameter("effect_edit_focus");
-    int focus = effecteditfocus->getValueAsInt();
-    if (focus == 0) led[LED_FX1].parameterChanged(effecteditfocus);
-    else if (focus == 1) led[LED_FX2].parameterChanged(effecteditfocus);
-    else if (focus == 2) led[LED_FX3].parameterChanged(effecteditfocus);
-    
-    engine->setEffectOrder();
 }
 
 
 void UserInterface::initializeUIElements()
 {
-    button[ButtonID::FX1].setup(ButtonID::FX1, "Effect 1");
-    button[ButtonID::FX2].setup(ButtonID::FX2, "Effect 2");
-    button[ButtonID::FX3].setup(ButtonID::FX3, "Effect 3");
-    button[ButtonID::ACTION].setup(ButtonID::ACTION, "Action");
-    button[ButtonID::TEMPO].setup(ButtonID::TEMPO, "Tempo");
-    button[ButtonID::BYPASS].setup(ButtonID::BYPASS, "Bypass");
-    button[ButtonID::UP].setup(ButtonID::UP, "Up");
-    button[ButtonID::DOWN].setup(ButtonID::DOWN, "Down");
-    button[ButtonID::EXIT].setup(ButtonID::EXIT, "Exit");
-    button[ButtonID::ENTER].setup(ButtonID::ENTER, "Enter");
+    button[BUTTON_FX1].setup(BUTTON_FX1, "effect1");
+    button[BUTTON_FX2].setup(BUTTON_FX2, "effect2");
+    button[BUTTON_FX3].setup(BUTTON_FX3, "effect3");
+    button[BUTTON_ACTION].setup(BUTTON_ACTION, "action");
+    button[BUTTON_TEMPO].setup(BUTTON_TEMPO, "tempo");
+    button[BUTTON_BYPASS].setup(BUTTON_BYPASS, "bypass");
+    button[BUTTON_UP].setup(BUTTON_UP, "up");
+    button[BUTTON_DOWN].setup(BUTTON_DOWN, "down");
+    button[BUTTON_EXIT].setup(BUTTON_EXIT, "exit");
+    button[BUTTON_ENTER].setup(BUTTON_ENTER, "enter");
     
-    potentiometer[0].setup(0, "Potentiometer 0");
-    potentiometer[1].setup(1, "Potentiometer 1");
-    potentiometer[2].setup(2, "Potentiometer 2");
-    potentiometer[3].setup(3, "Potentiometer 3");
-    potentiometer[4].setup(4, "Potentiometer 4");
-    potentiometer[5].setup(5, "Potentiometer 5");
-    potentiometer[6].setup(6, "Potentiometer 6");
-    potentiometer[7].setup(7, "Potentiometer 7");
+    potentiometer[0].setup(0, "pot1");
+    potentiometer[1].setup(1, "pot2");
+    potentiometer[2].setup(2, "pot3");
+    potentiometer[3].setup(3, "pot4");
+    potentiometer[4].setup(4, "pot5");
+    potentiometer[5].setup(5, "pot6");
+    potentiometer[6].setup(6, "pot7");
+    potentiometer[7].setup(7, "pot8");
     
-    led[LED_FX1].setup("effect1");
-    led[LED_FX2].setup("effect2");
-    led[LED_FX3].setup("effect3");
-    led[LED_ACTION].setup("action");
-    led[LED_TEMPO].setup("tempo");
-    led[LED_BYPASS].setup("bypass");
+    led[LED_FX1].setup(LED_FX1, "effect1");
+    led[LED_FX2].setup(LED_FX2, "effect2");
+    led[LED_FX3].setup(LED_FX3, "effect3");
+    led[LED_ACTION].setup(LED_ACTION, "action");
+    led[LED_TEMPO].setup(LED_TEMPO, "tempo");
+    led[LED_BYPASS].setup(LED_BYPASS, "bypass");
 }
 
 
 void UserInterface::initializeMenu()
 {
+    // Create Parameter Pages
+    // This is done here because it's easier to access the correct parameters in this context
+    // rather than within the menu.
     menu.addPage<Menu::ParameterPage>("effect_order", engine->getParameter("effect_order"));
     menu.addPage<Menu::ParameterPage>("tempo_set", engine->getParameter("tempo_set"));
     
@@ -407,135 +423,158 @@ void UserInterface::initializeMenu()
     menu.addPage<Menu::ParameterPage>("reverb_multfreq", engine->getParameter("reverb", "reverb_multfreq"));
     menu.addPage<Menu::ParameterPage>("reverb_multgain", engine->getParameter("reverb", "reverb_multgain"));
     
+    // Configure the menu: pass in the complete set of parameters.
     menu.setup(engine->getProgramParameters());
 }
 
 
 void UserInterface::initializeListeners()
 {
-//    // Buttons -> Parameters
-    button[ButtonID::FX1].addListener(engine->getParameter("effect1_engaged"));
-    button[ButtonID::FX2].addListener(engine->getParameter("effect2_engaged"));
-    button[ButtonID::FX3].addListener(engine->getParameter("effect3_engaged"));
-    button[ButtonID::BYPASS].addListener(engine->getParameter("global_bypass"));
+    // TODO: kill vectors of listeners and lambdas
+    
+    // BUTTON ACTIONS
+    // ==================================================================================
 
-    // Buttons -> Menu
-    button[ButtonID::UP].addListener(&menu);
-    button[ButtonID::DOWN].addListener(&menu);
-    button[ButtonID::EXIT].addListener(&menu);
-    button[ButtonID::ENTER].addListener(&menu);
-    
-    button[ButtonID::TEMPO].onClick.push_back([this] {
-        bool newTempoDetected = tempoTapper.tapTempo();
-        if (newTempoDetected) 
-        {
-            engine->getParameter("tempo")->setValue(tempoTapper.getTempoInBpm());
-        }
+    // FX parameters respond to the toggling of FX buttons.
+    button[BUTTON_FX1].addListener(engine->getParameter("effect1_engaged"));
+    button[BUTTON_FX2].addListener(engine->getParameter("effect2_engaged"));
+    button[BUTTON_FX3].addListener(engine->getParameter("effect3_engaged"));
+    button[BUTTON_BYPASS].addListener(engine->getParameter("global_bypass"));
+
+    // The menu responds to the menu button actions.
+    button[BUTTON_UP].addListener(&menu);
+    button[BUTTON_DOWN].addListener(&menu);
+    button[BUTTON_EXIT].addListener(&menu);
+    button[BUTTON_ENTER].addListener(&menu);
+
+    // The Tempo Tapper is triggered when the Tempo button is clicked.
+    // It checks for a new tempo and updates the Tempo Parameter accordingly.
+    button[BUTTON_TEMPO].onClick.push_back([this] {
+        evaluateNewTempo();
     });
-    
-    button[ButtonID::TEMPO].onPress.push_back([this] {
+
+    // The display will react and show the Tempo Parameter when the Tempo button is 
+    // long-pressed. This automatically sets the display to the TEMPORARY state,
+    // enabling tempo nudging and scrolling.
+    button[BUTTON_TEMPO].onPress.push_back([this] {
         display.parameterCalledDisplay(engine->getParameter("tempo"));
     });
-    
-    button[ButtonID::UP].onClick.push_back([this] { nudgeUIParameter(1); });
-    button[ButtonID::DOWN].onClick.push_back([this] { nudgeUIParameter(-1); });
-    
-    button[ButtonID::UP].onPress.push_back([this] { startScrollingUIParameter(1); });
-    button[ButtonID::DOWN].onPress.push_back([this] { startScrollingUIParameter(-1); });
-    
-    button[ButtonID::UP].onRelease.push_back([this] { stopScrollingUIParameter(); });
-    button[ButtonID::DOWN].onRelease.push_back([this] { stopScrollingUIParameter(); });
-    
-    button[ButtonID::ENTER].onPress.push_back([this] { setDefaultUIParameter(); });
-    
-    // Buttons -> Effect Edit Focus
-    button[ButtonID::FX1].onPress.push_back([this] {  engine->getParameter("effect_edit_focus")->setValue(0); });
-    button[ButtonID::FX2].onPress.push_back([this] {  engine->getParameter("effect_edit_focus")->setValue(1); });
-    button[ButtonID::FX3].onPress.push_back([this] {  engine->getParameter("effect_edit_focus")->setValue(2); });
+
+    // UI Parameters will be nudged or scrolled when a Direction Button is clicked
+    // or pressed. The current UI Parameter will be reset to its default value
+    // when a long press of the Enter Button is detected.
+    // These lambda functions are called before the button listener notification.
+    // They temporarily suspend the usual Menu Button actions until nudging,
+    // scrolling, or resetting to default is complete.
+    button[BUTTON_UP].onClick.push_back([this] { nudgeUIParameter(1); });
+    button[BUTTON_DOWN].onClick.push_back([this] { nudgeUIParameter(-1); });
+
+    button[BUTTON_UP].onPress.push_back([this] { startScrollingUIParameter(1); });
+    button[BUTTON_DOWN].onPress.push_back([this] { startScrollingUIParameter(-1); });
+
+    button[BUTTON_UP].onRelease.push_back([this] { stopScrollingUIParameter(); });
+    button[BUTTON_DOWN].onRelease.push_back([this] { stopScrollingUIParameter(); });
+
+    button[BUTTON_ENTER].onPress.push_back([this] { setUIParameterToDefault(); });
+
+    // On long presses of the FX buttons, the Effect Edit Focus Parameter is set.
+    // When this parameter changes, the potentiometers need to update their assigned parameter.
+    // The Action Button and LEDs should also update to reflect the corresponding states:
+    // VALUE or VALUEFOCUS.
+    button[BUTTON_FX1].onPress.push_back([this] {
+        engine->getParameter("effect_edit_focus")->setValue(0); });
+    button[BUTTON_FX2].onPress.push_back([this] {
+        engine->getParameter("effect_edit_focus")->setValue(1); });
+    button[BUTTON_FX3].onPress.push_back([this] {
+        engine->getParameter("effect_edit_focus")->setValue(2); });
+
     engine->getParameter("effect_edit_focus")->onChange.push_back([this] { setEffectEditFocus(); });
-    
-    // set the current effect edit focus
-    // Potentiometers -> Current Effect-parameters
-    // needs to live here, because the parameter must be made first listener of potentiometer!
+
+    // Set the current effect edit focus.
+    // This needs to be done here because the parameters must be the first listeners of the potentiometer!
+    // TODO: Confirm if this is still necessary.
     setEffectEditFocus();
     
-    // Potentiometers -> LED
-    for (uint n = 0; n < NUM_POTENTIOMETERS; ++n) potentiometer[n].addListener(&led[LED_ACTION]);
     
+    // POTENTIOMETER ACTIONS
+    // ==================================================================================
+    
+    // If a potentiometer reaches its cached value, the Action parameter LED blinks once.
+    // TODO: This could be implemented with a lambda function, allowing the potentiometers to have only one listener: the parameter.
     for (uint n = 0; n < NUM_POTENTIOMETERS; ++n)
-    {
-        potentiometer[n].onTouch = [this, n] 
-        {
-            static bool initializing = true;
-            static uint numInitCallsLeft = NUM_POTENTIOMETERS;
-            
-            if (!initializing)
-            {
-                int focus = engine->getParameter("effect_edit_focus")->getValueAsInt();
-            
-                auto effect = engine->getEffect(focus);
-                
-                AudioParameter* connectedParam = effect->getParameter(n);
-                
-                display.parameterCalledDisplay(connectedParam);
-            }
-            else
-            {
-                if (--numInitCallsLeft == 0) initializing = false;
-            }
-        };
-    }
-    
-    
-    // Parameters -> Display
-    engine->getParameter("tempo")->addListener(&display);
-    for (unsigned int n = 0; n < GrainmotherReverb::NUM_PARAMETERS; ++n) engine->getParameter("reverb", n)->addListener(&display);
-    for (unsigned int n = 0; n < GrainmotherGranulator::NUM_PARAMETERS; ++n) engine->getParameter("granulator", n)->addListener(&display);
-    //TODO: add Resonator
-    
-    // Parameters -> LEDs
-    engine->getParameter("global_bypass")->addListener(&led[LED_BYPASS]);
-    engine->getParameter("effect1_engaged")->addListener(&led[LED_FX1]);
-    engine->getParameter("effect2_engaged")->addListener(&led[LED_FX2]);
-    engine->getParameter("effect3_engaged")->addListener(&led[LED_FX3]);
-    engine->getParameter((uint)ParameterGroupID::REVERB, NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
-    engine->getParameter((uint)ParameterGroupID::GRANULATOR, NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
-    //TODO: add Resonator
-    engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX1]);
-    engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX2]);
-    engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX3]);
+        potentiometer[n].addListener(&led[LED_ACTION]);
 
-    // Paraneter Tempo -> Metronome
+    // When a potentiometer is touched, the display shows its associated parameter.
+    for (uint n = 0; n < NUM_POTENTIOMETERS; ++n)
+        potentiometer[n].onTouch = [this, n] { displayTouchedParameter(n); };
+
+    
+    // PARAMETER ACTIONS
+    // ==================================================================================
+    
+    // The display listens to all parameters that need to be displayed:
+    // - The tempo parameter
+    // - All effect parameters
+    engine->getParameter("tempo")->addListener(&display);
+
+    for (unsigned int n = 0; n < GrainmotherReverb::NUM_PARAMETERS; ++n)
+        engine->getParameter("reverb", n)->addListener(&display);
+    for (unsigned int n = 0; n < GrainmotherGranulator::NUM_PARAMETERS; ++n)
+        engine->getParameter("granulator", n)->addListener(&display);
+    // TODO: Add Resonator
+
+    // The Metronome reacts to changes in the Tempo parameter.
     engine->getParameter("tempo")->addListener(&metronome);
-    
-    // Parameter Tempo -> UserInterface
-    engine->getParameter("tempo")->onChange.push_back([this] { setNewTempo(); });
-    
-    // Parameter Effect Order -> UserInterface
+
+    // If a new tempo is detected, we need to determine which parameters should react to it.
+    // This depends on the preset setting 'Set Tempo To:', which specifies whether
+    // a tempo change should affect all connected effect parameters or only those of the
+    // currently focused effect.
+    engine->getParameter("tempo")->onChange.push_back([this] { setTempoRelatedParameters(); });
+
+    // If the effect order changes, the LEDs will briefly blink, and the algorithm
+    // to reset the process functions to the new order is called.
     engine->getParameter("effect_order")->onChange.push_back([this] { effectOrderChanged(); });
-    
-    // Parameters FX Bypass -> Effect
+
+    // TODO: Is this necessary?
+    // Effects toggle their engaged flag based on the corresponding parameter changes.
     engine->getParameter("effect1_engaged")->addListener(engine->getEffect(0));
     engine->getParameter("effect2_engaged")->addListener(engine->getEffect(1));
     engine->getParameter("effect3_engaged")->addListener(engine->getEffect(2));
+
+    // Recalculate the parallel weighting for the effect order algorithm when 
+    // an effect is bypassed or engaged.
+    engine->getParameter("effect1_engaged")->onChange.push_back([this] {
+        engine->recalculateParallelWeighting(); });
+    engine->getParameter("effect2_engaged")->onChange.push_back([this] { 
+        engine->recalculateParallelWeighting(); });
+    engine->getParameter("effect3_engaged")->onChange.push_back([this] { 
+        engine->recalculateParallelWeighting(); });
     
-    // Parameters FX Bypass -> AudioEngine: recalculate the parral weighting
-    engine->getParameter("effect1_engaged")->onChange.push_back([this] {engine->recalculateParallelWeighting(); });
-    engine->getParameter("effect2_engaged")->onChange.push_back([this] {engine->recalculateParallelWeighting(); });
-    engine->getParameter("effect3_engaged")->onChange.push_back([this] {engine->recalculateParallelWeighting(); });
+    engine->setEffectOrder();
     
-    // Metronome -> LED
-    metronome.onTic = [this] { led[LED_TEMPO].blinkOnce(); };
     
-    // Menu -> Display
+    // MENU ACTIONS
+    // ==================================================================================
+    
+    // The display reacts to a page change in the Menu.
     menu.onPageChange = [this] { display.menuPageChanged(menu.getCurrentPage()); };
-    
-    // Menu -> UserInterface
+
+    // TODO: Consider using a lambda function
+    // For certain settings stored in the Menu (such as global settings, preset changes,
+    // and effect order changes), the user interface must respond.
     menu.addListener(this);
+
+    // The LEDs flash when a preset is loaded or saved.
+    menu.onLoadMessage.push_back([this] { alertLEDs(LED::ALERT); });
+    menu.onSaveMessage.push_back([this] { alertLEDs(LED::ALERT); });
+
     
-    // Menu -> LEDs
-    menu.onLoadMessage.push_back( [this] { alertLEDs(LED::ALERT); } );
-    menu.onSaveMessage.push_back( [this] { alertLEDs(LED::ALERT); } );
+    // OTHER ACTIONS
+    // ==================================================================================
+
+    // The Tempo LED blinks in sync with the Metronome's tempo.
+    metronome.onTic = [this] { led[LED_TEMPO].blinkOnce(); };
 }
 
 
@@ -551,12 +590,21 @@ void UserInterface::processNonAudioTasks()
 
 void UserInterface::updateNonAudioTasks()
 {
+    // if a Menu Parameter is in Scrolling Mode, scroll it
     if (menu.isScrolling) menu.scroll();
 
+    // if a UI Parameter is in Scrolling Mode
     if (scrollingParameter)
     {
+        // scroll it
         scrollingParameter->nudgeValue(scrollingDirection);
-        potentiometer[scrollingParameter->getIndex()].decouple(scrollingParameter->getNormalizedValue());
+        
+        // since the parameter changed, the potentiometer needs to be decoupled
+        // and refreshed with the new normalized value
+        uint paramIndex = scrollingParameter->getIndex();
+        float normalizedValue = scrollingParameter->getNormalizedValue();
+        
+        potentiometer[paramIndex].decouple(normalizedValue);
     }
 }
 
@@ -577,14 +625,20 @@ void UserInterface::globalSettingChanged(Menu::Page* page_)
 
 void UserInterface::presetChanged()
 {
+    // When a preset changes, the tempo parameter would normally trigger
+    // setTempoRelatedParameters() to update the effect parameters that
+    // respond to a tempo change. This flag temporarily disables that behavior,
+    // ensuring the effect parameters remain at the values specified by the preset.
     settingTempoIsOnHold = true;
 }
 
 
 void UserInterface::effectOrderChanged()
 {
+    // call the effect order algorithm
     engine->setEffectOrder();
     
+    // led the LEDs blink once
     alertLEDs(LED::BLINKONCE);
 }
 
@@ -613,113 +667,135 @@ void UserInterface::setEffectEditFocus()
     
     // for the effect button: 
     // focus corresponding effect parameter
-    button[ButtonID::ACTION].focusListener(effect->getParameter(NUM_POTENTIOMETERS));
+    button[BUTTON_ACTION].focusListener(effect->getParameter(NUM_POTENTIOMETERS));
     
     // notify action-button-led that the parameter changed
     led[LED_ACTION].parameterChanged(effect->getParameter(NUM_POTENTIOMETERS));
     
-    // calculate the indexi of the focussed effect led and the others
+    // Calculate the indices of the focused effect LED and the others.
     int focussedEffectLedIndex = focus->getValueAsInt() + LED_FX1;
-    int secondEffectLedIndex = LED_FX2;
-    int thirdEffectLedIndex = LED_FX3;
-    
-    switch (focussedEffectLedIndex) 
-    {
-        case LED_FX1:
-            secondEffectLedIndex = LED_FX2;
-            thirdEffectLedIndex = LED_FX3;
-            break;
-        case LED_FX2:
-            secondEffectLedIndex = LED_FX1;
-            thirdEffectLedIndex = LED_FX3;
-            break;
-        case LED_FX3:
-            secondEffectLedIndex = LED_FX1;
-            thirdEffectLedIndex = LED_FX2;
-            break;
-    }
-    
-    // set the led state: focussed = VALUEFOCUS, non-focussed = VALUE
+    std::vector<int> ledIndices = { LED_FX1, LED_FX2, LED_FX3 };
+
+    // Remove the focused LED index from the vector to get the non-focused indices.
+    ledIndices.erase(std::remove(ledIndices.begin(), ledIndices.end(), focussedEffectLedIndex), ledIndices.end());
+
+    // Set the LED states: focused = VALUEFOCUS, non-focused = VALUE.
     led[focussedEffectLedIndex].setState(LED::State::VALUEFOCUS);
-    led[secondEffectLedIndex].setState(LED::State::VALUE);
-    led[thirdEffectLedIndex].setState(LED::State::VALUE);
+    led[ledIndices[0]].setState(LED::State::VALUE);
+    led[ledIndices[1]].setState(LED::State::VALUE);
 }
 
 
-void UserInterface::setNewTempo()
+void UserInterface::evaluateNewTempo()
 {
-    if (!settingTempoIsOnHold)
+    // This function is called when a tap occurs.
+    // The tempoTapper evaluates whether a new tempo has been detected.
+    // If a new tempo is captured, it returns true and saves the value internally.
+    // At this point, the tempo parameter can be updated with the new value.
+    bool newTempoDetected = tempoTapper.tapTempo();
+    
+    if (newTempoDetected)
+        engine->getParameter("tempo")->setValue(tempoTapper.getTempoInBpm());
+}
+
+
+void UserInterface::setTempoRelatedParameters()
+{
+    // This flag temporarily disables the function.
+    // Currently, the flag is only modified when a new preset is loaded, ensuring that
+    // the Tempo parameter does not override the tempo-related parameters when a preset is loaded.
+    if (settingTempoIsOnHold)
     {
-        float tempoBpm = engine->getParameter("tempo")->getValueAsFloat();
+        settingTempoIsOnHold = false;
+        return;
+    }
+
+    // Retrieve the current tempo in BPM from the parameter.
+    float tempoBpm = engine->getParameter("tempo")->getValueAsFloat();
+    
+    // Retrieve the menu setting 'Tempo Set'.
+    String tempoSetOption = engine->getParameter("engine", "tempo_set")->getPrintValueAsString();
+    
+    // check for the two valid options of 'Tempo Set'
+    if (tempoSetOption == "Current Effect" || tempoSetOption == "All Effects")
+    {
+        // Get the index of the currently focused effect.
+        int effectIndex = engine->getParameter("effect_edit_focus")->getValueAsInt();
         
-        String temposet = engine->getParameter("engine", "tempo_set")->getPrintValueAsString();
+        // Get a pointer to the current effect.
+        auto effect = engine->getEffect(effectIndex);
         
-        // only current Effect
-        if (temposet == "Current Effect")
+        // Adjust tempo-related parameters for the reverb effect.
+        if (effect->getId() == "reverb" || tempoSetOption == "All Effects")
         {
-            int effectIndex = engine->getParameter("effect_edit_focus")->getValueAsInt();
-            
-            auto effect = engine->getEffect(effectIndex);
-            
-            if (effect->getId() == "reverb")
-            {
-                auto predelay = engine->getParameter("reverb", "reverb_predelay");
-                
-                // * 8.f : fit ranges of bpm to ranges of predelay
-                predelay->setValue(bpm2msec(tempoBpm * 8.f), false);
-                
-                potentiometer[predelay->getIndex()].decouple(predelay->getNormalizedValue());
-            }
-            
-            else if (effect->getId() == "granulator")
-            {
-                auto grainlength = engine->getParameter("granulator", "gran_grainlength");
-                
-                // * 16.f : fit ranges of bpm to ranges of predelay
-                grainlength->setValue(bpm2msec(tempoBpm * 16.f), false);
-                
-                potentiometer[grainlength->getIndex()].decouple(grainlength->getNormalizedValue());
-            }
-            
-            // TODO: add Resonator
-    //        else if
-        }
-        
-        // all effects
-        else if (temposet == "All Effects")
-        {
+            // Get a pointer to the Predelay parameter.
             auto predelay = engine->getParameter("reverb", "reverb_predelay");
-            auto grainlength = engine->getParameter("granulator", "gran_grainlength");
-            //TODO: add Resonator
             
-            engine->getParameter("reverb", "reverb_predelay")->setValue(bpm2msec(tempoBpm * 8.f), false);
-            engine->getParameter("granulator", "gran_grainlength")->setValue(bpm2msec(tempoBpm * 16.f), false);
-            //TODO: add Resonator
+            // Convert BPM to milliseconds.
+            // * 8.f: Fit the BPM range to the range of the predelay.
+            // TODO: Adjust the values to ensure they are in the correct range.
+            float tempoMs = bpm2msec(tempoBpm * 8.f);
             
-            int effectIndex = engine->getParameter("effect_edit_focus")->getValueAsInt();
+            // Set the new predelay value without triggering a print notification.
+            predelay->setValue(tempoMs, false);
             
+            // Decouple the corresponding potentiometer and set its cache to the new normalized value.
             if (effectIndex == 0) potentiometer[predelay->getIndex()].decouple(predelay->getNormalizedValue());
-            else if (effectIndex == 1) potentiometer[grainlength->getIndex()].decouple(grainlength->getNormalizedValue());
-            else /*TODO: add Resonator*/;
         }
         
-        else engine_rt_error("couldn't find temposet option with name" + temposet, __FILE__, __LINE__, false);
+        // Adjust tempo-related parameters for the granulator effect.
+        if (effect->getId() == "granulator" || tempoSetOption == "All Effects")
+        {
+            // Retrieve the Grain Length parameter for the granulator effect.
+            auto grainLength = engine->getParameter("granulator", "gran_grainlength");
+            
+            // Convert BPM to milliseconds.
+            // * 16.f: Fit the BPM range to the range of the grain length.
+            // TODO: Adjust the values to ensure they are in the correct range.
+            float tempoMs = bpm2msec(tempoBpm * 16.f);
+            
+            // Set the new grain length value without triggering a print notification.
+            grainLength->setValue(tempoMs, false);
+            
+            // Decouple the corresponding potentiometer and set its cache to the new normalized value.
+            if (effectIndex == 1) potentiometer[grainLength->getIndex()].decouple(grainLength->getNormalizedValue());
+        }
+        
+        // TODO: Add Resonator support here.
     }
     
-    else settingTempoIsOnHold = false;
+    else
+    {
+        engine_rt_error("Couldn't find 'Tempo Set' option with name: " + tempoSetOption, __FILE__, __LINE__, false);
+    }
 }
 
 
 void UserInterface::nudgeUIParameter(const int direction_)
 {
+    // If the display is in TEMPORARY state, it holds a pointer to the currently shown parameter.
     if (display.getStateDuration() == Display::TEMPORARY)
     {
+        std::cout << "state of display: temporary" << std::endl;
+        
+        // Set the menu on hold to bypass the usual behavior of the Menu buttons.
         menu.onHold = true;
+        
+        // Refresh the counter for the TEMPORARY state of the display, extending its duration.
         display.refreshResetDisplayCounter();
+        
+        // Retrieve the currently shown parameter.
         AudioParameter* param = display.getTemporaryParameter();
+        
+        // Safety check to ensure the parameter is valid (shouldn't be nullptr when the 
+        // display state is TEMPORARY).
         if (param)
         {
+            // Nudge the parameter value in the specified direction.
             param->nudgeValue(direction_);
+            
+            // Decouple the corresponding potentiometer and update its cache to reflect 
+            // the new normalized value.
             potentiometer[param->getIndex()].decouple(param->getNormalizedValue());
         }
     }
@@ -728,14 +804,26 @@ void UserInterface::nudgeUIParameter(const int direction_)
 
 void UserInterface::startScrollingUIParameter(const int direction_)
 {
+    // If the display is in TEMPORARY state, it holds a pointer to the currently shown parameter.
     if (display.getStateDuration() == Display::TEMPORARY)
     {
+        // Set the menu on hold to bypass the usual behavior of the Menu buttons.
         menu.onHold = true;
-        
+
+        // Refresh the counter for the TEMPORARY state of the display, extending its duration.
         display.refreshResetDisplayCounter();
         
+        // Save a pointer to the currently shown parameter in this object.
+        // The scrolling action will be handled in the updateNonAudioTasks() function.
         scrollingParameter = display.getTemporaryParameter();
+        
+        // Safety check to ensure the parameter is valid (shouldn't be nullptr when the
+        // display state is TEMPORARY).
+        if (!scrollingParameter)
+            engine_rt_error("display doesn't hold a parameter for scrolling", 
+                            __FILE__, __LINE__, false);
             
+        // Save the scrolling direction in this object.
         scrollingDirection = direction_;
     }
 }
@@ -743,65 +831,117 @@ void UserInterface::startScrollingUIParameter(const int direction_)
 
 void UserInterface::stopScrollingUIParameter()
 {
-    if (scrollingParameter)
-    {
-        scrollingParameter = nullptr;
-    }
+    // Called when the Up or Down button is released after a long press.
+    // The scrollingParameter is set to nullptr, which acts as a flag for the
+    // updateNonAudioTasks() function to indicate whether a parameter should be scrolled.
+    scrollingParameter = nullptr;
 }
 
 
-void UserInterface::setDefaultUIParameter()
+void UserInterface::setUIParameterToDefault()
 {
+    // If the display is in TEMPORARY state, it holds a pointer to the currently shown parameter.
     if (display.getStateDuration() == Display::TEMPORARY)
     {
+        // Set the menu on hold to bypass the usual behavior of the Menu buttons.
         menu.onHold = true;
         
+        // Refresh the counter for the TEMPORARY state of the display, extending its duration.
         display.refreshResetDisplayCounter();
         
+        // Retrieve the currently shown parameter.
         AudioParameter* param = display.getTemporaryParameter();
         
+        // Safety check to ensure the parameter is valid (shouldn't be nullptr when the
+        // display state is TEMPORARY).
         if (param)
         {
+            // Set the parameter value to its default value.
             param->setDefaultValue();
             
+            // Decouple the corresponding potentiometer and update its cache to reflect
+            // the new normalized value.
             potentiometer[param->getIndex()].decouple(param->getNormalizedValue());
         }
     }
 }
 
 
+void UserInterface::displayTouchedParameter(uint paramIndex_)
+{
+    // This function is called every time a potentiometer is touched, instructing the
+    // display to show the associated parameter.
+    
+    // Since it's not possible to initialize the potentiometer's cache at startup with the
+    // current potentiometer position, we include an initialization algorithm.
+    // The function bypasses normal behavior for the first 8 calls (equal to the number of potentiometers).
+    static bool initializing = true;
+    static uint numInitCallsLeft = NUM_POTENTIOMETERS;
+
+    if (initializing)
+    {
+        if (--numInitCallsLeft == 0) initializing = false;
+        return;
+    }
+
+    // Retrieve the index of the currently focused effect.
+    int focus = engine->getParameter("effect_edit_focus")->getValueAsInt();
+
+    // Get a pointer to the focused effect.
+    auto effect = engine->getEffect(focus);
+
+    // Get the parameter associated with the touched potentiometer (using the same index).
+    AudioParameter* connectedParam = effect->getParameter(paramIndex_);
+
+    // Instruct the display object to show a parameter message for this parameter.
+    display.parameterCalledDisplay(connectedParam);
+}
+
+
 void UserInterface::alertLEDs(LED::State state_)
 {
+    // call all LED's alert function
     if (state_ == LED::State::ALERT)
         for (unsigned int n = 0; n < NUM_LEDS; ++n)
             led[n].alert();
     
+    // call all LED's blink once function
     else if (state_ == LED::State::BLINKONCE)
         for (unsigned int n = 0; n < NUM_LEDS; ++n)
             led[n].blinkOnce();
 }
 
 
+// =======================================================================================
 // MARK: - TEMPOTAPPER
-// ********************************************************************************
-  
+// =======================================================================================
+
+
 void TempoTapper::setup(const float minBPM_, const float maxBPM_, const float sampleRate_)
 {
+    // Set the sample rate for the audio processing.
     sampleRate = sampleRate_;
-    
+
+    // Calculate the maximum and minimum BPM counts based on the sample rate and BPM limits.
     maxBpmCounts = (60.f * sampleRate) / maxBPM_;
     minBpmCounts = (60.f * sampleRate) / minBPM_;
-    // high bpm = low counter!
-    //   60 bpm = (60 * fs) / 60
-    //    1 bpm = (60 * fs)
-    //  120 bpm = (60 * fs) / 120
+
+    // Explanation:
+    // The BPM counts represent the number of samples between beats at the given BPM.
+    // A higher BPM results in a lower count (fewer samples between beats).
+    // For example:
+    //   60 BPM = (60 * sampleRate) / 60  -> 1 second per beat
+    //    1 BPM = (60 * sampleRate)       -> 60 seconds per beat (one beat per minute)
+    //  120 BPM = (60 * sampleRate) / 120 -> 0.5 seconds per beat
 }
 
 
 void TempoTapper::process()
 {
+    // Increment the tap counter and check if it exceeds the minimum BPM count threshold.
     if (++tapCounter > minBpmCounts)
     {
+        // If the counter exceeds the minimum BPM count, stop counting.
         isCounting = false;
     }
 }
@@ -809,81 +949,89 @@ void TempoTapper::process()
 
 void TempoTapper::calculateNewTempo()
 {
-    //  44100 samples / fs = 1s
-    //  60s / 1s = 60 bpm
-    //  22050 samples / fs = 0.5s
-    //  60s / 0.5s = 120 bpm
-    //  88200 samples / fs = 2s
-    //  60s / 2s = 30 bpm
-    
+    // Calculate tempo-related values based on the tapCounter (number of samples between taps).
     tempoSamples = tapCounter;
     tempoSec = tapCounter / sampleRate;
     tempoMsec = tempoSec * 1000.f;
     tempoBpm = 60.f / tempoSec;
-//    bpm = round_float_1(bpm);
 }
 
 
 bool TempoTapper::tapTempo()
 {
-    // new tap arrives, different options:
-    // 1. the tap starts the counter
-    // 2. a tap was detected before (in a valid time distance). this would mean, calculate new bpm and restart counter
-    
+    // A new tap arrives:
+    // 1. The tap starts the counter (first tap).
+    // 2. A previous tap was detected within a valid time range, which means a new 
+    //    BPM should be calculated and the counter restarted.
+
     bool newTempoDetected = false;
-    
+
     if (isCounting)
     {
+        // Check if the time between taps falls within the valid BPM range.
         if (tapCounter >= maxBpmCounts && tapCounter <= minBpmCounts)
         {
+            // Calculate the new tempo based on the time interval.
             calculateNewTempo();
             
-            newTempoDetected =  true;
+            // Indicate that a new tempo has been detected.
+            newTempoDetected = true;
         }
     }
-    
+
+    // Start or restart the counting process.
     isCounting = true;
     
+    // Reset the tap counter for the next interval.
     tapCounter = 0;
-        
+
     return newTempoDetected;
 }
 
 
+// =======================================================================================
 // MARK: - METRONOME
-// ********************************************************************************
+// =======================================================================================
 
-// TODO: check in BELA if LEDs and Metronome works correctly
 
 void Metronome::setup(const float sampleRate_, const float defaultTempoBpm_)
 {
+    // Initialize the sample rate.
     sampleRate = sampleRate_;
     
-    tempoSamples = (int)((sampleRate * 60.f) / defaultTempoBpm_);
+    // Convert the default tempo from BPM to the corresponding number of samples per beat.
+    tempoSamples = bpm2samples(defaultTempoBpm_, sampleRate);
     
+    // Initialize the counter to the number of samples per beat.
     counter = tempoSamples;
 }
 
 
 void Metronome::process()
 {
+    // Trigger the metronome tick (onTic) when the counter reaches the tempoSamples value.
     if (counter == tempoSamples) onTic();
     
+    // Decrement the counter and reset it to tempoSamples when it reaches zero.
     if (--counter == 0) counter = tempoSamples;
 }
 
 
 void Metronome::setTempoSamples(const uint tempoSamples_)
 {
+    // Set the new tempo in terms of samples per beat.
     tempoSamples = tempoSamples_;
     
+    // Reset the counter to the new tempoSamples value.
     counter = tempoSamples_;
 }
 
 
 void Metronome::parameterChanged(AudioParameter *param_)
 {
+    // Retrieve the new tempo in BPM from the provided parameter.
     float tempoBpm = param_->getValueAsFloat();
     
+    // Convert the BPM to the number of samples per beat and update the metronome.
     setTempoSamples((uint)((sampleRate * 60.f) / tempoBpm));
 }

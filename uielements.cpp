@@ -39,11 +39,11 @@ static const float POT_MAX_VOLTAGE = 0.831f; /**< Maximum voltage for potentiome
 PotBehaviour Potentiometer::potBehaviour = PotBehaviour::CATCH;
 
 
-void Potentiometer::setup(const int index_, const String name_, const float guidefault_)
+void Potentiometer::setup(const int index_, const String& id_, const float guidefault_)
 {
     // set identifiers
     index = index_;
-    name = name_;
+    id = id_;
     
     // setup caches
     guiCache = guidefault_;
@@ -171,7 +171,7 @@ void Potentiometer::setValue(const float value_)
 {
     // check for unbounded value
     if (value_ < 0.f || value_ > 1.f)
-        engine_rt_error("new value for " + name + " exceeds range 0..1: " + std::to_string(value_),
+        engine_rt_error("new value for " + id + " exceeds range 0..1: " + std::to_string(value_),
                         __FILE__, __LINE__, true);
 
     last = current;
@@ -200,11 +200,11 @@ const int Button::DEBOUNCING_UNITS = 1;
 const int Button::LONGPRESS_UNITS = 10;
 
 
-void Button::setup(const int index_, const String name_, const Phase guidefault_, const Phase analogdefault_)
+void Button::setup(const int index_, const String& id_, const Phase guidefault_, const Phase analogdefault_)
 {
     // set identifiers
     index = index_;
-    name = name_;
+    id = id_;
         
     // setup caches with default value
     guiCache = guidefault_;

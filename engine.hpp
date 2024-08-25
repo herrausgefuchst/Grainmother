@@ -179,7 +179,6 @@ private:
 // MARK: - USER INTERFACE
 // =======================================================================================
 
-class Metronome;
 
 class UserInterface : public Menu::Listener
 {
@@ -202,13 +201,17 @@ private:
     void initializeListeners();
     
     void setEffectEditFocus();
-    void setNewTempo();
+    
+    void evaluateNewTempo();
+    void setTempoRelatedParameters();
     
     void nudgeUIParameter(const int direction_);
     
     void startScrollingUIParameter(const int direction_);
     void stopScrollingUIParameter();
-    void setDefaultUIParameter();
+    void setUIParameterToDefault();
+    
+    void displayTouchedParameter(uint paramIndex_);
     
     void alertLEDs(LED::State state_);
     
