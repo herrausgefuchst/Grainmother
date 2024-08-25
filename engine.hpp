@@ -12,7 +12,7 @@
 // MARK: - AUDIO ENGINE
 // =======================================================================================
 
-typedef std::function<StereoFloat(StereoFloat)> ProcessFunctionPointer;
+typedef std::function<StereoFloat(StereoFloat, uint)> ProcessFunctionPointer;
 
 /**
  * @class AudioEngine
@@ -43,7 +43,7 @@ public:
      * @param input_ The stereo input to process.
      * @return The processed stereo output.
      */
-    StereoFloat processAudioSamples(StereoFloat input_);
+    StereoFloat processAudioSamples(StereoFloat input_, uint sampleIndex_);
 
     /**
      * @brief update function, should be called blockwise

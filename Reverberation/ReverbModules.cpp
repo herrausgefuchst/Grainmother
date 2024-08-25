@@ -1,5 +1,9 @@
 #include "ReverbModules.h"
 
+
+using namespace Reverberation;
+
+
 // initialize static member variables
 unsigned int CombFilterStereo::writePointer = 0;
 unsigned int AllpassFilterStereo::writePointer = 0;

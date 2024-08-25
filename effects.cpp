@@ -27,18 +27,16 @@ void Effect::parameterChanged(AudioParameter *param_)
 
 void Reverb::setup()
 {
+    reverb.setup(sampleRate, blockSize);
+    
     initializeParameters();
     initializeListeners();
 }
 
 
-StereoFloat Reverb::processAudioSamples(const StereoFloat input_)
+StereoFloat Reverb::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
 {
-    StereoFloat effect = input_;
-    
-//    rt_printf("processing effect %s\n", id.c_str());
-    
-    return effect;
+    return reverb.processAudioSamples(input_, sampleIndex_);;
 }
 
 
@@ -90,17 +88,14 @@ void Reverb::initializeParameters()
 
 void Reverb::initializeListeners()
 {
-//    parameters.getParameter(SLICELENGTH)->onChange.push_back([this] { calcLengthInSamples(SLICELENGTH); });
-//    parameters.getParameter(TRIGGER)->onChange.push_back([this] { calcLengthInSamples(TRIGGER); });
-//    parameters.getParameter(GATE)->onChange.push_back([this] { calcLengthInSamples(GATE); });
-//    
-//    parameters.getParameter(PITCH)->onChange.push_back([this] { calcPitchIncrement(); });
-//    
-//    engineparameters->getParameter("tempo")->onChange.push_back([this]
-//                                                                {
-//        calcLengthInSamples();
-//        ctr_trigger = 0;
-//    });
+    for (unsigned int n = 0; n < Reverberation::NUM_PARAMETERS; ++n)
+    {
+        auto param = parameters.getParameter(n);
+        
+        param->onChange.push_back([this, param] {
+            reverb.parameterChanged(param->getID(), param->getValueAsFloat());
+        });
+    }
 }
 
 
@@ -115,7 +110,7 @@ void Granulator::setup()
 }
 
 
-StereoFloat Granulator::processAudioSamples(const StereoFloat input_)
+StereoFloat Granulator::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
 {
     // process ramps
 //    parameters.getParameter(GRAN1)->process();
@@ -176,7 +171,7 @@ void Granulator::initializeListeners()
 // MARK: - GRANULATOR
 // ********************************************************************************
 
-StereoFloat Resonator::processAudioSamples(const StereoFloat input_)
+StereoFloat Resonator::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
 {
     // process ramps
     // ...

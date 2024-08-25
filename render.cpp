@@ -115,7 +115,8 @@ void render (BelaContext *context, void *userData)
         userinterface.processNonAudioTasks();
         
         // process effects
-        StereoFloat output = inputHandler.process(context, sampleIndex);
+        StereoFloat input = inputHandler.process(context, sampleIndex);
+        StereoFloat output = engine.processAudioSamples(input, sampleIndex);
         
         // write output buffer
         audioWrite(context, sampleIndex, 0, output.leftSample);

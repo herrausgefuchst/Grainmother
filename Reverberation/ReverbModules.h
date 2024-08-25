@@ -14,7 +14,10 @@
 
 #pragma once
 
-#include "../functions.h"
+#include "../helpers.hpp"
+
+namespace Reverberation
+{
 
 /**
  * @defgroup EarlyReflectionStaticVariables
@@ -91,7 +94,7 @@ public:
         
         // set all values in buffer to 0.f
         std::fill(buffer.get(), buffer.get()+bufferLength, vdup_n_f32(0.f));
-
+        
         // setup readPointer
         setDelay(delaySamples_);
     }
@@ -182,7 +185,7 @@ public:
     {
         // y(n) = (1-a) * x(n) + a * y(n-1)
         state = vmla_n_f32(vmul_n_f32(x_, g_1), state, g);
- 
+        
         // overwrite the input
         x_ = state;
     }
@@ -234,7 +237,7 @@ public:
         // setup cutoff frequency
         setCutoffFrequency(cutoffFreq_);
     }
-
+    
     /** sets new cutoff frequency */
     void setCutoffFrequency(const float& cutoffFreq_)
     {
@@ -248,7 +251,7 @@ public:
         // set on/off flag
         enabled = cutoffFrequency < 20000 ? true : false;
     }
-
+    
     /** y(n) = b0 * x(n) + b1 * x(n-1) + b2 * x(n-2) - a1 * y(n-1) - a2 * y(n-2) */
     void processAudioSamples(float32x2_t& x_)
     {
@@ -257,7 +260,7 @@ public:
         y = vmla_n_f32(y, x2, b2);
         y = vmls_n_f32(y, y1, a1);
         y = vmls_n_f32(y, y2, a2);
-    
+        
         // delay the state variables
         x2 = x1;
         x1 = x_;
@@ -270,7 +273,7 @@ public:
     
     /** returns the momentary cutoff frequency */
     const float& getCutoffFrequency() const { return cutoffFrequency; }
-
+    
 private:
     /** helper function caulculates the filter coefficients */
     void calculateCoefficients()
@@ -278,7 +281,7 @@ private:
         float normal_cutoff = cutoffFrequency * nyquist_inv;
         float omega_c = PI * normal_cutoff;
         float tan_half_wc = tanf_neon(omega_c * 0.5f);
-
+        
         float b0_coef = tan_half_wc * tan_half_wc;
         
         // sets resonance, lower cutoff frequencys = more resonance
@@ -286,7 +289,7 @@ private:
         
         float sqrt2tanhalfwc = sqrt_2 * tan_half_wc / Q;
         float denom_inv = 1.f / (1.0f + sqrt2tanhalfwc + b0_coef);
-
+        
         b0 = b0_coef * denom_inv;
         b1 = 2.0f * b0;
         b2 = b0;
@@ -330,7 +333,7 @@ public:
         // setup cutoff frequency
         setCutoffFrequency(cutoffFreq_);
     }
-
+    
     /** sets new cutoff frequency */
     void setCutoffFrequency(const float& cutoffFreq_)
     {
@@ -344,7 +347,7 @@ public:
         // set on/off flag
         enabled = cutoffFrequency > 20.f ? true : false;
     }
-
+    
     /** y(n) = b0 * x(n) + b1 * x(n-1) + b2 * x(n-2) - a1 * y(n-1) - a2 * y(n-2) */
     void processAudioSamples(float32x2_t& x_)
     {
@@ -353,7 +356,7 @@ public:
         y = vmla_n_f32(y, x2, b2);
         y = vmls_n_f32(y, y1, a1);
         y = vmls_n_f32(y, y2, a2);
-    
+        
         // delay the state variables
         x2 = x1;
         x1 = x_;
@@ -366,7 +369,7 @@ public:
     
     /** returns the momentary cutoff frequency */
     const float& getCutoffFrequency() const { return cutoffFrequency; }
-
+    
 private:
     /** helper function caulculates the filter coefficients */
     void calculateCoefficients()
@@ -374,11 +377,11 @@ private:
         float normal_cutoff = cutoffFrequency * nyquist_inv;
         float omega_c = PI * normal_cutoff;
         float tan_half_wc = tanf_neon(omega_c * 0.5f);
-
+        
         float sqrt2tanhalfwc = sqrt_2 * tan_half_wc;
         float tanhalfwc_sq = tan_half_wc * tan_half_wc;
         float denom_o1 = 1.f / (1.0f + sqrt2tanhalfwc + tanhalfwc_sq);
-
+        
         b0 = denom_o1;
         b1 = -2.0f * b0;
         b2 = b0;
@@ -431,7 +434,7 @@ public:
         // center frequency
         setCenterFrequency(centerFreq_);
     }
-
+    
     /** sets new center frequency */
     void setCenterFrequency(const float& centerFreq_)
     {
@@ -448,7 +451,7 @@ public:
         // recalculate filter coefficients
         calculateCoefficients();
     }
-
+    
     /** sets new filter gain */
     void setGain(const float& gain_)
     {
@@ -466,7 +469,7 @@ public:
         // set on/off flag
         enabled = gain != 0.f ? true : false;
     }
-
+    
     /** sets new bandwidth */
     void setBandwidth(const float& bandwidth_)
     {
@@ -476,11 +479,11 @@ public:
         // calculate helper variables
         bandwidth2 = 2.0f * bandwidth;
         alpha = sinOmega0 * sinhf_neon(log_2 / bandwidth2 * omega0 / sinOmega0);
-    
+        
         // recalculate filter coefficients
         calculateCoefficients();
     }
-
+    
     /** y(n) = b0 * x(n) + b1 * x(n-1) + b2 * x(n-2) - a1 * y(n-1) - a2 * y(n-2) */
     void processAudioSamples(float32x2_t& x_)
     {
@@ -489,7 +492,7 @@ public:
         y = vmla_n_f32(y, x2, b2);
         y = vmls_n_f32(y, y1, a1);
         y = vmls_n_f32(y, y2, a2);
-    
+        
         // delay the state variables
         x2 = x1;
         x1 = x_;
@@ -503,7 +506,7 @@ public:
     const float& getCenterFrequency() const { return centerFreq; }
     const float& getGain() const { return gain; }
     const float& getBandwidth() const { return bandwidth; }
-
+    
 private:
     /** helper function caulculates the filter coefficients */
     void calculateCoefficients()
@@ -516,16 +519,16 @@ private:
         a1 = (-2.0f * cosOmega0) * denominator_inv;
         a2 = (1.0f - alpha * A_o1) * denominator_inv;
     }
-
+    
 private:
     /** user definable filter parameters */
     float centerFreq, gain, bandwidth;
-
+    
     float fs_inv; ///< inversed sample rate
     
     /** helper variables */
     float omega0, A, A_o1, alpha, cosOmega0, sinOmega0, bandwidth2;
-
+    
     /** filter coefficients */
     float32_t b0, b1, b2, a1, a2;
     
@@ -562,7 +565,7 @@ public:
      * @param blockSize_ the audio block size
      */
     void setup(const unsigned int& room_, const unsigned int& predelaySamples_, const float& size_, const unsigned int& blockSize_);
- 
+    
     /**
      * @brief reads out all taps by using linear interpolation, combines them in an array
      * @return a custom array of neon-vectors holding all the taps
@@ -630,19 +633,19 @@ public:
     {
         // set feedback gain
         setFeedbackGain(feedbackGain_);
-
+        
         // delay from ms to samples
         unsigned int delaySamples = delayMs_ * sampleRate_ * 0.001f;
         
         // set all values in buffer to 0.f
         std::fill(buffer.begin(), buffer.end(), 0.f);
-
+        
         // setup readPointer (-1 because read before write!)
         readPointer = bufferLength - 1 - delaySamples;
-                
+        
         return true;
     }
-
+    
     /**
      * @brief processes the allpass filter
      * @attention process function of AllpassFilterDualMono  is used instead
@@ -694,7 +697,7 @@ public:
     
     /** increments the static member variable writePointer */
     static void incrementWritePointer() { writePointer = (writePointer + 1) & bufferWrap; }
-
+    
 private:
     static const unsigned int bufferLength = 1024; ///< fixed buffer length for this module
     static const unsigned int bufferWrap = 1023; ///< bufferLength - 1, used for wrapping pointers
@@ -731,7 +734,7 @@ public:
     {
         feedbackGain = { filters[0].getFeedbackGain(), filters[1].getFeedbackGain() };
     }
-
+    
     /**
      * @brief processes the allpass filter with neon-intrinsics
      * @param xn_ the input float samples
@@ -752,7 +755,7 @@ public:
         // output yn = vn - g * wn;
         xn_ = vmls_f32(vn, feedbackGain, wn);
     }
-
+    
 private:
     alignas(alignof(float32x2_t)) float32x2_t feedbackGain = vdup_n_f32(0.f); ///< a vector of the two inidividual feedbackgains
 };
@@ -906,9 +909,9 @@ private:
     int readPointerHi = 0; ///< integer read pointers next to the float read position
     float32_t readPointerFrac = 0.f; ///< fracment for linear interpolation
     bool interpolationNeeded = false; ///< fllag for efficiency purposes
-
+    
     unsigned int delaySamples = 0; ///< the fixed filters delay in samples
-
+    
     float gComb = 0.707f; ///< comb filter feedback gain
     float gLP = 0.f; ///< lowpass filter feedback gain
     
@@ -940,17 +943,19 @@ public:
      * @attention be sure to call this every time one of the individual filter parameters has changed
      */
     void update();
-
+    
     /**
      * @brief processes the comb filter with neon-intrinsics
      * @param xn_ the input float samples
      * @see CombFilterStereo
      */
     float32x2_t processAudioSampleInParallel(float32x2_t xn_);
-
+    
 private:
     /** vectors of 4 filter coefficents, two each are copied from the corresponding CombFilterStereo objects */
     alignas(alignof(float32x4_t)) float32x4_t b0, b1;
     /** vector of 4 lowpass states, two each are copied from the corresponding CombFilterStereo objects */
     alignas(alignof(float32x4_t)) float32x4_t lowpassState = vdupq_n_f32(0.f);
 };
+
+} // namespace Reverberation

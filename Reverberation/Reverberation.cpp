@@ -4,6 +4,8 @@
 // MARK: - Early Reflections
 // =======================================================================================
 
+using namespace Reverberation;
+
 void EarlyReflections::setup(const float& sampleRate_, const float& blockSize_)
 {
     // error handling
@@ -21,9 +23,9 @@ void EarlyReflections::setup(const float& sampleRate_, const float& blockSize_)
     allpass.update();
     
     // setup Ramp Parameters (start, samplerate, blocksize, isProcessingBlockwise)
-    float initialSize = parameterInitialValue[static_cast<int>(ReverbParameters::SIZE)] * 0.01f;
-    float initialPreDelay = parameterInitialValue[static_cast<int>(ReverbParameters::PREDELAY)] * sampleRate_ * 0.001f;
-    float initialFeedback = parameterInitialValue[static_cast<int>(ReverbParameters::FEEDBACK)];
+    float initialSize = parameterInitialValue[static_cast<int>(Parameters::SIZE)] * 0.01f;
+    float initialPreDelay = parameterInitialValue[static_cast<int>(Parameters::PREDELAY)] * sampleRate_ * 0.001f;
+    float initialFeedback = parameterInitialValue[static_cast<int>(Parameters::FEEDBACK)];
     
     parameters.size.setup(initialSize, sampleRate_, RAMP_UPDATE_RATE, true);
     parameters.predelay.setup(initialPreDelay, sampleRate_, RAMP_UPDATE_RATE, true);
@@ -190,7 +192,7 @@ void Decay::setup(const DecayParameters& params_, const float& sampleRate_, cons
         for (unsigned int n = 0; n < typeParameters.numPostAllpassFilters; ++n)
             allpassFiltersPost[n].setup(typeParameters.diffusion, typeParameters.allpassPostDelaySamples[n], sampleRate_);
  
-    parameters.modulationDepth.setup(parameterInitialValue[static_cast<int>(ReverbParameters::MODDEPTH)] * 0.5f, sampleRate_, RAMP_UPDATE_RATE, true);
+    parameters.modulationDepth.setup(parameterInitialValue[static_cast<int>(Parameters::MODDEPTH)] * 0.5f, sampleRate_, RAMP_UPDATE_RATE, true);
 
     // --- copy set of Parameters
     setParameters(params_);
@@ -354,7 +356,7 @@ Decay::CombFilterDualStereoPtr Decay::createAlignedCombFilters(size_t count)
 // MARK: - BELA REVERB
 // =======================================================================================
 
-void BelaReverb::setup(const float& sampleRate_, const unsigned int& blocksize_)
+void Reverb::setup(const float& sampleRate_, const unsigned int& blocksize_)
 {
     // generel variables
     sampleRate = sampleRate_;
@@ -366,7 +368,7 @@ void BelaReverb::setup(const float& sampleRate_, const unsigned int& blocksize_)
 
     // sets the default reverb type and the corresponding parameters
     // for earlies and decay, creates a new decay object
-    ReverbTypes initialType = static_cast<ReverbTypes>(parameterInitialValue[static_cast<int>(ReverbParameters::TYPE)]);
+    ReverbTypes initialType = static_cast<ReverbTypes>(parameterInitialValue[static_cast<int>(Parameters::TYPE)]);
     setReverbType(initialType);
     
     // setup eraly reflections
@@ -379,19 +381,20 @@ void BelaReverb::setup(const float& sampleRate_, const unsigned int& blocksize_)
     delayedDecay.setDelay(decayDelaySamples());
     
     // setup equalizers
-    float initialMultFreq = parameterInitialValue[static_cast<int>(ReverbParameters::MULTFREQ)];
-    float initialMultGain = parameterInitialValue[static_cast<int>(ReverbParameters::MULTGAIN)];
-    float initialLowcutFreq = parameterInitialValue[static_cast<int>(ReverbParameters::LOWCUT)];
-    float initialHighcutFreq = parameterInitialValue[static_cast<int>(ReverbParameters::HIGHCUT)];
+    float initialMultFreq = parameterInitialValue[static_cast<int>(Parameters::MULTFREQ)];
+    float initialMultGain = parameterInitialValue[static_cast<int>(Parameters::MULTGAIN)];
+    float initialLowcutFreq = parameterInitialValue[static_cast<int>(Parameters::LOWCUT)];
+    float initialHighcutFreq = parameterInitialValue[static_cast<int>(Parameters::HIGHCUT)];
     inputMultiplier.setup(initialMultFreq, initialMultGain, 1.5f, sampleRate);
     lowcut.setup(initialLowcutFreq, sampleRate);
     highcut.setup(initialHighcutFreq, sampleRate);
     
-    dry = 1.f - 0.01f * parameterInitialValue[static_cast<int>(ReverbParameters::WETNESS)];
-    wet.setup(WETNESS_GAIN_COMPENSATION * 0.01f * parameterInitialValue[static_cast<int>(ReverbParameters::WETNESS)], sampleRate, RAMP_UPDATE_RATE);
+    dry = 1.f - 0.01f * parameterInitialValue[static_cast<int>(Parameters::WETNESS)];
+    wet.setup(WETNESS_GAIN_COMPENSATION * 0.01f * parameterInitialValue[static_cast<int>(Parameters::WETNESS)], sampleRate, RAMP_UPDATE_RATE);
 }
 
-void BelaReverb::updateRamps()
+
+void Reverb::updateRamps()
 {
     // delay of decay ramp
     if (!decayDelaySamples.rampFinished)
@@ -410,7 +413,7 @@ void BelaReverb::updateRamps()
 
 // MARK: processAudioSamples
 // ------------------------------------------------------------------------------
-StereoFloat BelaReverb::processAudioSamples(const StereoFloat input_, const unsigned int& sampleIndex_)
+StereoFloat Reverb::processAudioSamples(const StereoFloat input_, const unsigned int& sampleIndex_)
 {
     if (!settingType)
     {
@@ -450,7 +453,7 @@ StereoFloat BelaReverb::processAudioSamples(const StereoFloat input_, const unsi
 }
 
 
-void BelaReverb::setReverbType(ReverbTypes type_)
+void Reverb::setReverbType(ReverbTypes type_)
 {
     settingType = true;
     
@@ -595,33 +598,33 @@ void BelaReverb::setReverbType(ReverbTypes type_)
 
 // MARK: Parameter Changed
 // ------------------------------------------------------------------------------
-void BelaReverb::parameterChanged (const std::string& parameterID, float newValue)
+void Reverb::parameterChanged(const std::string& parameterID, float newValue)
 {
-    if (parameterID == "Decay")
+    if (parameterID == "reverb_decay")
     {
         DecayParameters params = decay->getParameters();
         params.decayTimeMs = newValue * 1000.f; // sec to ms
         decay->setParameters(params);
     }
-    else if (parameterID == "Predelay")
+    else if (parameterID == "reverb_predelay")
     {
         EarlyReflectionsParameters params = earlyReflections.getParameters();
         params.predelay = newValue * samplesPerMs; // ms to samples
         earlyReflections.setParameters(params);
     }
-    else if (parameterID == "Modulation Rate")
+    else if (parameterID == "reverb_modrate")
     {
         DecayParameters params = decay->getParameters();
         params.modulationRate = newValue;
         decay->setParameters(params);
     }
-    else if (parameterID == "Modulation Depth")
+    else if (parameterID == "reverb_moddepth")
     {
         DecayParameters params = decay->getParameters();
         params.modulationDepth = newValue * 0.5f; // % to 0...50 samples
         decay->setParameters(params);
     }
-    else if (parameterID == "Size")
+    else if (parameterID == "reverb_size")
     {
         EarlyReflectionsParameters params = earlyReflections.getParameters();
         params.size = newValue * 0.01f; // % to scaler
@@ -631,33 +634,33 @@ void BelaReverb::parameterChanged (const std::string& parameterID, float newValu
         if (delayOfDecay < 0) delayOfDecay = 0;
         decayDelaySamples.setRampTo(delayOfDecay, 0.03f);
     }
-    else if (parameterID == "Feedback")
+    else if (parameterID == "reverb_feedback")
     {
         EarlyReflectionsParameters params = earlyReflections.getParameters();
         params.feedback = newValue;
         earlyReflections.setParameters(params);
     }
-    else if (parameterID == "Wetness")
+    else if (parameterID == "reverb_wetness")
     {
         wet.setRampTo(WETNESS_GAIN_COMPENSATION * newValue * 0.01f, 0.02f); // % to scaler
     }
-    else if (parameterID == "Lowcut")
+    else if (parameterID == "reverb_lowcut")
     {
         lowcut.setCutoffFrequency(newValue);
     }
-    else if (parameterID == "Highcut")
+    else if (parameterID == "reverb_highcut")
     {
         highcut.setCutoffFrequency(newValue);
     }
-    else if (parameterID == "Multiplier Freq")
+    else if (parameterID == "reverb_multfreq")
     {
         inputMultiplier.setCenterFrequency(newValue);
     }
-    else if (parameterID == "Multiplier Gain")
+    else if (parameterID == "reverb_multgain")
     {
         inputMultiplier.setGain(newValue);
     }
-    else if (parameterID == "Reverb Type")
+    else if (parameterID == "reverb_type")
     {
         setReverbType(static_cast<ReverbTypes>(newValue));
     }

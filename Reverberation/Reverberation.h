@@ -583,7 +583,7 @@ private:
 // =======================================================================================
 
 /**
- * @class BelaReverb
+ * @class Reverb
  * @brief processes the whole Reverb
  *
  */
@@ -620,7 +620,7 @@ public:
      * @param parameterID the name of the changed parameter
      * @param newValue the UI value
      */
-    void parameterChanged (const std::string& parameterID, float newValue);
+    void parameterChanged(const std::string& parameterID, float newValue);
     
     /**
      * @brief sets a new reverb type

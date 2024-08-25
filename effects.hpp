@@ -44,7 +44,7 @@ public:
      * @param input_ The stereo input to process.
      * @return The processed stereo output.
      */
-    virtual StereoFloat processAudioSamples(const StereoFloat input_) = 0;
+    virtual StereoFloat processAudioSamples(const StereoFloat input_, const uint sampleIndex_) = 0;
 
     /**
      * @brief Updates the audio block for the effect.
@@ -103,7 +103,7 @@ public:
     
     void setup() override;
     
-    StereoFloat processAudioSamples(const StereoFloat input_) override;
+    StereoFloat processAudioSamples(const StereoFloat input_, const uint sampleIndex_) override;
     
     void updateAudioBlock() override;
     
@@ -129,7 +129,7 @@ public:
     
     ~Granulator() {}
     
-    StereoFloat processAudioSamples(const StereoFloat input_) override;
+    StereoFloat processAudioSamples(const StereoFloat input_, const uint sampleIndex_) override;
     
     void updateAudioBlock() override;
     
@@ -151,7 +151,7 @@ public:
     
     ~Resonator() {}
     
-    StereoFloat processAudioSamples(const StereoFloat input_) override;
+    StereoFloat processAudioSamples(const StereoFloat input_, const uint sampleIndex_) override;
     
     void updateAudioBlock() override;
 

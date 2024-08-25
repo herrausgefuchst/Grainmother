@@ -89,7 +89,7 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
 }
 
 
-StereoFloat AudioEngine::processAudioSamples(StereoFloat input_)
+StereoFloat AudioEngine::processAudioSamples(StereoFloat input_, uint sampleIndex_)
 {
     StereoFloat output = {0.f, 0.f};
     
@@ -107,7 +107,7 @@ StereoFloat AudioEngine::processAudioSamples(StereoFloat input_)
                 {
                     ++processedEffects;
                     
-                    output += processFunction[m][n](input_) * parallelWeight[m];
+                    output += processFunction[m][n](input_, sampleIndex_) * parallelWeight[m];
                 }
                 
                 if (++catchedEffects == NUM_EFFECTS) break;
@@ -183,8 +183,8 @@ void AudioEngine::setEffectOrder()
                 if (effectIndex >= 0 && effectIndex < NUM_EFFECTS)
                 {
                     // insert the process function of this effect to the precise array slot
-                    processFunction[row][col] = [this, effectIndex](StereoFloat input) {
-                        return effects[effectIndex]->processAudioSamples(input);
+                    processFunction[row][col] = [this, effectIndex](StereoFloat input, uint sampleIndex) {
+                        return effects[effectIndex]->processAudioSamples(input, sampleIndex);
                     };
                     
                     // insert the process effect index to the precise array slot
