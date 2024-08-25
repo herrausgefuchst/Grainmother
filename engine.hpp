@@ -22,13 +22,6 @@ class AudioEngine
 {
 public:
     /**
-     * @enum Parameters
-     * @brief Enumeration for the various parameters in the audio engine.
-     */
-    // TODO: what is this?
-    enum Parameters { TEMPO, BYPASS, BEATREPEAT, GRANULATOR, DELAY, FXFOCUS };
-    
-    /**
      * @brief Constructor for AudioEngine.
      */
     AudioEngine();

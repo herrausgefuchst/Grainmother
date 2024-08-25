@@ -494,7 +494,6 @@ void Menu::buttonClicked (UIElement* _uielement)
     {
         Button* button = static_cast<Button*>(_uielement);
              
-        // TODO: index/id could be more understandable and clear
         switch (button->getIndex())
         {
             case BUTTON_UP:

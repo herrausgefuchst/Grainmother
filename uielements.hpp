@@ -179,7 +179,6 @@ public:
      */
     void decouple(const float newcurrent_);
     
-    //TODO: make this work, has to be called when changes appears
     static void setPotBevaviour(PotBehaviour potBehaviour_) { potBehaviour = potBehaviour_; }
     
     // getters

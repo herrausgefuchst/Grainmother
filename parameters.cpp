@@ -387,7 +387,6 @@ void SlideParameter::nudgeValue(const int direction_)
     // bound the new value to minimum and maximum
     boundValue(newValue, min, max);
     
-    //TODO: is this needed?
     newValue = round_float_3(newValue);
         
     // if its different than the current value, set new value
