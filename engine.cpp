@@ -75,7 +75,7 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     }
     
     // Effects
-    effects[0] = new Reverb(&engineParameters, GrainmotherReverb::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
+    effects[0] = new Reverb(&engineParameters, Reverberation::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
     effects[1] = new Granulator(&engineParameters, GrainmotherGranulator::NUM_PARAMETERS, "granulator", sampleRate, blockSize);
     effects[2] = new Resonator(&engineParameters, 8, "resonator", sampleRate, blockSize);
     
@@ -511,7 +511,7 @@ void UserInterface::initializeListeners()
     // - All effect parameters
     engine->getParameter("tempo")->addListener(&display);
 
-    for (unsigned int n = 0; n < GrainmotherReverb::NUM_PARAMETERS; ++n)
+    for (unsigned int n = 0; n < Reverberation::NUM_PARAMETERS; ++n)
         engine->getParameter("reverb", n)->addListener(&display);
     for (unsigned int n = 0; n < GrainmotherGranulator::NUM_PARAMETERS; ++n)
         engine->getParameter("granulator", n)->addListener(&display);

@@ -1,6 +1,6 @@
 #pragma once
 
-#define BELA_CONNECTED
+//#define BELA_CONNECTED
 
 #include <iostream>
 #include <vector>
@@ -16,6 +16,7 @@
 #include <mutex>
 #include <numeric>
 #include <cstring>
+#include <arm_neon.h>
 
 #ifdef BELA_CONNECTED
 

@@ -3,6 +3,7 @@
 
 #include "functions.h"
 #include "parameters.hpp"
+#include "Reverberation/Reverberation.h"
 
 // MARK: - EFFECT
 // ********************************************************************************
@@ -109,6 +110,8 @@ public:
 private:
     void initializeParameters();
     void initializeListeners();
+    
+    Reverberation::Reverb reverb;
 };
 
 

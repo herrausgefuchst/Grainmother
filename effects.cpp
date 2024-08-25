@@ -50,7 +50,7 @@ void Reverb::updateAudioBlock()
 
 void Reverb::initializeParameters()
 {
-    using namespace GrainmotherReverb;
+    using namespace Reverberation;
     
     // parameters controlled by potentiometers/sliders (index 0...7)
     for (unsigned int n = 0; n < NUM_POTENTIOMETERS; ++n)
