@@ -458,7 +458,7 @@ void LED::parameterChanged(AudioParameter* param_)
         ChoiceParameter* param = static_cast<ChoiceParameter*>(param_);
         
         // set value to a ratio: parameter value / number of choices
-        value = 0.3f + 0.7f * ((param->getValueAsFloat() + 1.f) / (float)param->getNumChoices());
+        value = 0.3f + 0.7f * lin2log((param->getValueAsFloat() + 1.f) / (float)param->getNumChoices());
     }
 }
 
