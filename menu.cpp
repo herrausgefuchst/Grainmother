@@ -227,7 +227,7 @@ void Menu::setup(std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programPa
     initializePageActions();
     
     // load the last used preset preset
-    loadPreset();
+    loadPreset(getPage("load_preset")->getCurrentChoice());
     
     // set start page
     setCurrentPage("load_preset");
@@ -359,8 +359,8 @@ void Menu::initializePageActions()
     // - exit: go the menu
     // - enter: go to save-page and copy the current choice index to it
     Page* homePage = getPage("load_preset");
-    homePage->onUp = [this] { loadPreset(); };
-    homePage->onDown = [this] { loadPreset(); };
+    homePage->onUp = [this] { loadPreset(getPage("load_preset")->getCurrentChoice()); };
+    homePage->onDown = [this] { loadPreset(getPage("load_preset")->getCurrentChoice()); };
     homePage->onExit = [this] { setCurrentPage("menu"); };
     homePage->onEnter = [this] {
         size_t currentLoadIndex = getPage("load_preset")->getCurrentChoice();
@@ -546,7 +546,7 @@ void Menu::buttonPressed (UIElement* _uielement)
             }
             case BUTTON_EXIT:
             {
-                if (currentPage->getID() == "load_preset") loadPreset();
+                if (currentPage->getID() == "load_preset") loadPreset(getPage("load_preset")->getCurrentChoice());
                 break;
             }
             case BUTTON_ENTER:
@@ -585,7 +585,7 @@ void Menu::buttonReleased (UIElement* _uielement)
 }
 
 
-void Menu::loadPreset()
+void Menu::loadPreset(uint index_)
 {
     // extract parametergroups (order is fixed!)
     auto engine = programParameters[0];
@@ -593,26 +593,23 @@ void Menu::loadPreset()
     auto effect2 = programParameters[2];
     //TODO: add third effect
 //    auto effect3 = programParameters[3];
-
-    // get the index of the currently selected preset
-    size_t index = getPage("load_preset")->getCurrentChoice();
     
     // load and set parameters from JSON file (without display notification)
     for (unsigned int n = 0; n < engine->getNumParametersInGroup(); ++n)
-        engine->getParameter(n)->setValue((float)JSONpresets[index]["engine"][n], false);
+        engine->getParameter(n)->setValue((float)JSONpresets[index_]["engine"][n], false);
     
     for (unsigned int n = 0; n < effect1->getNumParametersInGroup(); ++n)
-        effect1->getParameter(n)->setValue((float)JSONpresets[index]["effect1"][n], false);
+        effect1->getParameter(n)->setValue((float)JSONpresets[index_]["effect1"][n], false);
     
     for (unsigned int n = 0; n < effect2->getNumParametersInGroup(); ++n)
-        effect2->getParameter(n)->setValue((float)JSONpresets[index]["effect2"][n], false);
+        effect2->getParameter(n)->setValue((float)JSONpresets[index_]["effect2"][n], false);
     
     //TODO: add third effect
 //    for (unsigned int n = 0; n < effect3->getNumParametersInGroup(); ++n)
-//        effect3->getParameter(n)->setValue((float)JSONpresets[index]["effect3"][n], withPrint);
+//        effect3->getParameter(n)->setValue((float)JSONpresets[index_]["effect3"][n], withPrint);
     
     // last used preset is now the current one
-    lastUsedPresetIndex = index;
+    lastUsedPresetIndex = index_;
 
     #ifdef CONSOLE_PRINT
     consoleprint("Loaded preset with name " + getPage("load_preset")->getCurrentPrintValue() + " from JSON!", __FILE__, __LINE__);

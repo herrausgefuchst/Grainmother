@@ -210,7 +210,6 @@ private:
     
     AudioEngine* engine = nullptr;
     
-    Menu menu;
     TempoTapper tempoTapper; /**< The tempo tapper instance */
     Metronome metronome;
     bool settingTempoIsOnHold = false;
@@ -223,6 +222,7 @@ public:
     Potentiometer potentiometer[NUM_POTENTIOMETERS];
     LED led[NUM_LEDS];
     Display display;
+    Menu menu;
 };
 
 

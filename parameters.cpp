@@ -464,7 +464,6 @@ void ButtonParameter::buttonClicked(UIElement* uielement_)
 {
     toggle();
     
-    // TODO: turn around this and the notify listeners function?
     // call any connected functions that should react on a click
     for (auto i : onClick) i();
 }
@@ -473,8 +472,7 @@ void ButtonParameter::buttonClicked(UIElement* uielement_)
 void ButtonParameter::buttonPressed(UIElement* uielement_)
 {
     toggle();
-    
-    // TODO: turn around this and the notify listeners function?
+
     // call any connected functions that should react on a press
     for (auto i : onPress) i();
 }
@@ -484,7 +482,6 @@ void ButtonParameter::buttonReleased(UIElement* uielement_)
 {
     toggle();
     
-    // TODO: turn around this and the notify listeners function?
     // call any connected functions that should react on a press
     for (auto i : onPress) i();
 }
@@ -600,7 +597,6 @@ void ToggleParameter::buttonClicked(UIElement* uielement_)
     // notify listeners with display print
     notifyListeners(true);
     
-    // TODO: turn around notify and onClick?
     // call any connected functions that should react on a click
     for (auto i : onClick) i();
 }

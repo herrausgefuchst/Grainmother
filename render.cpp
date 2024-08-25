@@ -24,6 +24,14 @@ bool setup (BelaContext *context, void *userData)
     guiBufferIdx[LEDS] = gui.setBuffer('f', NUM_LEDS);
     for (unsigned int n = DSP1; n <= DSP10; n++) guiBufferIdx[n] = gui.setBuffer('c', DISPLAY_NUM_LETTERS_IN_ROW);
     
+    // midi
+    const char* gMidiPort0 = "hw:1,0,0";
+
+    midi.readFrom("hw:1,0,0");
+    midi.writeTo("hw:1,0,0");
+    midi.enableParser(true);
+    midi.getParser()->setCallback(midiMessageCallback, (void*) "hw:1,0,0");
+    
     // display
     DISPLAY_BLOCKS_PER_FRAME = context->audioSampleRate / ( DISPLAY_FRAMERATE * context->audioFrames );
     displayBlockCtr = DISPLAY_BLOCKS_PER_FRAME;
@@ -220,6 +228,23 @@ void updateNonAudioTasks(void* arg_)
         scrollingBlockCtr = SCROLLING_BLOCKS_PER_FRAME;
         
         userinterface.updateNonAudioTasks();
+    }
+}
+
+void midiMessageCallback(MidiChannelMessage message, void* arg)
+{
+    if(arg != NULL)
+    {
+        rt_printf("Message from midi port %s ", (const char*) arg);
+    }
+    
+    message.prettyPrint();
+    
+    if(message.getType() == kmmProgramChange)
+    {
+        rt_printf("Program Change detected!");
+        
+        userinterface.menu.loadPreset(0);
     }
 }
 

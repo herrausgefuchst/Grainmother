@@ -185,6 +185,8 @@ public:
     std::function<void()> onEffectOrderChange;
     std::function<void(Page* page_)> onGlobalSettingChange;
     
+    void loadPreset(uint index_ = 0);
+    
 private:
     void initializePages();
     void initializePageHierarchy();
@@ -193,7 +195,6 @@ private:
     
     void display();
 
-    void loadPreset();
     void savePreset();
 
 protected:

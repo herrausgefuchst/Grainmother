@@ -4,6 +4,7 @@
 #include <Bela.h>
 #include <libraries/Gui/Gui.h>
 #include <libraries/Scope/Scope.h>
+#include <libraries/Midi/Midi.h>
 
 #include "inputs.hpp"
 #include "engine.hpp"
@@ -14,6 +15,7 @@
 void updateLEDs(void* arg_);
 void updateUserInterface(void* arg_);
 void updateNonAudioTasks(void* arg_);
+void midiMessageCallback(MidiChannelMessage message, void* arg);
 
 namespace BelaVariables
 {
@@ -62,6 +64,8 @@ Gui gui;
 #ifdef SCOPE_ACTIVE
 Scope scope;
 #endif
+
+Midi midi;
 
 // object for the audio player and input controls in GUI
 InputHandler inputHandler;

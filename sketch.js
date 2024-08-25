@@ -41,7 +41,7 @@ class Slider
             this.slider = createSlider(min, max, start, step);
             this.var = createSpan(this.slider.value());
         }
-        // logarithmic Fader TODO: change Lin 2 Log
+        // logarithmic Fader
         else
         {
             this.start = (start - this.min) / (this.range - this.min)
