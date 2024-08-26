@@ -77,9 +77,6 @@ public:
     std::vector<std::function<void()>> onPress;   /**< List of functions to call on press */
     std::vector<std::function<void()>> onRelease; /**< List of functions to call on release */
 
-    /** Processes the parameter ramp (can be overridden). */
-    virtual void processRamp() {}
-
     /**
      * Sets the parameter value (float version).
      * @param value_ The new value.
@@ -118,11 +115,8 @@ public:
     /** Gets the current value of the parameter as an int. @return The int value. */
     virtual int getValueAsInt() const = 0;
 
-    /** Gets the printable value of the parameter as a float. @return The printable float value. */
-    virtual float getPrintValueAsFloat() const = 0;
-
     /** Gets the printable value of the parameter as a string. @return The printable string value. */
-    virtual String getPrintValueAsString() const = 0;
+    virtual String getValueAsString() const = 0;
 
     /** Gets the normalized value of the parameter. @return The normalized value. */
     virtual float getNormalizedValue() const { return 0.f; }
@@ -214,14 +208,11 @@ public:
     /** @brief Gets the current value as a float. @return The float value of the current choice. */
     float getValueAsFloat() const override { return static_cast<float>(getValueAsInt()); }
     
-    /** @brief Gets the printable value as a float. @return The printable float value of the current choice. */
-    float getPrintValueAsFloat() const override { return getValueAsFloat(); }
-    
     /** @brief Gets the current value as an int. @return The int value of the current choice. */
     int getValueAsInt() const override { return choice; }
     
     /** @brief Gets the printable value as a string. @return The printable string value of the current choice. */
-    String getPrintValueAsString() const override { return choiceNames[choice]; }
+    String getValueAsString() const override { return choiceNames[choice]; }
 
     /** @brief Gets the number of choices available. @return The number of choices. */
     size_t getNumChoices() const { return numChoices; }
@@ -268,21 +259,16 @@ public:
      * @param default_ The default value of the parameter.
      * @param sampleRate_ The sample rate for the parameter.
      * @param scaling_ The scaling type (linear or frequency).
-     * @param ramptimeMs_ The ramp time in milliseconds for changes.
      */
     SlideParameter(const uint index_, const String& id_, const String& name_, 
                    const String& suffix_, const float min_, const float max_,
                    const float nudgeStep_,
                    const float default_,
                    const float sampleRate_,
-                   const Scaling scaling_ = LIN,
-                   const float ramptimeMs_ = 0.f);
+                   const Scaling scaling_ = LIN);
 
     /** Destructor for SlideParameter. */
     ~SlideParameter() {}
-    
-    /** Processes the parameter ramp. */
-    void processRamp() override;
     
     /** Handles potentiometer changes from a UI element. */
     void potChanged(UIElement* uielement_) override;
@@ -304,9 +290,6 @@ public:
     /** Sets the scaling type of the parameter. */
     void setScaling(const Scaling scaling_) { scaling = scaling_; }
     
-    /** Sets the ramp time in milliseconds. */
-    void setRampTimeMs(const float rampTimeMs_) { ramptimeMs = rampTimeMs_; }
-    
     /**
      * @brief Sets the normalized value of the parameter (0..1)
      * @param value_ The normalized value to set.
@@ -321,10 +304,7 @@ public:
     void nudgeValue(const int direction_) override;
 
     /** @brief Gets the current value as a float. @return The float value of the parameter. */
-    float getValueAsFloat() const override { return value(); }
-    
-    /** @brief Gets the printable value as a float. @return The printable float value of the parameter. */
-    float getPrintValueAsFloat() const override { return value.getTarget(); }
+    float getValueAsFloat() const override { return value; }
     
     /** @brief Gets the normalized value of the parameter. (0...1) @return The normalized value. */
     float getNormalizedValue() const override { return normalizedValue; }
@@ -336,7 +316,7 @@ public:
     String getSuffix() const { return suffix; }
 
     /** @brief Gets the printable value as a string. @return The printable string value of the parameter. */
-    String getPrintValueAsString() const override { return TOSTRING(value.getTarget()); }
+    String getValueAsString() const override { return TOSTRING(value); }
     
     /** @brief Gets the minimum value of the parameter. @return The minimum value. */
     float getMin() const override { return min; }
@@ -351,22 +331,14 @@ public:
     float getRange() const override { return range; }
     
 private:
-    /**
-     * @brief Sets the ramp value with an option to use the ramp.
-     * @param value_ The value to set.
-     * @param withRamp_ Whether to use the ramp.
-     */
-    void setRampValue(const float value_, const bool withRamp_ = true);
-    
     const String suffix;             /**< The unit of measurement for the parameter. */
     const float min;                 /**< The minimum value of the parameter. */
     const float max;                 /**< The maximum value of the parameter. */
     float nudgeStep;                 /**< The nudge step size of the parameter. */
     const float defaultValue;        /**< The default value of the parameter. */
     const float range;               /**< The range of the parameter. */
-    float ramptimeMs;                /**< The ramp time in milliseconds. */
     Scaling scaling;                 /**< The scaling type (linear or frequency). */
-    RampLinear value;                /**< The current value, managed with a ramp. */
+    float value;                /**< The current value, managed with a ramp. */
     float normalizedValue;           /**< The normalized value of the parameter. */
 };
 
@@ -440,14 +412,11 @@ public:
     /** @brief Gets the current value as a float. @return The float value of the parameter. */
     float getValueAsFloat() const override { return static_cast<float>(getValueAsInt()); }
     
-    /** @brief Gets the printable value as a float. @return The printable float value of the parameter. */
-    float getPrintValueAsFloat() const override { return getValueAsFloat(); }
-    
     /** @brief Gets the current value as an int. @return The int value of the parameter. */
     int getValueAsInt() const override { return value; }
     
     /** @brief Gets the printable value as a string. @return The printable string value of the parameter. */
-    String getPrintValueAsString() const override;
+    String getValueAsString() const override;
     
 private:
     /** Toggles the button state between INACTIVE and ACTIVE. */
@@ -524,14 +493,11 @@ public:
     /** @brief Gets the current value as a float. @return The float value of the parameter. */
     float getValueAsFloat() const override { return static_cast<float>(getValueAsInt()); }
     
-    /** @brief Gets the printable value as a float. @return The printable float value of the parameter. */
-    float getPrintValueAsFloat() const override { return getValueAsFloat(); }
-    
     /** @brief Gets the current value as an int. @return The int value of the parameter. */
     int getValueAsInt() const override { return value; }
     
     /** @brief Gets the printable value as a string. @return The printable string value of the parameter. */
-    String getPrintValueAsString() const override;
+    String getValueAsString() const override;
     
 private:
     ToggleState value = INACTIVE;                 /**< The current toggle state of the parameter. */

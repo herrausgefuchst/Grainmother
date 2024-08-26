@@ -179,10 +179,10 @@ SlideParameter::SlideParameter(const uint index_, const String& id_, const Strin
                                const String& suffix_, const float min_, const float max_,
                                const float nudgeStep_, const float default_,
                                const float sampleRate_,
-                               const Scaling scaling_, const float ramptimeMs_)
+                               const Scaling scaling_)
     : AudioParameter(index_, id_, name_)
     , suffix(suffix_), min(min_), max(max_), nudgeStep(round_float_3(nudgeStep_))
-    , defaultValue(default_), range(max_ - min_), ramptimeMs(ramptimeMs_)
+    , defaultValue(default_), range(max_ - min_)
     , scaling(scaling_)
 {
     // handling wrong initialization values
@@ -197,23 +197,9 @@ SlideParameter::SlideParameter(const uint index_, const String& id_, const Strin
     engine_error(nudgeStep_ <= 0.f,
                  "AudioParameter " + name + " has no suitable step value",
                  __FILE__, __LINE__, true);
-    
-    // setup ramp
-    // TODO: blockwise processing?
-    value.setup(default_, sampleRate_, 1);
      
     // set value, no display print
     setValue(default_, false);
-}
-
-
-void SlideParameter::processRamp()
-{
-    if (!value.rampFinished)
-    {
-        value.processRamp();
-        notifyListeners(false);
-    }
 }
 
 
@@ -248,8 +234,8 @@ void SlideParameter::setValue(float value_, const bool withPrint_)
             break;
     }
     
-    // set print/ramp value
-    setRampValue(value_, withPrint_);
+    // set value
+    value = value_;
     
     #ifdef CONSOLE_PRINT
     consoleprint("AudioParameter(Slide) '" + name + "' received new value: "
@@ -282,23 +268,20 @@ void SlideParameter::setNormalizedValue(float value_, const bool withPrint_)
     // set normalized value
     normalizedValue = value_;
     
-    // calculate corresponding print value
-    float printValue;
-    
     switch (scaling)
     {
         // linear scaling
         case Scaling::LIN:
         {
-            printValue = mapValue(value_, 0.f, 1.f, min, max);
+            value = mapValue(value_, 0.f, 1.f, min, max);
             break;
         }
         // frequency related scaling
         // f(x) = 2 ^(log2(range + 1) * x) - 1 + min
         case Scaling::FREQ:
         {
-            printValue = powf_neon(2.f, logbase(range + nudgeStep + 1.f, 2.f) * value_) - 1.f + min;
-            boundValue(printValue, min, max);
+            value = powf_neon(2.f, logbase(range + nudgeStep + 1.f, 2.f) * value_) - 1.f + min;
+            boundValue(value, min, max);
             break;
         }
         default:
@@ -311,9 +294,6 @@ void SlideParameter::setNormalizedValue(float value_, const bool withPrint_)
                  __FILE__, __LINE__);
     #endif
     
-    // set print/ramp value
-    setRampValue(printValue);
-    
     // notify listeners
     notifyListeners(withPrint_);
 }
@@ -322,16 +302,6 @@ void SlideParameter::setNormalizedValue(float value_, const bool withPrint_)
 void SlideParameter::setDefaultValue()
 {
     setValue(defaultValue);
-}
-
-
-void SlideParameter::setRampValue(const float value_, const bool withRamp_)
-{
-    // flag withPrint_ not only determines if the value is going to be displayed,
-    // but also if the ramp should be skipped (i.e., in case of Preset Change)
-    if (!withRamp_) value = value_;
-    
-    else value.setRampTo(value_, ramptimeMs * 0.001f);
 }
 
 
@@ -351,11 +321,10 @@ void SlideParameter::nudgeValue(const int direction_)
         engine_rt_error("trying to nudge tempo without defined direction",
                         __FILE__, __LINE__, false);
     
-    float currentValue = value();
     float newValue;
     
     // modulo defines if the current value is in the grid of steps
-    float modulo = round_float_3(fabsf_neon(fmodf_neon(currentValue, nudgeStep)));
+    float modulo = round_float_3(fabsf_neon(fmodf_neon(value, nudgeStep)));
     
     // check for floating point precision issues, set flag for in Grid value
     bool inGrid = false;
@@ -365,7 +334,7 @@ void SlideParameter::nudgeValue(const int direction_)
     // nudge one step up or down
     if (inGrid)
     {
-        newValue = direction_ >= 0 ? currentValue + nudgeStep : currentValue - nudgeStep;
+        newValue = direction_ >= 0 ? value + nudgeStep : value - nudgeStep;
     }
     
     // the current value is not in the grid of steps:
@@ -374,13 +343,13 @@ void SlideParameter::nudgeValue(const int direction_)
     {
         if (direction_ >= 0) 
         {
-            if (currentValue >= 0.f) newValue = currentValue + (nudgeStep - modulo);
-            else newValue = currentValue + modulo;
+            if (value >= 0.f) newValue = value + (nudgeStep - modulo);
+            else newValue = value + modulo;
         }
         else
         {
-            if (currentValue >= 0.f) newValue = currentValue - modulo;
-            else newValue = currentValue - (nudgeStep - modulo);
+            if (value >= 0.f) newValue = value - modulo;
+            else newValue = value - (nudgeStep - modulo);
         }
     }
     
@@ -390,7 +359,7 @@ void SlideParameter::nudgeValue(const int direction_)
     newValue = round_float_3(newValue);
         
     // if its different than the current value, set new value
-    if (newValue != currentValue) setValue(newValue);
+    if (newValue != value) setValue(newValue);
 }
 
 
@@ -487,7 +456,7 @@ void ButtonParameter::buttonReleased(UIElement* uielement_)
 }
 
 
-String ButtonParameter::getPrintValueAsString() const
+String ButtonParameter::getValueAsString() const
 {
     if (toggleStateNames)
         return value == ACTIVE ? toggleStateNames[ACTIVE] : toggleStateNames[INACTIVE];
@@ -609,7 +578,7 @@ void ToggleParameter::buttonPressed(UIElement* uielement_)
 }
 
 
-String ToggleParameter::getPrintValueAsString() const
+String ToggleParameter::getValueAsString() const
 {
     if (toggleStateNames)
         return value == ACTIVE ? toggleStateNames[ACTIVE] : toggleStateNames[INACTIVE];

@@ -796,13 +796,13 @@ void Menu::savePreset()
     JSONpresets[index]["name"] = name;
     
     for (unsigned int n = 0; n < engine->getNumParametersInGroup(); ++n)
-        JSONpresets[index]["engine"][n] = engine->getParameter(n)->getPrintValueAsFloat();
+        JSONpresets[index]["engine"][n] = engine->getParameter(n)->getValueAsFloat();
     
     for (unsigned int n = 0; n < effect1->getNumParametersInGroup(); ++n)
-        JSONpresets[index]["effect1"][n] = effect1->getParameter(n)->getPrintValueAsFloat();
+        JSONpresets[index]["effect1"][n] = effect1->getParameter(n)->getValueAsFloat();
     
     for (unsigned int n = 0; n < effect2->getNumParametersInGroup(); ++n)
-        JSONpresets[index]["effect2"][n] = effect2->getParameter(n)->getPrintValueAsFloat();
+        JSONpresets[index]["effect2"][n] = effect2->getParameter(n)->getValueAsFloat();
     
     //TODO: add third effect
 //    for (unsigned int n = 0; n < effect3->getNumParametersInGroup(); ++n)

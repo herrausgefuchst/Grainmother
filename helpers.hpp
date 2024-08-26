@@ -65,7 +65,7 @@ private:
  *
  * This class is used for parameters that glitch or crackle when changing them in the UI too fast. One can set the time, the ramp needs to process.
  */
-class RampLinear
+class LinearRamp
 {
 public:
     /** ()-operator returns the momentary value.*/
@@ -75,7 +75,7 @@ public:
     }
     
     /** !=-operator compres the two momentary values of both objects */
-    bool operator!= (const RampLinear& otherRamp) const
+    bool operator!= (const LinearRamp& otherRamp) const
     {
         if (value != otherRamp() || !rampFinished) return true;
         else return false;

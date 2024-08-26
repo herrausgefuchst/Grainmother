@@ -72,7 +72,7 @@ public:
         void up() override;
         void down() override;
         
-        String getCurrentPrintValue() const override { return parameter->getPrintValueAsString(); }
+        String getCurrentPrintValue() const override { return parameter->getValueAsString(); }
         
         AudioParameter* getParameter() { return parameter; }
         

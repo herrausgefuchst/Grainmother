@@ -269,9 +269,9 @@ struct EarlyReflectionsParameters
         return *this;
     }
     
-    RampLinear size; ///< a multiplier for the tap delay times
-    RampLinear predelay; ///< time till the first tap
-    RampLinear feedback; ///< feedbackloop gain
+    LinearRamp size; ///< a multiplier for the tap delay times
+    LinearRamp predelay; ///< time till the first tap
+    LinearRamp feedback; ///< feedbackloop gain
     bool feedbackEnabled = false; ///< flag for efficienxy purposes
 };
 
@@ -480,7 +480,7 @@ struct DecayParameters
     
     float decayTimeMs = parameterInitialValue[static_cast<int>(Parameters::DECAY)] * 1000.f; ///< the rt60 time in miliseconds
     float modulationRate = parameterInitialValue[static_cast<int>(Parameters::MODRATE)]; ///< the modulation rate of combfilters in hertz
-    RampLinear modulationDepth; ///< the modulation depth of combfilters in samples
+    LinearRamp modulationDepth; ///< the modulation depth of combfilters in samples
 };
 
 
@@ -641,14 +641,14 @@ private:
     EarlyReflections earlyReflections;
     std::unique_ptr<Decay> decay = nullptr;
     SimpleDelayStereo delayedDecay; ///< delay of decay, used to sync decay to earlies
-    RampLinear decayDelaySamples;
+    LinearRamp decayDelaySamples;
     
     ParametricEQStereo inputMultiplier;
     ButterworthLowcutStereo lowcut;
     ButterworthHighcutStereo highcut;
 
     float32_t dry; ///< amount of returned input signal
-    RampLinear wet; ///< amount of returned effect signal
+    LinearRamp wet; ///< amount of returned effect signal
     
     bool settingType = false;
 };

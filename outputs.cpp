@@ -305,7 +305,7 @@ void Display::creatSlideParameterMessage(AudioParameter* param_)
     
     oscTransmitter.add(parameter->getName());
     oscTransmitter.add(parameter->getSuffix());
-    oscTransmitter.add(parameter->getPrintValueAsFloat());
+    oscTransmitter.add(parameter->getValueAsFloat());
     oscTransmitter.add(parameter->getNormalizedValue());
 #endif
     
@@ -325,7 +325,7 @@ void Display::creatSlideParameterMessage(AudioParameter* param_)
     displayCache.add(parameter->getSuffix());
     displayCache.add(parameter->getMin());
     displayCache.add(parameter->getMax());
-    displayCache.add(parameter->getPrintValueAsFloat());
+    displayCache.add(parameter->getValueAsFloat());
     displayCache.createRows();
 }
 

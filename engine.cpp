@@ -172,7 +172,7 @@ void AudioEngine::setEffectOrder()
     }
     
     // retrieve the current choice of effect order
-    String effectOrder = getParameter("effect_order")->getPrintValueAsString();
+    String effectOrder = getParameter("effect_order")->getValueAsString();
     
     // Split the effectOrder string into parallel segments
     std::stringstream stringStream(effectOrder);
@@ -742,7 +742,7 @@ void UserInterface::setTempoRelatedParameters()
     float tempoBpm = engine->getParameter("tempo")->getValueAsFloat();
     
     // Retrieve the menu setting 'Tempo Set'.
-    String tempoSetOption = engine->getParameter("engine", "tempo_set")->getPrintValueAsString();
+    String tempoSetOption = engine->getParameter("engine", "tempo_set")->getValueAsString();
     
     // check for the two valid options of 'Tempo Set'
     if (tempoSetOption == "Current Effect" || tempoSetOption == "All Effects")
