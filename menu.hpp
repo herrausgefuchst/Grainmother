@@ -28,7 +28,7 @@ public:
         
         void addParent(Page* parent_) { parent = parent_; }
         
-        virtual void update(String& name_) {}
+        virtual void update(String presetName_, uint index_ = 0) {}
         
         std::function<void()> onUp;
         std::function<void()> onDown;
@@ -118,13 +118,19 @@ public:
     public:
         NamingPage(const String& id_, const String& name_, Menu& menu_);
         
-        void update(String& name_) override;
+        void update(String presetName_, uint index_ = 0) override;
         
         void up() override;
         void down() override;
         void enter() override;
         
         String getCurrentPrintValue() const override { return editedPresetName; }
+        
+        uint getCurrentChoiceIndex() const override { return 0; }
+        
+        size_t getNumChoices() const override { return 1; }
+        
+        String* getChoiceNames() override { return &editedPresetName; }
                                 
     private:
         char getCharFromIndex(uint index_) const;
@@ -153,6 +159,8 @@ public:
                     std::initializer_list<String> choiceNames_, const size_t numChoices_,
                     const uint defaultIndex_, const uint minIndex_, Menu& menu);
         
+        void update(String presetName_, uint index_ = 0) override;
+
         void up() override;
         void down() override;
         

@@ -1,6 +1,6 @@
 #include "menu.hpp"
 
-//#define CONSOLE_PRINT
+#define CONSOLE_PRINT
 
 // =======================================================================================
 // MARK: - MENU::PAGE
@@ -180,6 +180,14 @@ Menu::SettingPage::SettingPage(const String& id_, const String& name_,
 }
 
 
+void Menu::SettingPage::update(String presetName_, uint index_)
+{
+    // TODO: Saftey check!
+    
+    choiceNames[index_] = presetName_;
+}
+
+
 void Menu::SettingPage::up()
 {
     // decrement the current index
@@ -215,15 +223,21 @@ Menu::NamingPage::NamingPage(const String& id_, const String& name_, Menu& menu_
     : Page(menu_, id_, name_) {}
 
 
-void Menu::NamingPage::update(String& name_)
+void Menu::NamingPage::update(String name_, uint index_)
 {
-    // TODO: check for exactly 10 chars in string
-    
     editedPresetName = name_;
+    
+    if (name_.size() > nameLength) editedPresetName = name_.substr(0, nameLength);
+    
+    else if (name_.size() < nameLength) editedPresetName.append(nameLength - name_.size(), ' ');
+    
+    std::cout << "size of editedPresetName = " << editedPresetName.size() << std::endl;
     
     charPosition = 0;
     
     charIndex = getIndexFromChar(editedPresetName[charPosition]);
+    
+    std::cout << "Current Edit Name: " << editedPresetName << std::endl;
 }
 
 
@@ -236,6 +250,8 @@ void Menu::NamingPage::up()
     menu.display();
     
     if (onUp) onUp();
+    
+    std::cout << "Current Edit Name: " << editedPresetName << std::endl;
 }
 
 
@@ -248,24 +264,26 @@ void Menu::NamingPage::down()
     menu.display();
     
     if (onDown) onDown();
+    
+    std::cout << "Current Edit Name: " << editedPresetName << std::endl;
 }
 
 
 void Menu::NamingPage::enter()
 {
-    if (charPosition >= nameLength - 1)
+    if (++charPosition == nameLength)
     {
         if (onEnter) onEnter();
     }
     
     else
     {
-        ++charPosition;
-        
         charIndex = getIndexFromChar(editedPresetName[charPosition]);
         
         menu.display();
     }
+    
+    std::cout << "Current Edit Name: " << editedPresetName << std::endl;
 }
 
 
@@ -416,6 +434,9 @@ void Menu::initializePages()
     // Save Preset To? (one element smaller than load page)
     addPage<SettingPage>("save_preset", "Save Preset to Slot: ", presetSaveNames,
                          NUM_PRESETS-1, 0, 0);
+    
+    // Name Preset
+    addPage<NamingPage>("name_preset", "Name the Preset: ");
 }
 
 
@@ -444,8 +465,11 @@ void Menu::initializePageHierarchy()
     getPage("preset_settings")->addParent(getPage("menu"));
 
     // Home screen
-    getPage("save_preset")->addParent(getPage("load_preset"));
+//    getPage("save_preset")->addParent(getPage("load_preset"));
     getPage("menu")->addParent(getPage("load_preset"));
+    
+    // Save Preset
+//    getPage("name_preset")->addParent(getPage("save_preset"));
 }
 
 
@@ -471,13 +495,22 @@ void Menu::initializePageActions()
         setCurrentPage("save_preset");
     };
     
-    // Save Page
+    getPage("save_preset")->onEnter = [this] {
+        getPage("name_preset")->update(getPage("save_preset")->getCurrentPrintValue());
+        setCurrentPage("name_preset");
+    };
+    getPage("save_preset")->onExit = [this] {
+        setCurrentPage("load_preset");
+    };
+    
+    // Name Page
     // - enter: save preset
-    Page* savePage = getPage("save_preset");
-    savePage->onEnter = [this] {
+    getPage("name_preset")->onEnter = [this] {
         getPage("load_preset")->setCurrentChoice(getPage("save_preset")->getCurrentChoiceIndex()+1);
         savePreset();
+        setCurrentPage("load_preset");
     };
+    getPage("name_preset")->onExit = [this] { setCurrentPage("load_preset"); };
     
     // Global Settings
     // - enter: notify listeners
@@ -642,7 +675,7 @@ void Menu::buttonPressed (UIElement* _uielement)
         case BUTTON_DOWN:
         {
             // parameter pages start scrolling
-            if (isoftype<ParameterPage>(currentPage))
+            if (isoftype<ParameterPage>(currentPage) || isoftype<NamingPage>(currentPage))
             {
                 isScrolling = true;
                 scrollDirection = (button->getIndex() == BUTTON_UP) ? UP : DOWN;
@@ -662,6 +695,12 @@ void Menu::buttonPressed (UIElement* _uielement)
             {
                 ParameterPage* page = static_cast<ParameterPage*>(currentPage);
                 page->getParameter()->setDefaultValue();
+            }
+            if (isoftype<NamingPage>(currentPage))
+            {
+                getPage("load_preset")->setCurrentChoice(getPage("save_preset")->getCurrentChoiceIndex()+1);
+                savePreset();
+                setCurrentPage("load_preset");
             }
         }
         default:
@@ -736,10 +775,15 @@ void Menu::savePreset()
     // get the index of the selected saving slot
     // +1 because JSON file has the default parameter values on index 0
     // and we dont want to overwrite the default preset
-    size_t index = getPage("save_preset")->getCurrentChoiceIndex() + 1;
+    uint index = getPage("save_preset")->getCurrentChoiceIndex() + 1;
     
     // name
-    // TODO: add a new name to the preset
+    String name = getPage("name_preset")->getCurrentPrintValue();
+    
+    name = trimWhiteSpace(name);
+    
+    getPage("load_preset")->update(name, index);
+    getPage("save_preset")->update(name, index-1);
     
     // extract parametergroups (order is fixed!)
     auto engine = programParameters[0];
@@ -749,6 +793,8 @@ void Menu::savePreset()
 //    auto effect3 = programParameters[3];
     
     // save Data to JSON
+    JSONpresets[index]["name"] = name;
+    
     for (unsigned int n = 0; n < engine->getNumParametersInGroup(); ++n)
         JSONpresets[index]["engine"][n] = engine->getParameter(n)->getPrintValueAsFloat();
     
@@ -763,7 +809,7 @@ void Menu::savePreset()
 //        JSONpresets[index]["effect3"][n] = effect3->getParameter(n)->getPrintValueAsFloat();
 
     #ifdef CONSOLE_PRINT
-    consoleprint("Saved preset with name " + getPage("save_preset")->getCurrentPrintValue() + " to JSON!", __FILE__, __LINE__);
+    consoleprint("Saved preset with name " + name + " to JSON!", __FILE__, __LINE__);
     #endif
     
     // notify listeners

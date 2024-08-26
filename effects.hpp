@@ -41,6 +41,7 @@ public:
      * @param input_ The stereo input to process.
      * @return The processed stereo output.
      */
+    // TODO: could they all pass in a float32x2_t vector instead?
     virtual StereoFloat processAudioSamples(const StereoFloat input_, const uint sampleIndex_) = 0;
 
     /**
@@ -48,7 +49,9 @@ public:
      */
     virtual void updateAudioBlock() = 0;
 
-    
+    // TODO: add a ramp here for input gain
+    // TODO: add a counter that waits i.e. till the decay is finished
+    // TODO: add a ramp here for output gain
     void engage(bool engaged_) { engaged = engaged_; }
     
     
@@ -118,8 +121,6 @@ private:
 class Granulator : public Effect
 {
 public:
-    enum Parameters { GRAN1, GRAN2, GRAN3, GRAN4, GRAN5, GRAN6, GRAN7, GRAN8, GRAN9 };
-    
     using Effect::Effect;
     
     void setup() override;
@@ -142,8 +143,6 @@ private:
 class Resonator : public Effect
 {
 public:
-    enum Parameters { GRAN1, GRAN2, GRAN3, GRAN4, GRAN5, GRAN6, GRAN7, GRAN8, GRAN9 };
-    
     using Effect::Effect;
     
     ~Resonator() {}
