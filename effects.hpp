@@ -15,11 +15,8 @@
 class Effect : public AudioParameter::Listener
 {
 public:
-    /**
-     * @brief Deleted default constructor to enforce parameterized construction.
-     */
-    Effect() = delete;
-
+    Effect() {}
+    
     /**
      * @brief Constructs an Effect with specified engine parameters and name.
      * @param engineParameters_ Pointer to the AudioParameterGroup containing engine parameters.

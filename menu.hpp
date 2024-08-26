@@ -28,14 +28,19 @@ public:
         
         void addParent(Page* parent_) { parent = parent_; }
         
-        std::function<void()> onUp, onDown, onEnter, onExit;
+        virtual void update(String& name_) {}
+        
+        std::function<void()> onUp;
+        std::function<void()> onDown;
+        std::function<void()> onEnter;
+        std::function<void()> onExit;
         
         virtual void up();
         virtual void down();
         virtual void enter();
         virtual void exit();
         
-        virtual void setCurrentChoice(const size_t index_) {}
+        virtual void setCurrentChoice(const uint index_) {}
         
         String getName() const { return name; }
         
@@ -43,7 +48,7 @@ public:
         
         virtual String getCurrentPrintValue() const { return ""; }
         
-        virtual size_t getCurrentChoice() const { return 0; }
+        virtual uint getCurrentChoiceIndex() const { return 0; }
         
         virtual size_t getNumChoices() const { return 0; }
         
@@ -87,12 +92,12 @@ public:
         void up() override;
         void down() override;
         void enter() override;
+                
+        void setCurrentChoice(const uint index_) override { choiceIndex = index_; }
+        
+        uint getCurrentChoiceIndex() const override { return choiceIndex; }
         
         String getCurrentPrintValue() const override { return options[choiceIndex]->getName(); }
-        
-        size_t getCurrentChoice() const override { return choiceIndex; }
-        
-        void setCurrentChoice(const size_t index_) override { choiceIndex = index_; }
         
         size_t getNumChoices() const override { return options.size(); }
         
@@ -101,7 +106,36 @@ public:
     private:
         std::vector<Page*> options;
         std::vector<String> choiceNames;
-        size_t choiceIndex = 0;
+        uint choiceIndex = 0;
+    };
+    
+    // =======================================================================================
+    // MARK: - MENU::PAGE::NAMINGPAGE
+    // =======================================================================================
+    
+    class NamingPage : public Page
+    {
+    public:
+        NamingPage(const String& id_, const String& name_, Menu& menu_);
+        
+        void update(String& name_) override;
+        
+        void up() override;
+        void down() override;
+        void enter() override;
+        
+        String getCurrentPrintValue() const override { return editedPresetName; }
+                                
+    private:
+        char getCharFromIndex(uint index_) const;
+        uint getIndexFromChar(char char_) const;
+        
+        String editedPresetName;
+        uint charIndex = 0;
+        uint charPosition = 0;
+        
+        const size_t numChars = 63; // Number of characters: space, 26 uppercase, 26 lowercase, 10 digits
+        const size_t nameLength = 10;
     };
     
     // =======================================================================================
@@ -113,27 +147,27 @@ public:
     public:
         SettingPage(const String& id_, const String& name_,
                     String* choiceNames_, const size_t numChoices_,
-                    const size_t defaultIndex_, const size_t minIndex_, Menu& menu_);
+                    const uint defaultIndex_, const uint minIndex_, Menu& menu_);
         
         SettingPage(const String& id_, const String& name_,
                     std::initializer_list<String> choiceNames_, const size_t numChoices_,
-                    const size_t defaultIndex_, const size_t minIndex_, Menu& menu);
+                    const uint defaultIndex_, const uint minIndex_, Menu& menu);
         
         void up() override;
         void down() override;
         
+        void setCurrentChoice(const uint index_) override { choiceIndex = index_; }
+
+        uint getCurrentChoiceIndex() const override { return choiceIndex; }
+
         String getCurrentPrintValue() const override { return choiceNames[choiceIndex]; }
-        
-        size_t getCurrentChoice() const override { return choiceIndex; }
-    
-        void setCurrentChoice(const size_t index_) override { choiceIndex = index_; }
-        
+                    
         size_t getNumChoices() const override { return choiceNames.size(); }
         
         String* getChoiceNames() override { return choiceNames.data(); }
         
     private:
-        size_t choiceIndex = 0;
+        uint choiceIndex = 0;
         std::vector<String> choiceNames;
     };
 
@@ -164,20 +198,6 @@ public:
     void buttonClicked(UIElement* uielement_) override;
     void buttonPressed(UIElement* uielement_) override;
     void buttonReleased(UIElement* uielement_) override;
-        
-//    class Listener
-//    {
-//    public:
-//        virtual ~Listener() {}
-//        
-//        virtual void globalSettingChanged(Page* page_) {}
-//        
-//        virtual void effectOrderChanged() {}
-//        
-//        virtual void presetChanged() {}
-//    };
-
-//    void addListener(Listener* listener_) { listeners.push_back(listener_); }
     
     std::function<void()> onPresetSave;
     std::function<void()> onPresetLoad;
@@ -202,13 +222,12 @@ protected:
     
 private:
     std::vector<Page*> pages;
-//    std::vector<Listener*> listeners;
 
     json JSONpresets;
     json JSONglobals;
     
     std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programParameters;
-    size_t lastUsedPresetIndex = 0;
+    uint lastUsedPresetIndex = 0;
     
     enum ScrollDirection { DOWN, UP };
     ScrollDirection scrollDirection;

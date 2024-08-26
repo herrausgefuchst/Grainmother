@@ -25,8 +25,6 @@ bool setup (BelaContext *context, void *userData)
     for (unsigned int n = DSP1; n <= DSP10; n++) guiBufferIdx[n] = gui.setBuffer('c', DISPLAY_NUM_LETTERS_IN_ROW);
     
     // midi
-    const char* gMidiPort0 = "hw:1,0,0";
-
     midi.readFrom("hw:1,0,0");
     midi.writeTo("hw:1,0,0");
     midi.enableParser(true);
@@ -67,7 +65,7 @@ bool setup (BelaContext *context, void *userData)
     for (uint n = 0; n < NUM_POTENTIOMETERS; ++n)
         userinterface.potentiometer[n].setAnalogDefault(analogRead(context, 0, HARDWARE_PIN_POTENTIOMETER[n]));
     userinterface.setup(&engine, context->audioSampleRate);
-    
+        
     return true;
 }
 
@@ -109,14 +107,14 @@ void render (BelaContext *context, void *userData)
 
 // process SAMPLEWISE ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     
-    sampleIndex = 0;
-    for(; sampleIndex < context->audioFrames; ++sampleIndex)
+    for(sampleIndex = 0; sampleIndex < context->audioFrames; ++sampleIndex)
     {
         userinterface.processNonAudioTasks();
         
         // process effects
-        StereoFloat input = inputHandler.process(context, sampleIndex);
-        StereoFloat output = engine.processAudioSamples(input, sampleIndex);
+//        StereoFloat input = inputHandler.process(context, sampleIndex);
+//        StereoFloat output = engine.processAudioSamples(input, sampleIndex);
+        StereoFloat output = engine.processAudioSamples({audioRead(context, sampleIndex, 0), audioRead(context, sampleIndex, 1)}, sampleIndex);
         
         // write output buffer
         audioWrite(context, sampleIndex, 0, output.leftSample);

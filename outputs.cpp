@@ -1,6 +1,6 @@
 #include "outputs.hpp"
 
-#define CONSOLE_PRINT
+//#define CONSOLE_PRINT
 
 // =======================================================================================
 // MARK: - DISPLAY-CACHE
@@ -269,6 +269,10 @@ void Display::menuPageChanged(Menu::Page* page_)
         Menu::ParameterPage* page = static_cast<Menu::ParameterPage*>(page_);
         parameterCalledDisplay(page->getParameter());
     }
+    else if (instanceof<Menu::NamingPage>(page_))
+    {
+        // TODO: display naming page
+    }
     // - all other menu pages have the same message type
     else
     {
@@ -376,7 +380,7 @@ void Display::createButtonParameterMessage(AudioParameter* param_)
 
 void Display::createMenuPageMessage(Menu::Page* page_)
 {
-    size_t currentChoice = page_->getCurrentChoice();
+    size_t currentChoice = page_->getCurrentChoiceIndex();
     String* choiceNames = page_->getChoiceNames();
     size_t numChoices = page_->getNumChoices();
     
@@ -406,12 +410,12 @@ void Display::createPresetMessage()
 #ifdef BELA_CONNECTED
     oscTransmitter.newMessage("/preset");
     oscTransmitter.add(presetPage->getCurrentPrintValue());
-    oscTransmitter.add((int)presetPage->getCurrentChoice());
+    oscTransmitter.add((int)presetPage->getCurrentChoiceIndex());
 #endif
     
     displayCache.newMessage("/preset");
     displayCache.add(presetPage->getCurrentPrintValue());
-    displayCache.add((int)presetPage->getCurrentChoice());
+    displayCache.add((int)presetPage->getCurrentChoiceIndex());
     displayCache.createRows();
 }
 

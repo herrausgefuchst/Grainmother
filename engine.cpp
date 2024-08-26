@@ -1,6 +1,6 @@
 #include "engine.hpp"
 
-#define CONSOLE_PRINT
+//#define CONSOLE_PRINT
 
 // =======================================================================================
 // MARK: - AUDIO ENGINE
@@ -73,11 +73,35 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
         (MENUPARAMETER, parameterID[TEMPO_SET], parameterName[TEMPO_SET],
          std::initializer_list<String>{ "Current Effect", "All Effects" });
     }
-    
+        
     // Effects
-    effects[0] = new Reverb(&engineParameters, Reverberation::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
-    effects[1] = new Granulator(&engineParameters, GrainmotherGranulator::NUM_PARAMETERS, "granulator", sampleRate, blockSize);
-    effects[2] = new Resonator(&engineParameters, 8, "resonator", sampleRate, blockSize);
+//    effects[0] = new Reverb(&engineParameters, Reverberation::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
+//    effects[1] = new Granulator(&engineParameters, GrainmotherGranulator::NUM_PARAMETERS, "granulator", sampleRate, blockSize);
+//    effects[2] = new Resonator(&engineParameters, 8, "resonator", sampleRate, blockSize);
+    
+    // Define the alignment - typically 16 bytes for SIMD types
+    constexpr std::size_t alignment = 16;
+
+    // Aligned allocation and object construction for Effect1
+    void* memEffect1 = nullptr;
+    if (posix_memalign(&memEffect1, alignment, sizeof(Reverb)) != 0) {
+        throw std::bad_alloc();
+    }
+    effects[0] = new (memEffect1) Reverb(&engineParameters, Reverberation::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
+    
+    // Aligned allocation and object construction for Effect2
+    void* memEffect2 = nullptr;
+    if (posix_memalign(&memEffect2, alignment, sizeof(Granulator)) != 0) {
+        throw std::bad_alloc();
+    }
+    effects[1] = new (memEffect2) Granulator(&engineParameters, GrainmotherGranulator::NUM_PARAMETERS, "granulator", sampleRate, blockSize);
+
+    // Aligned allocation and object construction for Effect3
+    void* memEffect3 = nullptr;
+    if (posix_memalign(&memEffect3, alignment, sizeof(Effect)) != 0) {
+        throw std::bad_alloc();
+    }
+    effects[2] = new (memEffect3) Resonator(&engineParameters, 8, "resonator", sampleRate, blockSize);
     
     effects[0]->setup();
     effects[1]->setup();
@@ -614,7 +638,7 @@ void UserInterface::globalSettingChanged(Menu::Page* page_)
 {
     if (page_->getID() == "pot_behaviour")
     {
-        Potentiometer::setPotBevaviour(INT2ENUM(page_->getCurrentChoice(), PotBehaviour));
+        Potentiometer::setPotBevaviour(INT2ENUM(page_->getCurrentChoiceIndex(), PotBehaviour));
     }
     
     //TODO: midi in

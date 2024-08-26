@@ -37,6 +37,7 @@ void Reverb::setup()
 StereoFloat Reverb::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
 {
     return reverb.processAudioSamples(input_, sampleIndex_);;
+//    return input_;
 }
 
 

@@ -555,9 +555,8 @@ private:
 class AudioParameterGroup
 {
 public:
-    /** Deleted default constructor to enforce parameterized construction. */
-    AudioParameterGroup() = delete;
-
+    AudioParameterGroup() {}
+    
     /**
      * @brief Constructs an AudioParameterGroup with a specified ID and size.
      * @param id_ The ID of the parameter group.
@@ -623,7 +622,7 @@ public:
     size_t getNumParametersInGroup() const { return parameterGroup.size(); }
     
 private:
-    const String id; /**< The ID of the parameter group. */
+    String id; /**< The ID of the parameter group. */
     std::vector<AudioParameter*> parameterGroup; /**< A vector containing the parameters in the group. */
 };
 

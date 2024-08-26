@@ -94,6 +94,7 @@ public:
         
 private:
     Effect* effects[NUM_EFFECTS]; /**< Array of unique pointers to effects */
+    
     std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programParameters; /**< Array of program parameter groups */
     AudioParameterGroup engineParameters; /**< Parameters specific to the audio engine */
     

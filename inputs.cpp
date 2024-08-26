@@ -149,7 +149,7 @@ void InputHandler::setup(const float fs_, const float oscfreq_, const float volu
     
     volume = volume_;
     
-    input = FILE;
+    input = AUDIOIN;
 }
 
 #ifdef BELA_CONNECTED
