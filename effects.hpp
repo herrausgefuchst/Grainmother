@@ -48,12 +48,10 @@ public:
      * @brief Updates the audio block for the effect.
      */
     virtual void updateAudioBlock() = 0;
-
-    // TODO: add a ramp here for input gain
-    // TODO: add a counter that waits i.e. till the decay is finished
-    // TODO: add a ramp here for output gain
-    void engage(bool engaged_) { engaged = engaged_; }
     
+    void updateRamps();
+
+    void engage(bool engaged_);
     
     void parameterChanged(AudioParameter *param_) override;
     
@@ -87,8 +85,12 @@ protected:
     AudioParameterGroup parameters; /**< The group of parameters specific to this effect */
     AudioParameterGroup* engineParameters = nullptr; /**< Pointer to engine-wide parameters */
     
-public:
-    bool engaged = true;
+    float dry = 0.f;
+    LinearRamp wet;
+    LinearRamp inputGain;
+    
+    static const uint RAMP_BLOCKSIZE;
+    static const uint RAMP_BLOCKSIZE_WRAP;
 };
 
 // MARK: - BEATREPEAT
@@ -106,6 +108,8 @@ public:
     StereoFloat processAudioSamples(const StereoFloat input_, const uint sampleIndex_) override;
     
     void updateAudioBlock() override;
+    
+    void parameterChanged(AudioParameter *param_) override;
     
 private:
     void initializeParameters();

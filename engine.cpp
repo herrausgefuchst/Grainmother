@@ -1,6 +1,6 @@
 #include "engine.hpp"
 
-//#define CONSOLE_PRINT
+#define CONSOLE_PRINT
 
 // =======================================================================================
 // MARK: - AUDIO ENGINE
@@ -127,12 +127,12 @@ StereoFloat AudioEngine::processAudioSamples(StereoFloat input_, uint sampleInde
         {
             if (processFunction[m][n])
             {
-                if (effects[processIndex[m][n]]->engaged)
-                {
+//                if (effects[processIndex[m][n]]->engaged)
+//                {
                     ++processedEffects;
                     
                     output += processFunction[m][n](input_, sampleIndex_) * parallelWeight[m];
-                }
+//                }
                 
                 if (++catchedEffects == NUM_EFFECTS) break;
             }
@@ -251,7 +251,8 @@ void AudioEngine::recalculateParallelWeighting()
                              __FILE__, __LINE__);
                 #endif
                 
-                if (effects[processIndex[i][j]]->engaged) ++numParallelEffects;
+//                if (effects[processIndex[i][j]]->engaged) ++numParallelEffects;
+                ++numParallelEffects;
             }
         }
         
@@ -562,12 +563,12 @@ void UserInterface::initializeListeners()
 
     // Recalculate the parallel weighting for the effect order algorithm when 
     // an effect is bypassed or engaged.
-    engine->getParameter("effect1_engaged")->onChange.push_back([this] {
-        engine->recalculateParallelWeighting(); });
-    engine->getParameter("effect2_engaged")->onChange.push_back([this] { 
-        engine->recalculateParallelWeighting(); });
-    engine->getParameter("effect3_engaged")->onChange.push_back([this] { 
-        engine->recalculateParallelWeighting(); });
+//    engine->getParameter("effect1_engaged")->onChange.push_back([this] {
+//        engine->recalculateParallelWeighting(); });
+//    engine->getParameter("effect2_engaged")->onChange.push_back([this] { 
+//        engine->recalculateParallelWeighting(); });
+//    engine->getParameter("effect3_engaged")->onChange.push_back([this] { 
+//        engine->recalculateParallelWeighting(); });
     
     engine->setEffectOrder();
     

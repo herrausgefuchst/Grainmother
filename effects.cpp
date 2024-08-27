@@ -3,6 +3,9 @@
 // MARK: - BEATREPEAT
 // ********************************************************************************
 
+const uint Effect::RAMP_BLOCKSIZE = 1;
+const uint Effect::RAMP_BLOCKSIZE_WRAP = RAMP_BLOCKSIZE - 1;
+
 Effect::Effect(AudioParameterGroup* engineParameters_,
                 const unsigned int numParameters_, const String& name_,
                 const float sampleRate_, const unsigned int blockSize_)
@@ -11,7 +14,11 @@ Effect::Effect(AudioParameterGroup* engineParameters_,
     , blockSize(blockSize_)
     , parameters(name_, numParameters_)
     , engineParameters(engineParameters_)
-{}
+{
+    inputGain.setup(1.f, sampleRate, RAMP_BLOCKSIZE);
+    
+    wet.setup(0.f, sampleRate, RAMP_BLOCKSIZE);
+}
 
 
 void Effect::parameterChanged(AudioParameter *param_)
@@ -21,9 +28,29 @@ void Effect::parameterChanged(AudioParameter *param_)
 }
 
 
+void Effect::engage(bool engaged_)
+{
+    if (engaged_) inputGain.setRampTo(1.f, 0.35f);
+    
+    else inputGain.setRampTo(0.f, 0.1f);
+}
+
+
+void Effect::updateRamps()
+{
+    if (!inputGain.rampFinished) inputGain.processRamp();
+    
+    if (!wet.rampFinished)
+    {
+        wet.processRamp();
+        
+        dry = 1.f - wet();
+    }
+}
+
+
 // MARK: - BEATREPEAT
 // ********************************************************************************
-
 
 void Reverb::setup()
 {
@@ -36,8 +63,13 @@ void Reverb::setup()
 
 StereoFloat Reverb::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
 {
-    return reverb.processAudioSamples(input_, sampleIndex_);;
-//    return input_;
+    if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
+    
+    StereoFloat drySignal = input_ * dry;
+    
+    StereoFloat wetSignal = reverb.processAudioSamples(input_ * inputGain(), sampleIndex_) * wet();
+        
+    return wetSignal + drySignal;
 }
 
 
@@ -93,9 +125,29 @@ void Reverb::initializeListeners()
     {
         auto param = parameters.getParameter(n);
         
-        param->onChange.push_back([this, param] {
-            reverb.parameterChanged(param->getID(), param->getValueAsFloat());
-        });
+        if (param->getID() != "reverb_wetness")
+        {
+            param->onChange.push_back([this, param] {
+                reverb.parameterChanged(param->getID(), param->getValueAsFloat());
+            });
+        }
+    }
+    
+    parameters.getParameter("reverb_wetness")->addListener(this);
+}
+
+
+void Reverb::parameterChanged(AudioParameter *param_)
+{
+    if (param_->getID() == "effect1_engaged")
+    {
+        engage(param_->getValueAsInt());
+    }
+    
+    else if (param_->getID() == "reverb_wetness")
+    {
+        wet.setRampTo(0.01f * param_->getValueAsFloat(), 0.05f);
+        dry = 1.f - wet();
     }
 }
 

@@ -1,3 +1,7 @@
+// TODO: Modulation Rate doesnt initalize correctly
+// TODO: resonance of highcut filter is too strong
+// TODO: documentation renaming
+
 // =======================================================================================
 //
 // BelaReverb.h
@@ -178,7 +182,7 @@ static const float parameterInitialValue[NUM_PARAMETERS] = {
     100.f,
     0.f,
     20000.f,
-    65.f,
+    100.f,
     3.f,
     20.f,
     120.f,
