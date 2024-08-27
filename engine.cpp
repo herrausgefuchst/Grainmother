@@ -7,6 +7,10 @@
 // =======================================================================================
 
 
+const uint AudioEngine::RAMP_BLOCKSIZE = 8;
+const uint AudioEngine::RAMP_BLOCKSIZE_WRAP = RAMP_BLOCKSIZE - 1;
+
+
 AudioEngine::AudioEngine()
     : engineParameters("engine", Engine::NUM_PARAMETERS)
 {}
@@ -110,11 +114,19 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     programParameters.at(0) = (&engineParameters);
     for (unsigned int n = 1; n < NUM_EFFECTS+1; ++n)
         programParameters.at(n) = effects[n-1]->getEffectParameterGroup();
+    
+    globalWet.setup(1.f, sampleRate, RAMP_BLOCKSIZE);
+    globalDry = 1.f - globalWet();
 }
 
 
 StereoFloat AudioEngine::processAudioSamples(StereoFloat input_, uint sampleIndex_)
 {
+    if (bypassed) return input_;
+    
+    if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
+    
+    StereoFloat input = input_;
     StereoFloat output = {0.f, 0.f};
     
     uint catchedEffects = 0;
@@ -127,12 +139,9 @@ StereoFloat AudioEngine::processAudioSamples(StereoFloat input_, uint sampleInde
         {
             if (processFunction[m][n])
             {
-//                if (effects[processIndex[m][n]]->engaged)
-//                {
-                    ++processedEffects;
-                    
-                    output += processFunction[m][n](input_, sampleIndex_) * parallelWeight[m];
-//                }
+                ++processedEffects;
+                
+                output += processFunction[m][n](input, sampleIndex_) * parallelWeight[m];
                 
                 if (++catchedEffects == NUM_EFFECTS) break;
             }
@@ -142,13 +151,13 @@ StereoFloat AudioEngine::processAudioSamples(StereoFloat input_, uint sampleInde
         
         else
         {
-            if (processedEffects > 0) input_ = output;
+            if (processedEffects > 0) input = output;
             
             output = { 0.f, 0.f };
         }
     }
     
-    return output;
+    return output * globalWet() + input_ * globalDry;
 }
 
 
@@ -265,6 +274,40 @@ void AudioEngine::recalculateParallelWeighting()
                  + TOSTRING(parallelWeight[1]) + ", " + TOSTRING(parallelWeight[2]),
                  __FILE__, __LINE__);
     #endif
+}
+
+
+void AudioEngine::setBypass(bool bypassed_)
+{
+    if (bypassed_)
+    {
+        globalWet.setRampTo(0.f, 0.05f);
+    }
+    
+    else
+    {
+        globalWet.setRampTo(1.f, 0.05f);
+        
+        bypassed = false;
+    }
+    
+    globalDry = 1.f - globalWet();
+}
+
+
+void AudioEngine::updateRamps()
+{
+    if (!globalWet.rampFinished)
+    {
+        globalWet.processRamp();
+        
+        globalDry = 1.f - globalWet();
+    }
+    
+    else if (!bypassed && globalWet() == 0.f)
+    {
+        bypassed = true;
+    }
 }
 
 
@@ -555,23 +598,17 @@ void UserInterface::initializeListeners()
     // to reset the process functions to the new order is called.
     engine->getParameter("effect_order")->onChange.push_back([this] { effectOrderChanged(); });
 
-    // TODO: Is this necessary?
     // Effects toggle their engaged flag based on the corresponding parameter changes.
     engine->getParameter("effect1_engaged")->addListener(engine->getEffect(0));
     engine->getParameter("effect2_engaged")->addListener(engine->getEffect(1));
     engine->getParameter("effect3_engaged")->addListener(engine->getEffect(2));
-
-    // Recalculate the parallel weighting for the effect order algorithm when 
-    // an effect is bypassed or engaged.
-//    engine->getParameter("effect1_engaged")->onChange.push_back([this] {
-//        engine->recalculateParallelWeighting(); });
-//    engine->getParameter("effect2_engaged")->onChange.push_back([this] { 
-//        engine->recalculateParallelWeighting(); });
-//    engine->getParameter("effect3_engaged")->onChange.push_back([this] { 
-//        engine->recalculateParallelWeighting(); });
     
     engine->setEffectOrder();
     
+    // Engine sets a small Ramp for input and effect output if the Global Bypass button is pressed
+    engine->getParameter("global_bypass")->onChange.push_back([this] {
+        engine->setBypass(engine->getParameter("global_bypass")->getValueAsFloat());
+    });
     
     // MENU ACTIONS
     // ==================================================================================

@@ -57,6 +57,12 @@ public:
     void recalculateParallelWeighting();
     
     
+    void setBypass(bool bypassed_);
+    
+    
+    void updateRamps();
+    
+    
     /**
      * @brief Retrieves an audio parameter by its ID.
      * @param parameterID_ The ID of the parameter to retrieve.
@@ -97,6 +103,13 @@ private:
     
     std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> programParameters; /**< Array of program parameter groups */
     AudioParameterGroup engineParameters; /**< Parameters specific to the audio engine */
+    
+    bool bypassed = false;
+    LinearRamp globalWet;
+    float globalDry;
+    
+    static const uint RAMP_BLOCKSIZE;
+    static const uint RAMP_BLOCKSIZE_WRAP;
     
     ProcessFunctionPointer processFunction[3][3];
     int processIndex[3][3];
