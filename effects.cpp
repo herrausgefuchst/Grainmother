@@ -3,10 +3,10 @@
 // MARK: - BEATREPEAT
 // ********************************************************************************
 
-const uint Effect::RAMP_BLOCKSIZE = 1;
-const uint Effect::RAMP_BLOCKSIZE_WRAP = RAMP_BLOCKSIZE - 1;
+const uint EffectProcessor::RAMP_BLOCKSIZE = 1;
+const uint EffectProcessor::RAMP_BLOCKSIZE_WRAP = RAMP_BLOCKSIZE - 1;
 
-Effect::Effect(AudioParameterGroup* engineParameters_,
+EffectProcessor::EffectProcessor(AudioParameterGroup* engineParameters_,
                 const unsigned int numParameters_, const String& name_,
                 const float sampleRate_, const unsigned int blockSize_)
     : id(name_)
@@ -21,14 +21,14 @@ Effect::Effect(AudioParameterGroup* engineParameters_,
 }
 
 
-void Effect::parameterChanged(AudioParameter *param_)
+void EffectProcessor::parameterChanged(AudioParameter *param_)
 {
     // TODO: no safety guards here
     engage(param_->getValueAsInt());
 }
 
 
-void Effect::engage(bool engaged_)
+void EffectProcessor::engage(bool engaged_)
 {
     if (engaged_) inputGain.setRampTo(1.f, 0.35f);
     
@@ -36,7 +36,7 @@ void Effect::engage(bool engaged_)
 }
 
 
-void Effect::updateRamps()
+void EffectProcessor::updateRamps()
 {
     if (!inputGain.rampFinished) inputGain.processRamp();
     
@@ -52,7 +52,7 @@ void Effect::updateRamps()
 // MARK: - BEATREPEAT
 // ********************************************************************************
 
-void Reverb::setup()
+void ReverbProcessor::setup()
 {
     reverb.setup(sampleRate, blockSize);
     
@@ -61,7 +61,7 @@ void Reverb::setup()
 }
 
 
-StereoFloat Reverb::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
+StereoFloat ReverbProcessor::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
 {
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
     
@@ -73,13 +73,13 @@ StereoFloat Reverb::processAudioSamples(const StereoFloat input_, const uint sam
 }
 
 
-void Reverb::updateAudioBlock()
+void ReverbProcessor::updateAudioBlock()
 {
     
 }
 
 
-void Reverb::initializeParameters()
+void ReverbProcessor::initializeParameters()
 {
     using namespace Reverberation;
     
@@ -119,7 +119,7 @@ void Reverb::initializeParameters()
     static_cast<SlideParameter*>(parameters.getParameter("reverb_decay"))->setScaling(SlideParameter::Scaling::FREQ);
 }
 
-void Reverb::initializeListeners()
+void ReverbProcessor::initializeListeners()
 {
     for (unsigned int n = 0; n < Reverberation::NUM_PARAMETERS; ++n)
     {
@@ -137,7 +137,7 @@ void Reverb::initializeListeners()
 }
 
 
-void Reverb::parameterChanged(AudioParameter *param_)
+void ReverbProcessor::parameterChanged(AudioParameter *param_)
 {
     if (param_->getID() == "effect1_engaged")
     {
@@ -156,14 +156,14 @@ void Reverb::parameterChanged(AudioParameter *param_)
 // ********************************************************************************
 
 
-void Granulator::setup()
+void GranulatorProcessor::setup()
 {
     initializeParameters();
     initializeListeners();
 }
 
 
-StereoFloat Granulator::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
+StereoFloat GranulatorProcessor::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
 {
     // process ramps
 //    parameters.getParameter(GRAN1)->process();
@@ -176,10 +176,10 @@ StereoFloat Granulator::processAudioSamples(const StereoFloat input_, const uint
     return effect;
 }
 
-void Granulator::updateAudioBlock()
+void GranulatorProcessor::updateAudioBlock()
 {}
 
-void Granulator::initializeParameters()
+void GranulatorProcessor::initializeParameters()
 {
     using namespace GrainmotherGranulator;
     
@@ -216,7 +216,7 @@ void Granulator::initializeParameters()
     static_cast<SlideParameter*>(parameters.getParameter("gran_highcut"))->setScaling(SlideParameter::Scaling::FREQ);
 }
 
-void Granulator::initializeListeners()
+void GranulatorProcessor::initializeListeners()
 {
     
 }
@@ -224,7 +224,7 @@ void Granulator::initializeListeners()
 // MARK: - GRANULATOR
 // ********************************************************************************
 
-StereoFloat Resonator::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
+StereoFloat ResonatorProcessor::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
 {
     // process ramps
     // ...
@@ -236,10 +236,10 @@ StereoFloat Resonator::processAudioSamples(const StereoFloat input_, const uint 
     return effect;
 }
 
-void Resonator::updateAudioBlock()
+void ResonatorProcessor::updateAudioBlock()
 {}
 
-void Resonator::initializeParameters()
+void ResonatorProcessor::initializeParameters()
 {
 //    parameters.addParameter("delay1", "Delay1", "%", 0.f, 100.f, 0.f, 0.f);
 //    parameters.addParameter("delay2", "Delay2", "%", 0.f, 100.f, 0.f, 0.f);
@@ -252,7 +252,7 @@ void Resonator::initializeParameters()
 //    parameters.addParameter("delay9", "Delay9", ButtonParameter::COUPLED);
 }
 
-void Resonator::initializeListeners()
+void ResonatorProcessor::initializeListeners()
 {
     
 }

@@ -126,9 +126,9 @@ public:
         
         String getCurrentPrintValue() const override { return editedPresetName; }
         
-        uint getCurrentChoiceIndex() const override { return 0; }
+        uint getCurrentChoiceIndex() const override { return charPosition; }
         
-        size_t getNumChoices() const override { return 1; }
+        size_t getNumChoices() const override { return nameLength; }
         
         String* getChoiceNames() override { return &editedPresetName; }
                                 

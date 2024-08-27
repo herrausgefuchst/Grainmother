@@ -1,4 +1,4 @@
-#include "engine.hpp"
+#include "Engine.h"
 
 #define CONSOLE_PRINT
 
@@ -11,160 +11,157 @@ const uint AudioEngine::RAMP_BLOCKSIZE = 8;
 const uint AudioEngine::RAMP_BLOCKSIZE_WRAP = RAMP_BLOCKSIZE - 1;
 
 
-AudioEngine::AudioEngine()
-    : engineParameters("engine", Engine::NUM_PARAMETERS)
+AudioEngine::AudioEngine() : engineParameters("engine", Engine::NUM_PARAMETERS)
 {}
 
 
 void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
 {
-    // Member Variables
+    // Assign member variables
     sampleRate = sampleRate_;
     blockSize = blockSize_;
     
-    // engine parameters
-    {
-        using namespace Engine;
-        
-        // tempo
-        engineParameters.addParameter<SlideParameter>
-        (UIPARAM_SEPCIAL, parameterID[TEMPO], parameterName[TEMPO],
-         " bpm", 30.f, 300.f, 1.f, 120.f, sampleRate);
-
-        // global bypass
-        engineParameters.addParameter<ButtonParameter>
-        (MENUPARAMETER, parameterID[GLOBAL_BYPASS], parameterName[GLOBAL_BYPASS],
-         std::initializer_list<String>{ "OFF", "ON" });
-
-        // effect bypasses
-        engineParameters.addParameter<ToggleParameter>
-        (MENUPARAMETER, parameterID[EFFECT1_ENGAGED], parameterName[EFFECT1_ENGAGED],
-         std::initializer_list<String>{ "OFF", "ON" });
-        
-        engineParameters.addParameter<ToggleParameter>
-        (MENUPARAMETER, parameterID[EFFECT2_ENGAGED], parameterName[EFFECT2_ENGAGED],
-         std::initializer_list<String>{ "OFF", "ON" });
-        
-        engineParameters.addParameter<ToggleParameter>
-        (MENUPARAMETER, parameterID[EFFECT3_ENGAGED], parameterName[EFFECT3_ENGAGED],
-         std::initializer_list<String>{ "OFF", "ON" });
-
-        // effect edit focus
-        engineParameters.addParameter<ChoiceParameter>
-        (MENUPARAMETER, parameterID[EFFECT_EDIT_FOCUS], parameterName[EFFECT_EDIT_FOCUS],
-         std::initializer_list<String>{ "Reverb", "Granulator", "Resonator" });
-        
-        // effect order
-        engineParameters.addParameter<ChoiceParameter>
-        (MENUPARAMETER, parameterID[EFFECT_ORDER], parameterName[EFFECT_ORDER],
-         std::initializer_list<String>{
-            "1 - 2 - 3",
-            "2 | 3 - 1",
-            "1 | 3 - 2",
-            "1 | 2 - 3",
-            "3 - 1 | 2",
-            "2 - 1 | 3",
-            "1 - 2 | 3",
-            "1 | 2 | 3",
-            "3 - 2 - 1",
-            "3 - 1 - 2",
-            "2 - 3 - 1",
-            "2 - 1 - 3",
-            "1 - 3 - 2"});
-        
-        // set tempo to?
-        engineParameters.addParameter<ChoiceParameter>
-        (MENUPARAMETER, parameterID[TEMPO_SET], parameterName[TEMPO_SET],
-         std::initializer_list<String>{ "Current Effect", "All Effects" });
-    }
-        
-    // Effects
-//    effects[0] = new Reverb(&engineParameters, Reverberation::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
-//    effects[1] = new Granulator(&engineParameters, GrainmotherGranulator::NUM_PARAMETERS, "granulator", sampleRate, blockSize);
-//    effects[2] = new Resonator(&engineParameters, 8, "resonator", sampleRate, blockSize);
+    // Initialize engine parameters
+    initializeEngineParameters();
     
     // Define the alignment - typically 16 bytes for SIMD types
     constexpr std::size_t alignment = 16;
 
-    // Aligned allocation and object construction for Effect1
+    // Aligned allocation and object construction for effects
     void* memEffect1 = nullptr;
-    if (posix_memalign(&memEffect1, alignment, sizeof(Reverb)) != 0) {
-        throw std::bad_alloc();
-    }
-    effects[0] = new (memEffect1) Reverb(&engineParameters, Reverberation::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
-    
-    // Aligned allocation and object construction for Effect2
     void* memEffect2 = nullptr;
-    if (posix_memalign(&memEffect2, alignment, sizeof(Granulator)) != 0) {
-        throw std::bad_alloc();
-    }
-    effects[1] = new (memEffect2) Granulator(&engineParameters, GrainmotherGranulator::NUM_PARAMETERS, "granulator", sampleRate, blockSize);
-
-    // Aligned allocation and object construction for Effect3
     void* memEffect3 = nullptr;
-    if (posix_memalign(&memEffect3, alignment, sizeof(Effect)) != 0) {
-        throw std::bad_alloc();
-    }
-    effects[2] = new (memEffect3) Resonator(&engineParameters, 8, "resonator", sampleRate, blockSize);
     
-    effects[0]->setup();
-    effects[1]->setup();
+    if (posix_memalign(&memEffect1, alignment, sizeof(ReverbProcessor)) != 0) { throw std::bad_alloc(); }
+    if (posix_memalign(&memEffect2, alignment, sizeof(GranulatorProcessor)) != 0) { throw std::bad_alloc(); }
+    if (posix_memalign(&memEffect3, alignment, sizeof(ResonatorProcessor)) != 0) { throw std::bad_alloc(); }
     
-    // add all Parameters to a vector of AudioParameterGroups which holds all Program Parameters
+    effectProcessor[0] = new (memEffect1) ReverbProcessor(&engineParameters, Reverberation::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
+    effectProcessor[1] = new (memEffect2) GranulatorProcessor(&engineParameters, GrainmotherGranulator::NUM_PARAMETERS, "granulator", sampleRate, blockSize);
+    effectProcessor[2] = new (memEffect3) ResonatorProcessor(&engineParameters, 8, "resonator", sampleRate, blockSize);
+    
+    // The setup functions of the effect processors create a set of parameters and initialize the listener connections.
+    // They also initialize the actual effect objects.
+    effectProcessor[0]->setup();
+    effectProcessor[1]->setup();
+    // TODO: Add resonator setup
+    
+    // Add all parameters to a vector of AudioParameterGroups, which holds all program parameters
     programParameters.at(0) = (&engineParameters);
-    for (unsigned int n = 1; n < NUM_EFFECTS+1; ++n)
-        programParameters.at(n) = effects[n-1]->getEffectParameterGroup();
+    for (unsigned int n = 1; n < NUM_EFFECTS + 1; ++n)
+        programParameters.at(n) = effectProcessor[n - 1]->getEffectParameterGroup();
     
+    // Set up the wet ramp for global bypass control and initialize the corresponding dry multiplier
     globalWet.setup(1.f, sampleRate, RAMP_BLOCKSIZE);
     globalDry = 1.f - globalWet();
 }
 
 
+void AudioEngine::initializeEngineParameters()
+{
+    using namespace Engine;
+    
+    // tempo
+    engineParameters.addParameter<SlideParameter>
+    (UIPARAM_SEPCIAL, parameterID[TEMPO], parameterName[TEMPO],
+     " bpm", 30.f, 300.f, 1.f, 120.f, sampleRate);
+
+    // global bypass
+    engineParameters.addParameter<ButtonParameter>
+    (MENUPARAMETER, parameterID[GLOBAL_BYPASS], parameterName[GLOBAL_BYPASS],
+     std::initializer_list<String>{ "OFF", "ON" });
+
+    // effect 1, 2, 3 engaged
+    engineParameters.addParameter<ToggleParameter>
+    (MENUPARAMETER, parameterID[EFFECT1_ENGAGED], parameterName[EFFECT1_ENGAGED],
+     std::initializer_list<String>{ "OFF", "ON" });
+    engineParameters.addParameter<ToggleParameter>
+    (MENUPARAMETER, parameterID[EFFECT2_ENGAGED], parameterName[EFFECT2_ENGAGED],
+     std::initializer_list<String>{ "OFF", "ON" });
+    engineParameters.addParameter<ToggleParameter>
+    (MENUPARAMETER, parameterID[EFFECT3_ENGAGED], parameterName[EFFECT3_ENGAGED],
+     std::initializer_list<String>{ "OFF", "ON" });
+
+    // effect edit focus
+    engineParameters.addParameter<ChoiceParameter>
+    (MENUPARAMETER, parameterID[EFFECT_EDIT_FOCUS], parameterName[EFFECT_EDIT_FOCUS],
+     std::initializer_list<String>{ "Reverb", "Granulator", "Resonator" });
+    
+    // effect order
+    engineParameters.addParameter<ChoiceParameter>
+    (MENUPARAMETER, parameterID[EFFECT_ORDER], parameterName[EFFECT_ORDER],
+     std::initializer_list<String>{
+        "1 - 2 - 3",
+        "2 | 3 - 1",
+        "1 | 3 - 2",
+        "1 | 2 - 3",
+        "3 - 1 | 2",
+        "2 - 1 | 3",
+        "1 - 2 | 3",
+        "1 | 2 | 3",
+        "3 - 2 - 1",
+        "3 - 1 - 2",
+        "2 - 3 - 1",
+        "2 - 1 - 3",
+        "1 - 3 - 2"});
+    
+    // set tempo to?
+    engineParameters.addParameter<ChoiceParameter>
+    (MENUPARAMETER, parameterID[TEMPO_SET], parameterName[TEMPO_SET],
+     std::initializer_list<String>{ "Current Effect", "All Effects" });
+}
+
+
 StereoFloat AudioEngine::processAudioSamples(StereoFloat input_, uint sampleIndex_)
 {
+    // don't process anything if the bypassed flag is set true
     if (bypassed) return input_;
     
+    // process the ramp for wetness in a certain rate
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
     
     StereoFloat input = input_;
     StereoFloat output = {0.f, 0.f};
     
-    uint catchedEffects = 0;
+    // Counter to keep track of how many effects have been processed.
+    uint processedEffects = 0;
     
+    // Iterate through all effects in series to apply processing functions.
     for (uint m = 0; m < NUM_EFFECTS; ++m)
     {
-        uint processedEffects = 0;
-        
+        // Iterate through all effects in parallel to apply processing functions.
         for (uint n = 0; n < NUM_EFFECTS; ++n)
         {
+            // Check if there is a valid processing function for the current combination of effects.
             if (processFunction[m][n])
             {
-                ++processedEffects;
-                
+                // Apply the processing function to the input, and accumulate the result into 'output'.
+                // The result is weighted by the parallelWeight associated with the current effect chain,
+                // as precalculated in recalculateParallelWeighting()
                 output += processFunction[m][n](input, sampleIndex_) * parallelWeight[m];
                 
-                if (++catchedEffects == NUM_EFFECTS) break;
+                // Increment the processed effects counter.
+                // Exit if all effects have been processed.
+                if (++processedEffects == NUM_EFFECTS) break;
             }
         }
         
-        if (catchedEffects == NUM_EFFECTS) break;
+        // Exit the outer loop if all effects have been processed.
+        if (processedEffects == NUM_EFFECTS) break;
         
         else
         {
-            if (processedEffects > 0) input = output;
+            // If not all effects have been processed, set the input to the current output.
+            input = output;
             
+            // Reset the output for the next iteration of processing.
             output = { 0.f, 0.f };
         }
     }
-    
+
+    // Return the final output after applying the global wet/dry mix.
+    // The output is mixed with the original input, weighted by globalWet and globalDry parameters.
     return output * globalWet() + input_ * globalDry;
-}
-
-
-void AudioEngine::updateAudioBlock()
-{
-    for (uint n = 0; n < NUM_EFFECTS; ++n)
-        effects[n]->updateAudioBlock();
 }
 
 
@@ -217,7 +214,7 @@ void AudioEngine::setEffectOrder()
                 {
                     // insert the process function of this effect to the precise array slot
                     processFunction[row][col] = [this, effectIndex](StereoFloat input, uint sampleIndex) {
-                        return effects[effectIndex]->processAudioSamples(input, sampleIndex);
+                        return effectProcessor[effectIndex]->processAudioSamples(input, sampleIndex);
                     };
                     
                     // insert the process effect index to the precise array slot
@@ -246,30 +243,41 @@ void AudioEngine::setEffectOrder()
 
 void AudioEngine::recalculateParallelWeighting()
 {
-    for(int i = 0; i < 3; ++i) 
+    // Iterate over each effect chain
+    for (uint i = 0; i < NUM_EFFECTS; ++i)
     {
+        // Counter to track the number of parallel effects in the current chain
         uint numParallelEffects = 0;
         
-        for(int j = 0; j < 3; ++j)
+        // Iterate through all effects within the current chain
+        for(uint j = 0; j < NUM_EFFECTS; ++j)
         {
+            // Check if there is a valid processing function for the current effect in the chain
             if (processFunction[i][j] != nullptr)
             {
                 #ifdef CONSOLE_PRINT
+                // Print debug information about the processing function and its index
                 consoleprint("processFunction[" + TOSTRING(i) + "][" + TOSTRING(j)
                              + "] is set to processIndex[" + TOSTRING(processIndex[i][j]) + "]",
                              __FILE__, __LINE__);
                 #endif
                 
-//                if (effects[processIndex[i][j]]->engaged) ++numParallelEffects;
+                // Increment the count of parallel effects for this chain
                 ++numParallelEffects;
             }
         }
         
-        if (numParallelEffects > 0) parallelWeight[i] = 1.f / (float)numParallelEffects;
-        else parallelWeight[i] = 0.f;
+        // Calculate the parallel weight for the current chain
+        // If there are parallel effects, set the weight as the inverse of their count
+        // If there are no parallel effects, set the weight to 0
+        if (numParallelEffects > 0)
+            parallelWeight[i] = 1.f / (float)numParallelEffects;
+        else
+            parallelWeight[i] = 0.f;
     }
     
     #ifdef CONSOLE_PRINT
+    // Print the calculated parallel weights for debugging
     consoleprint("parallel Weights are set to " + TOSTRING(parallelWeight[0]) + ", "
                  + TOSTRING(parallelWeight[1]) + ", " + TOSTRING(parallelWeight[2]),
                  __FILE__, __LINE__);
@@ -279,31 +287,34 @@ void AudioEngine::recalculateParallelWeighting()
 
 void AudioEngine::setBypass(bool bypassed_)
 {
+    // If bypass is enabled, ramp down the wet signal to 0 over 0.05 seconds.
     if (bypassed_)
     {
         globalWet.setRampTo(0.f, 0.05f);
     }
-    
+    // If bypass is disabled, ramp up the wet signal to 1 over 0.05 seconds and set bypassed to false.
     else
     {
         globalWet.setRampTo(1.f, 0.05f);
-        
         bypassed = false;
     }
     
+    // Update the dry signal to be the inverse of the wet signal.
     globalDry = 1.f - globalWet();
 }
 
 
 void AudioEngine::updateRamps()
 {
+    // If the wet signal ramp is not yet finished, continue processing the ramp.
     if (!globalWet.rampFinished)
     {
         globalWet.processRamp();
         
+        // Update the dry signal to be the inverse of the wet signal.
         globalDry = 1.f - globalWet();
     }
-    
+    // If the ramp is finished and the wet signal has reached 0, set bypassed to true.
     else if (!bypassed && globalWet() == 0.f)
     {
         bypassed = true;
@@ -379,12 +390,12 @@ AudioParameter* AudioEngine::getParameter(const String& paramGroup_, const uint 
 }
 
 
-Effect* AudioEngine::getEffect(const unsigned int index_)
+EffectProcessor* AudioEngine::getEffect(const unsigned int index_)
 {
     if (index_ > NUM_EFFECTS-1)
         engine_rt_error("Audio Engine holds no Effect with Index " + TOSTRING(index_), __FILE__, __LINE__, true);
     
-    auto effect = effects[index_];
+    auto effect = effectProcessor[index_];
     
     if (!effect)
         engine_rt_error("Audio Engine can't find effect", __FILE__, __LINE__, true);

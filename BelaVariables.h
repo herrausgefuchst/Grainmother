@@ -7,7 +7,7 @@
 #include <libraries/Midi/Midi.h>
 
 #include "inputs.hpp"
-#include "engine.hpp"
+#include "Engine.h"
 
 #define SCOPE_ACTIVE
 

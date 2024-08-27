@@ -149,6 +149,8 @@ private:
      */
     void createMenuPageMessage(Menu::Page* page_);
     
+    void createNamingPageMessage(Menu::Page* page_);
+    
 #ifdef BELA_CONNECTED
     OscSender oscTransmitter; /**< Handles OSC transmission for OLED display on BELA. */
 #endif

@@ -271,8 +271,7 @@ void Display::menuPageChanged(Menu::Page* page_)
     }
     else if (instanceof<Menu::NamingPage>(page_))
     {
-        // TODO: display naming page
-        createMenuPageMessage(page_);
+        createNamingPageMessage(page_);
     }
     // - all other menu pages have the same message type
     else
@@ -420,6 +419,20 @@ void Display::createPresetMessage()
     displayCache.add(presetPage->getCurrentPrintValue());
     displayCache.add((int)presetPage->getCurrentChoiceIndex());
     displayCache.createRows();
+}
+
+
+void Display::createNamingPageMessage(Menu::Page *page_)
+{
+#ifdef BELA_CONNECTED
+    std::cout << "Size of name: " << page_->getCurrentPrintValue().size() << std::endl;
+    
+    oscTransmitter.newMessage("/namingpage");
+    oscTransmitter.add(page_->getName());
+    oscTransmitter.add(page_->getCurrentPrintValue());
+    oscTransmitter.add((int)page_->getCurrentChoiceIndex());
+    oscTransmitter.add((int)page_->getNumChoices());
+#endif
 }
 
 

@@ -15,10 +15,10 @@
  * @class Effect
  * @brief A base class representing an audio effect, with setup and processing capabilities.
  */
-class Effect : public AudioParameter::Listener
+class EffectProcessor : public AudioParameter::Listener
 {
 public:
-    Effect() {}
+    EffectProcessor() {}
     
     /**
      * @brief Constructs an Effect with specified engine parameters and name.
@@ -28,14 +28,14 @@ public:
      * @param sampleRate_ The sample rate
      * @param blockSize_ The audio block size
      */
-    Effect(AudioParameterGroup* engineParameters_, 
+    EffectProcessor(AudioParameterGroup* engineParameters_,
            const unsigned int numParameters_, const String& name_,
            const float sampleRate_, const unsigned int blockSize_);
 
     /**
      * @brief Virtual destructor for Effect.
      */
-    virtual ~Effect() {}
+    virtual ~EffectProcessor() {}
 
     virtual void setup() {}
     
@@ -99,12 +99,12 @@ protected:
 // MARK: - BEATREPEAT
 // ********************************************************************************
 
-class Reverb : public Effect
+class ReverbProcessor : public EffectProcessor
 {
 public:    
-    using Effect::Effect;
+    using EffectProcessor::EffectProcessor;
     
-    ~Reverb() {}
+    ~ReverbProcessor() {}
     
     void setup() override;
     
@@ -125,14 +125,14 @@ private:
 // MARK: - GRANULATOR
 // ********************************************************************************
 
-class Granulator : public Effect
+class GranulatorProcessor : public EffectProcessor
 {
 public:
-    using Effect::Effect;
+    using EffectProcessor::EffectProcessor;
     
     void setup() override;
     
-    ~Granulator() {}
+    ~GranulatorProcessor() {}
     
     StereoFloat processAudioSamples(const StereoFloat input_, const uint sampleIndex_) override;
     
@@ -147,12 +147,12 @@ private:
 // MARK: - DELAY
 // ********************************************************************************
 
-class Resonator : public Effect
+class ResonatorProcessor : public EffectProcessor
 {
 public:
-    using Effect::Effect;
+    using EffectProcessor::EffectProcessor;
     
-    ~Resonator() {}
+    ~ResonatorProcessor() {}
     
     StereoFloat processAudioSamples(const StereoFloat input_, const uint sampleIndex_) override;
     
