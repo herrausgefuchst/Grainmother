@@ -173,8 +173,6 @@ void ChoiceParameter::buttonClicked(UIElement* uielement_)
 // MARK: - SLIDE PARAMETER
 // =======================================================================================
 
-// TODO: clear out ramps
-
 SlideParameter::SlideParameter(const uint index_, const String& id_, const String& name_, 
                                const String& suffix_, const float min_, const float max_,
                                const float nudgeStep_, const float default_,

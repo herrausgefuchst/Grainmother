@@ -789,7 +789,7 @@ void UserInterface::setTempoRelatedParameters()
             if (effectIndex == 1) potentiometer[grainLength->getIndex()].decouple(grainLength->getNormalizedValue());
         }
         
-        // TODO: Add Resonator support here.
+        // TODO: Add Resonator
     }
     
     else
@@ -804,8 +804,6 @@ void UserInterface::nudgeUIParameter(const int direction_)
     // If the display is in TEMPORARY state, it holds a pointer to the currently shown parameter.
     if (display.getStateDuration() == Display::TEMPORARY)
     {
-        std::cout << "state of display: temporary" << std::endl;
-        
         // Set the menu on hold to bypass the usual behavior of the Menu buttons.
         menu.onHold = true;
         
@@ -836,8 +834,6 @@ void UserInterface::startScrollingUIParameter(const int direction_)
     // If the display is in TEMPORARY state, it holds a pointer to the currently shown parameter.
     if (display.getStateDuration() == Display::TEMPORARY)
     {
-        std::cout << "state of display: temporary" << std::endl;
-        
         // Set the menu on hold to bypass the usual behavior of the Menu buttons.
         menu.onHold = true;
 
@@ -856,8 +852,6 @@ void UserInterface::startScrollingUIParameter(const int direction_)
             
         // Save the scrolling direction in this object.
         scrollingDirection = direction_;
-        
-        std::cout << "state of display: temporary" << std::endl;
     }
 }
 

@@ -260,6 +260,12 @@ inline float samples2bpm(uint samples, float sampleRate)
 }
 
 
+inline float sec2samples(float sec, float sampleRate)
+{
+    return sampleRate * sec;
+}
+
+
 /**
  * @brief Rounds a floating-point number to one decimal place.
  *

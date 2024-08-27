@@ -11,8 +11,7 @@
  * @class AudioParameter
  * @brief A class representing an audio parameter that can be observed by listeners.
  *
- * Print Value = value that is going to be printed on display
- * (Current) Value = mostly same as Print Value, but can vary in case of Ramps (Slide Parameter)
+ * Value = value that is going to be printed on display
  * Normalized Value = value between 0..1 as received from GUI or Potentiometers
  *
  */
