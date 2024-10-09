@@ -5,7 +5,6 @@
 #include "parameters.hpp"
 #include "Reverberation/Reverberation.h"
 
-//TODO: rename Effect -> EffectProcessor
 //TODO: add engaging functionality to the two other effects
 
 // MARK: - EFFECT

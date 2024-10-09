@@ -234,8 +234,6 @@ private:
 /**
  * @class SlideParameter
  * @brief Represents a parameter with a sliding scale, supporting linear and frequency scaling.
- *
- * The SlideParameter includes a ramp for the print value.
  */
 class SlideParameter : public AudioParameter
 {

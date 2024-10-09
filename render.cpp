@@ -98,12 +98,7 @@ void render (BelaContext *context, void *userData)
         displayBlockCtr = DISPLAY_BLOCKS_PER_FRAME;
         
         userinterface.display.update();
-//        if(userinterface.display.update(false))
-//            Bela_scheduleAuxiliaryTask(taskUpdateGUIDisplay);
     }
-    
-//    // update effects
-//    engine.processBlock();
 
 // process SAMPLEWISE ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     
@@ -111,9 +106,6 @@ void render (BelaContext *context, void *userData)
     {
         userinterface.processNonAudioTasks();
         
-        // process effects
-//        StereoFloat input = inputHandler.process(context, sampleIndex);
-//        StereoFloat output = engine.processAudioSamples(input, sampleIndex);
         StereoFloat output = engine.processAudioSamples({audioRead(context, sampleIndex, 0), audioRead(context, sampleIndex, 1)}, sampleIndex);
         
         // write output buffer

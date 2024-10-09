@@ -11,6 +11,8 @@
  * Each of these classes plays a crucial role in the operation of the audio processing system, allowing for real-time audio manipulation, user control, and synchronization.
  */
 
+// TODO: responiveness of potentiometers for catching is not very good...
+
 #ifndef Engine_h
 #define Engine_h
 
