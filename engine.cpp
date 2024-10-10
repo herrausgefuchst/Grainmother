@@ -37,7 +37,7 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     if (posix_memalign(&memEffect3, alignment, sizeof(ResonatorProcessor)) != 0) { throw std::bad_alloc(); }
     
     effectProcessor[0] = new (memEffect1) ReverbProcessor(&engineParameters, Reverberation::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
-    effectProcessor[1] = new (memEffect2) GranulatorProcessor(&engineParameters, GrainmotherGranulator::NUM_PARAMETERS, "granulator", sampleRate, blockSize);
+    effectProcessor[1] = new (memEffect2) GranulatorProcessor(&engineParameters, Granulation::NUM_PARAMETERS, "granulator", sampleRate, blockSize);
     effectProcessor[2] = new (memEffect3) ResonatorProcessor(&engineParameters, 8, "resonator", sampleRate, blockSize);
     
     // The setup functions of the effect processors create a set of parameters and initialize the listener connections.
@@ -162,6 +162,13 @@ StereoFloat AudioEngine::processAudioSamples(StereoFloat input_, uint sampleInde
     // Return the final output after applying the global wet/dry mix.
     // The output is mixed with the original input, weighted by globalWet and globalDry parameters.
     return output * globalWet() + input_ * globalDry;
+}
+
+
+void AudioEngine::updateAudioBlock()
+{
+    // granulator update function
+    effectProcessor[1]->updateAudioBlock();
 }
 
 
@@ -502,6 +509,10 @@ void UserInterface::initializeMenu()
     menu.addPage<Menu::ParameterPage>("reverb_multfreq", engine->getParameter("reverb", "reverb_multfreq"));
     menu.addPage<Menu::ParameterPage>("reverb_multgain", engine->getParameter("reverb", "reverb_multgain"));
     
+    menu.addPage<Menu::ParameterPage>("granulator_delayspeedratio", engine->getParameter("granulator", "granulator_delayspeedratio"));
+    menu.addPage<Menu::ParameterPage>("granulator_filterresonance", engine->getParameter("granulator", "granulator_filterresonance"));
+    menu.addPage<Menu::ParameterPage>("granulator_filtermodel", engine->getParameter("granulator", "granulator_filtermodel"));
+    
     // Configure the menu: pass in the complete set of parameters.
     menu.setup(engine->getProgramParameters());
 }
@@ -592,7 +603,7 @@ void UserInterface::initializeListeners()
 
     for (unsigned int n = 0; n < Reverberation::NUM_PARAMETERS; ++n)
         engine->getParameter("reverb", n)->addListener(&display);
-    for (unsigned int n = 0; n < GrainmotherGranulator::NUM_PARAMETERS; ++n)
+    for (unsigned int n = 0; n < Granulation::NUM_PARAMETERS; ++n)
         engine->getParameter("granulator", n)->addListener(&display);
     // TODO: Add Resonator
 
@@ -824,18 +835,18 @@ void UserInterface::setTempoRelatedParameters()
         if (effect->getId() == "granulator" || tempoSetOption == "All Effects")
         {
             // Retrieve the Grain Length parameter for the granulator effect.
-            auto grainLength = engine->getParameter("granulator", "gran_grainlength");
+            auto density = engine->getParameter("granulator", "granulator_density");
             
             // Convert BPM to milliseconds.
-            // * 16.f: Fit the BPM range to the range of the grain length.
             // TODO: Adjust the values to ensure they are in the correct range.
-            float tempoMs = bpm2msec(tempoBpm * 16.f);
+            float tempoMs = bpm2msec(tempoBpm);
+            float tempoRate = 1000.f / tempoMs;
             
-            // Set the new grain length value without triggering a print notification.
-            grainLength->setValue(tempoMs, false);
+            // Set the new density value without triggering a print notification.
+            density->setValue(tempoRate, false);
             
             // Decouple the corresponding potentiometer and set its cache to the new normalized value.
-            if (effectIndex == 1) potentiometer[grainLength->getIndex()].decouple(grainLength->getNormalizedValue());
+            if (effectIndex == 1) potentiometer[density->getIndex()].decouple(density->getNormalizedValue());
         }
         
         // TODO: Add Resonator

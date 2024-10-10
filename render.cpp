@@ -52,6 +52,7 @@ bool setup (BelaContext *context, void *userData)
     if((THREAD_updateLEDs = Bela_createAuxiliaryTask(&updateLEDs, 89, "updateLEDs", nullptr)) == 0) return false;
     if((THREAD_updateUserInterface = Bela_createAuxiliaryTask(&updateUserInterface, 88, "updateUserInterface", context)) == 0) return false;
     if((THREAD_updateNonAudioTasks = Bela_createAuxiliaryTask(&updateNonAudioTasks, 87, "updateNonAudioTasks", nullptr)) == 0) return false;
+    if((THREAD_updateEffects = Bela_createAuxiliaryTask(&updateEffects, 90, "updateEffects", nullptr)) == 0) return false;
 //    if((taskUpdateGUIDisplay = Bela_createAuxiliaryTask(&updateGUIdisplay, 88, "update-GUI-display", nullptr)) == 0) return false;
     
     // digital pinmodes
@@ -77,6 +78,9 @@ void render (BelaContext *context, void *userData)
 
 // update BLOCKWISE +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+    // update Effects blockwise
+    Bela_scheduleAuxiliaryTask(THREAD_updateEffects);
+    
     // update user interface
     Bela_scheduleAuxiliaryTask(THREAD_updateUserInterface);
     
@@ -220,6 +224,11 @@ void updateNonAudioTasks(void* arg_)
         
         userinterface.updateNonAudioTasks();
     }
+}
+
+void updateEffects(void* arg_)
+{
+    engine.updateAudioBlock();
 }
 
 void midiMessageCallback(MidiChannelMessage message, void* arg)

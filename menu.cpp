@@ -401,11 +401,20 @@ void Menu::initializePages()
         getPage("reverb_multgain")
     });
     
+    // Granulator - Additional Parameters
+    // parent page for naviagting through the menu parameters
+    addPage<NavigationPage>("granulator_additionalParameters", "Granulator", std::initializer_list<Page*>{
+        getPage("granulator_delayspeedratio"),
+        getPage("granulator_filterresonance"),
+        getPage("granulator_filtermodel")
+    });
+    
     // Preset Settings
     // parent page for naviagting through the preset settings
     addPage<NavigationPage>("preset_settings", "Preset Settings", std::initializer_list<Page *>{
         getPage("effect_order"),
         getPage("reverb_additionalParameters"),
+        getPage("granulator_additionalParameters"),
         getPage("tempo_set")
     });
     
@@ -450,6 +459,11 @@ void Menu::initializePageHierarchy()
     getPage("reverb_multfreq")->addParent(getPage("reverb_additionalParameters"));
     getPage("reverb_multgain")->addParent(getPage("reverb_additionalParameters"));
 
+    // Granulator - Additional Parameters
+    getPage("granulator_delayspeedratio")->addParent(getPage("granulator_additionalParameters"));
+    getPage("granulator_filterresonance")->addParent(getPage("granulator_additionalParameters"));
+    getPage("granulator_filtermodel")->addParent(getPage("granulator_additionalParameters"));
+    
     // Global Settings
     getPage("midi_in_channel")->addParent(getPage("global_settings"));
     getPage("midi_out_channel")->addParent(getPage("global_settings"));
@@ -457,6 +471,7 @@ void Menu::initializePageHierarchy()
     
     // Preset Settings
     getPage("reverb_additionalParameters")->addParent(getPage("preset_settings"));
+    getPage("granulator_additionalParameters")->addParent(getPage("preset_settings"));
     getPage("effect_order")->addParent(getPage("preset_settings"));
     getPage("tempo_set")->addParent(getPage("preset_settings"));
     

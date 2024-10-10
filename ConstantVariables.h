@@ -54,3 +54,5 @@ static const float log_2 = logf(2.f); ///< The natural logarithm of 2, approxima
 
 static const float SMALLEST_POSITIVE_FLOATVALUE = 1.17549e-38; ///< The smallest positive representable float value, approximately 1.17549e-38.
 static const float SMALLEST_NEGATIVE_FLOATVALUE = -1.17549e-38; ///< The smallest negative representable float value, approximately -1.17549e-38.
+
+static const float RAND_MAX_INVERSED = (float)(1.f / RAND_MAX);

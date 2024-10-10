@@ -446,6 +446,30 @@ inline String trimWhiteSpace(const String& str)
 }
 
 
+inline float generateGaussian(const float mean, const float stddev)
+{
+    static bool haveSpare = false;
+    static float rand1, rand2;
+
+    if (haveSpare)
+    {
+        haveSpare = false;
+        return mean + stddev * sqrtf_neon(rand1) * sinf_neon(rand2);
+    }
+
+    haveSpare = true;
+
+    rand1 = rand() * RAND_MAX_INVERSED;
+    if (rand1 < 1e-100) rand1 = 1e-100;  // Avoid log(0)
+
+    rand1 = -2.f * logf_neon(rand1);
+    rand2 = (rand() * RAND_MAX_INVERSED) * 2.0f * PI;
+
+    return mean + stddev * sqrtf_neon(rand1) * cosf_neon(rand2);
+}
+
+
+
 /** @} */
 
 /**

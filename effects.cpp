@@ -1,7 +1,8 @@
 #include "effects.hpp"
 
-// MARK: - BEATREPEAT
-// ********************************************************************************
+// =======================================================================================
+// MARK: - EFFECT PROCESSOR
+// =======================================================================================
 
 const uint EffectProcessor::RAMP_BLOCKSIZE = 1;
 const uint EffectProcessor::RAMP_BLOCKSIZE_WRAP = RAMP_BLOCKSIZE - 1;
@@ -49,8 +50,9 @@ void EffectProcessor::updateRamps()
 }
 
 
-// MARK: - BEATREPEAT
-// ********************************************************************************
+// =======================================================================================
+// MARK: - REVERB
+// =======================================================================================
 
 void ReverbProcessor::setup()
 {
@@ -70,12 +72,6 @@ StereoFloat ReverbProcessor::processAudioSamples(const StereoFloat input_, const
     StereoFloat wetSignal = reverb.processAudioSamples(input_ * inputGain(), sampleIndex_) * wet();
         
     return wetSignal + drySignal;
-}
-
-
-void ReverbProcessor::updateAudioBlock()
-{
-    
 }
 
 
@@ -119,6 +115,7 @@ void ReverbProcessor::initializeParameters()
     static_cast<SlideParameter*>(parameters.getParameter("reverb_decay"))->setScaling(SlideParameter::Scaling::FREQ);
 }
 
+
 void ReverbProcessor::initializeListeners()
 {
     for (unsigned int n = 0; n < Reverberation::NUM_PARAMETERS; ++n)
@@ -152,12 +149,15 @@ void ReverbProcessor::parameterChanged(AudioParameter *param_)
 }
 
 
+// =======================================================================================
 // MARK: - GRANULATOR
-// ********************************************************************************
+// =======================================================================================
 
 
 void GranulatorProcessor::setup()
 {
+    granulator.setup(sampleRate, blockSize);
+    
     initializeParameters();
     initializeListeners();
 }
@@ -165,23 +165,25 @@ void GranulatorProcessor::setup()
 
 StereoFloat GranulatorProcessor::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
 {
-    // process ramps
-//    parameters.getParameter(GRAN1)->process();
-//    parameters.getParameter(GRAN2)->process();
+    if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
 
-    StereoFloat effect = input_;
+    StereoFloat drySignal = input_ * dry;
     
-//    rt_printf("processing effect %s\n", id.c_str());
+    StereoFloat wetSignal = granulator.processAudioSamples(input_ * inputGain(), sampleIndex_) * wet();
     
-    return effect;
+    return wetSignal + drySignal;
 }
 
+
 void GranulatorProcessor::updateAudioBlock()
-{}
+{
+    granulator.update();
+}
+
 
 void GranulatorProcessor::initializeParameters()
 {
-    using namespace GrainmotherGranulator;
+    using namespace Granulation;
     
     // parameters controlled by potentiometers/sliders (index 0...7)
     for (unsigned int n = 0; n < NUM_POTENTIOMETERS; ++n)
@@ -198,31 +200,65 @@ void GranulatorProcessor::initializeParameters()
     parameters.addParameter<ButtonParameter>(NUM_POTENTIOMETERS,
                                              parameterID[NUM_POTENTIOMETERS],
                                              parameterName[NUM_POTENTIOMETERS],
-                                             std::initializer_list<String>{"Off", "On"});
+                                             std::initializer_list<String>{"OFF", "ON"});
     
-    // parameters controlled by menu (index 9...11)
-    for (unsigned int n = NUM_POTENTIOMETERS+1; n < NUM_PARAMETERS; ++n)
-        parameters.addParameter<SlideParameter>(n, parameterID[n],
-                                                parameterName[n],
-                                                parameterSuffix[n],
-                                                parameterMin[n],
-                                                parameterMax[n],
-                                                parameterStep[n],
-                                                parameterInitialValue[n],
-                                                sampleRate);
+    // parameters controlled by menu (index 9...)
+    uint n = 9;
+    parameters.addParameter<ChoiceParameter>(n, parameterID[n], parameterName[n], delaySpeedRatios, numDelaySpeedRatios);
+    
+    n = 10;
+    parameters.addParameter<SlideParameter>(n, parameterID[n],
+                                            parameterName[n],
+                                            parameterSuffix[n],
+                                            parameterMin[n],
+                                            parameterMax[n],
+                                            parameterStep[n],
+                                            parameterInitialValue[n],
+                                            sampleRate);
+    
+    n = 11;
+    parameters.addParameter<ChoiceParameter>(n, parameterID[n], parameterName[n], std::initializer_list<String>{ "Moog Ladder -24db", "Moog Half Ladder -12dB" });
     
     // special cases: scaling and ramps:
-    static_cast<SlideParameter*>(parameters.getParameter("gran_density"))->setScaling(SlideParameter::Scaling::FREQ);
-    static_cast<SlideParameter*>(parameters.getParameter("gran_highcut"))->setScaling(SlideParameter::Scaling::FREQ);
+    static_cast<SlideParameter*>(parameters.getParameter("granulator_density"))->setScaling(SlideParameter::Scaling::FREQ);
 }
 
 void GranulatorProcessor::initializeListeners()
 {
+    for (unsigned int n = 0; n < Granulation::NUM_PARAMETERS; ++n)
+    {
+        auto param = parameters.getParameter(n);
+        
+        if (param->getID() != "granulator_wetness")
+        {
+            param->onChange.push_back([this, param] {
+                granulator.parameterChanged(param->getID(), param->getValueAsFloat());
+            });
+        }
+    }
     
+    parameters.getParameter("granulator_wetness")->addListener(this);
 }
 
-// MARK: - GRANULATOR
-// ********************************************************************************
+
+void GranulatorProcessor::parameterChanged(AudioParameter *param_)
+{
+    if (param_->getID() == "effect2_engaged")
+    {
+        engage(param_->getValueAsInt());
+    }
+    
+    else if (param_->getID() == "granulator_wetness")
+    {
+        wet.setRampTo(0.01f * param_->getValueAsFloat(), 0.05f);
+        dry = 1.f - wet();
+    }
+}
+
+
+// =======================================================================================
+// MARK: - RESONATOR
+// =======================================================================================
 
 StereoFloat ResonatorProcessor::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
 {

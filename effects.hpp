@@ -4,11 +4,13 @@
 #include "functions.h"
 #include "parameters.hpp"
 #include "Reverberation/Reverberation.h"
+#include "Granulation/Granulation.h"
 
 //TODO: add engaging functionality to the two other effects
 
-// MARK: - EFFECT
-// ********************************************************************************
+// =======================================================================================
+// MARK: - EFFECT PROCESSOR
+// =======================================================================================
 
 /**
  * @class Effect
@@ -49,7 +51,7 @@ public:
     /**
      * @brief Updates the audio block for the effect.
      */
-    virtual void updateAudioBlock() = 0;
+    virtual void updateAudioBlock() {}
     
     void updateRamps();
 
@@ -95,8 +97,9 @@ protected:
     static const uint RAMP_BLOCKSIZE_WRAP;
 };
 
-// MARK: - BEATREPEAT
-// ********************************************************************************
+// =======================================================================================
+// MARK: - REVERB
+// =======================================================================================
 
 class ReverbProcessor : public EffectProcessor
 {
@@ -108,9 +111,7 @@ public:
     void setup() override;
     
     StereoFloat processAudioSamples(const StereoFloat input_, const uint sampleIndex_) override;
-    
-    void updateAudioBlock() override;
-    
+        
     void parameterChanged(AudioParameter *param_) override;
     
 private:
@@ -121,8 +122,9 @@ private:
 };
 
 
+// =======================================================================================
 // MARK: - GRANULATOR
-// ********************************************************************************
+// =======================================================================================
 
 class GranulatorProcessor : public EffectProcessor
 {
@@ -137,14 +139,19 @@ public:
     
     void updateAudioBlock() override;
     
+    void parameterChanged(AudioParameter *param_) override;
+    
 private:
     void initializeParameters();
     void initializeListeners();
+    
+    Granulation::Granulator granulator;
 };
 
 
-// MARK: - DELAY
-// ********************************************************************************
+// =======================================================================================
+// MARK: - RESONATOR
+// =======================================================================================
 
 class ResonatorProcessor : public EffectProcessor
 {

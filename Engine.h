@@ -76,6 +76,8 @@ public:
      */
     StereoFloat processAudioSamples(StereoFloat input_, uint sampleIndex_);
     
+    void updateAudioBlock();
+    
     /**
      * @brief Sets the processing order for the effects.
      *

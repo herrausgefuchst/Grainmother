@@ -14,6 +14,7 @@
 //void updateGUIdisplay (void* _arg);
 void updateLEDs(void* arg_);
 void updateUserInterface(void* arg_);
+void updateEffects(void* arg_);
 void updateNonAudioTasks(void* arg_);
 void midiMessageCallback(MidiChannelMessage message, void* arg);
 
@@ -81,6 +82,7 @@ UserInterface userinterface;
 AuxiliaryTask THREAD_updateLEDs;
 AuxiliaryTask THREAD_updateUserInterface;
 AuxiliaryTask THREAD_updateNonAudioTasks;
+AuxiliaryTask THREAD_updateEffects;
 
 }; // namespace BelaVariables
 
