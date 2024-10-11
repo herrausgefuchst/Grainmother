@@ -119,6 +119,10 @@ protected:
  * If the change exceeds the noise threshold, the value is accepted.
  *
  */
+
+static const float POT_CATCHING_TOLERANCE = 0.008f; /**< Tolerance for catching potentiometer */
+static const float POT_MAX_VOLTAGE = 0.831f; /**< Maximum voltage for potentiometer */
+
 class Potentiometer : public UIElement
 {
 public:
@@ -145,6 +149,7 @@ public:
     
     void setAnalogDefault(const float analogDefault_) { analogCache = analogDefault_; }
     
+    void setInitialValue(const float value_) { current = value_; } 
     
     /**
      * @brief Updates the potentiometer with new GUI and analog values.
@@ -185,6 +190,7 @@ public:
     
     std::function<void()> onTouch;
     std::function<void()> onCatch;
+    std::function<void()> onChange;
     
 private:
     float current = 0.f; /**< Current value of the potentiometer */
@@ -194,7 +200,8 @@ private:
     float analogCache; /**< Cached analog value */
     
     InputSource inputFocus = InputSource::NONE; /**< Current listening focus */
-    
+
+public:
     static PotBehaviour potBehaviour;
 };
 

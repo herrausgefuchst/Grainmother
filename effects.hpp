@@ -57,6 +57,8 @@ public:
 
     void engage(bool engaged_);
     
+    void setInputGain(const float inGain_);
+    
     void parameterChanged(AudioParameter *param_) override;
     
     
@@ -92,6 +94,7 @@ protected:
     float dry = 0.f;
     LinearRamp wet;
     LinearRamp inputGain;
+    float inputGainCache;
     
     static const uint RAMP_BLOCKSIZE;
     static const uint RAMP_BLOCKSIZE_WRAP;

@@ -17,8 +17,9 @@ EffectProcessor::EffectProcessor(AudioParameterGroup* engineParameters_,
     , engineParameters(engineParameters_)
 {
     inputGain.setup(1.f, sampleRate, RAMP_BLOCKSIZE);
+    inputGainCache = inputGain();
     
-    wet.setup(0.f, sampleRate, RAMP_BLOCKSIZE);
+    wet.setup(1.f, sampleRate, RAMP_BLOCKSIZE);
 }
 
 
@@ -31,9 +32,19 @@ void EffectProcessor::parameterChanged(AudioParameter *param_)
 
 void EffectProcessor::engage(bool engaged_)
 {
-    if (engaged_) inputGain.setRampTo(1.f, 0.35f);
+    if (engaged_) inputGain.setRampTo(inputGainCache, 0.35f);
     
-    else inputGain.setRampTo(0.f, 0.1f);
+    else 
+    {
+        inputGainCache = inputGain();
+        inputGain.setRampTo(0.f, 0.1f);
+    }
+}
+
+
+void EffectProcessor::setInputGain(const float inGain_)
+{
+    inputGain.setRampTo(inGain_, 0.05f);
 }
 
 
@@ -67,11 +78,13 @@ StereoFloat ReverbProcessor::processAudioSamples(const StereoFloat input_, const
 {
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
     
-    StereoFloat drySignal = input_ * dry;
+//    StereoFloat drySignal = input_ * dry;
+//    
+//    StereoFloat wetSignal = reverb.processAudioSamples(input_ * inputGain(), sampleIndex_) * wet();
+//        
+//    return wetSignal + drySignal;
     
-    StereoFloat wetSignal = reverb.processAudioSamples(input_ * inputGain(), sampleIndex_) * wet();
-        
-    return wetSignal + drySignal;
+    return reverb.processAudioSamples(input_ * inputGain(), sampleIndex_);
 }
 
 
@@ -122,7 +135,7 @@ void ReverbProcessor::initializeListeners()
     {
         auto param = parameters.getParameter(n);
         
-        if (param->getID() != "reverb_wetness")
+        if (param->getID() != "reverb_mix")
         {
             param->onChange.push_back([this, param] {
                 reverb.parameterChanged(param->getID(), param->getValueAsFloat());
@@ -130,7 +143,7 @@ void ReverbProcessor::initializeListeners()
         }
     }
     
-    parameters.getParameter("reverb_wetness")->addListener(this);
+    parameters.getParameter("reverb_mix")->addListener(this);
 }
 
 
@@ -141,10 +154,11 @@ void ReverbProcessor::parameterChanged(AudioParameter *param_)
         engage(param_->getValueAsInt());
     }
     
-    else if (param_->getID() == "reverb_wetness")
+    else if (param_->getID() == "reverb_mix")
     {
-        wet.setRampTo(0.01f * param_->getValueAsFloat(), 0.05f);
-        dry = 1.f - wet();
+        setInputGain(param_->getValueAsFloat() * 0.01f);
+//        wet.setRampTo(0.01f * param_->getValueAsFloat(), 0.05f);
+//        dry = 1.f - wet();
     }
 }
 
@@ -166,12 +180,14 @@ void GranulatorProcessor::setup()
 StereoFloat GranulatorProcessor::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
 {
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
-
-    StereoFloat drySignal = input_ * dry;
     
-    StereoFloat wetSignal = granulator.processAudioSamples(input_ * inputGain(), sampleIndex_) * wet();
+//    StereoFloat drySignal = input_ * dry;
+//    
+//    StereoFloat wetSignal = granulator.processAudioSamples(input_ * inputGain(), sampleIndex_) * wet();
+//    
+//    return wetSignal + drySignal;
     
-    return wetSignal + drySignal;
+    return granulator.processAudioSamples(input_ * inputGain(), sampleIndex_);
 }
 
 
@@ -229,7 +245,7 @@ void GranulatorProcessor::initializeListeners()
     {
         auto param = parameters.getParameter(n);
         
-        if (param->getID() != "granulator_wetness")
+        if (param->getID() != "granulator_mix")
         {
             param->onChange.push_back([this, param] {
                 granulator.parameterChanged(param->getID(), param->getValueAsFloat());
@@ -237,7 +253,7 @@ void GranulatorProcessor::initializeListeners()
         }
     }
     
-    parameters.getParameter("granulator_wetness")->addListener(this);
+    parameters.getParameter("granulator_mix")->addListener(this);
 }
 
 
@@ -248,10 +264,12 @@ void GranulatorProcessor::parameterChanged(AudioParameter *param_)
         engage(param_->getValueAsInt());
     }
     
-    else if (param_->getID() == "granulator_wetness")
+    else if (param_->getID() == "granulator_mix")
     {
-        wet.setRampTo(0.01f * param_->getValueAsFloat(), 0.05f);
-        dry = 1.f - wet();
+        setInputGain(param_->getValueAsFloat() * 0.01f);
+        
+//        wet.setRampTo(0.01f * param_->getValueAsFloat(), 0.05f);
+//        dry = 1.f - wet();
     }
 }
 
@@ -267,7 +285,7 @@ StereoFloat ResonatorProcessor::processAudioSamples(const StereoFloat input_, co
     
 //    rt_printf("processing effect %s\n", id.c_str());
 
-    StereoFloat effect = input_;
+    StereoFloat effect = { 0.f, 0.f };
     
     return effect;
 }

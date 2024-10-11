@@ -59,7 +59,7 @@ enum class Parameters
     GLIDE,
     DELAY,
     HIGHCUT,
-    WETNESS,
+    MIX,
     REVERSE,
     DELAY_SPEED_RATIO,
     FILTER_RESONANCE,
@@ -75,7 +75,7 @@ static const std::string parameterID[NUM_PARAMETERS] = {
     "granulator_glide",
     "granulator_delay",
     "granulator_highcut",
-    "granulator_wetness",
+    "granulator_mix",
     "granulator_reverse",
     "granulator_delayspeedratio",
     "granulator_filterresonance",
@@ -91,7 +91,7 @@ static const std::string parameterName[NUM_PARAMETERS] = {
     "Glide",
     "Delay",
     "Highcut",
-    "Wetness",
+    "Mix",
     "Reverse",
     "Delay Speed Ratio",
     "Filter Resonance",
@@ -1146,9 +1146,6 @@ private:
     float sampleRate;             ///< The sample rate of the audio system.
     uint blockSize;               ///< The size of the audio block to process.
     
-    float32_t wet = 0.7f * GAIN_COMPENSATION; ///< Wet signal level for the granulator output.
-    float dry = 0.3f;             ///< Dry signal level for the granulator output.
-    
     float32_t delayWet = 0.f;     ///< Wet signal level for the delay effect.
     float32_t delayDry = 1.f;     ///< Dry signal level for the delay effect.
     float delaySpeedRatio = 1.f;  ///< Speed ratio for delay feedback timing.
@@ -1159,14 +1156,12 @@ private:
     std::vector<Grain*> grainCloud[2]; ///< The collection of active grains for each channel.
     size_t numActiveGrains[2] = { 0, 0 }; ///< Number of active grains for each channel.
     
-    uint onsetCounter[2] = { 1, 1 };  ///< Counter for the time until the next grain onset.
-    uint nextInterOnset[2] = { 0, 0 }; ///< Time until the next grain onset for each channel.
+    uint onsetCounter[2];  ///< Counter for the time until the next grain onset.
+    uint nextInterOnset[2]; ///< Time until the next grain onset for each channel.
     
     FilterStereo filter;          ///< Stereo filter applied to the output.
     Delay delay;                  ///< Delay effect applied to the output.
     DCOffsetFilterStereo dcOffsetFilter; ///< DC offset filter applied to the output.
-    
-    static const float GAIN_COMPENSATION; ///< Compensation factor for gain adjustment.
 };
 
 } // namespace Granulation

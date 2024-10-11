@@ -1,5 +1,7 @@
 #include "Granulation.h"
 
+//#define CONSOLE_PRINT
+
 using namespace Granulation;
 
 // =======================================================================================
@@ -481,9 +483,6 @@ float Grain::getNextSample()
 // =======================================================================================
 
 
-const float Granulator::GAIN_COMPENSATION = 2.f;
-
-
 bool Granulator::setup(const float sampleRate_, const uint blockSize_)
 {
     sampleRate = sampleRate_;
@@ -497,6 +496,7 @@ bool Granulator::setup(const float sampleRate_, const uint blockSize_)
     manager.setup(sampleRate);
     
     // initialize all manager parameters
+    consoleprint("gonna initialize parameters:", __FILE__, __LINE__);
     parameterChanged("granulator_grainlength", parameterInitialValue[(int)Parameters::GRAINLENGTH]);
     parameterChanged("granulator_density", parameterInitialValue[(int)Parameters::DENSITY]);
     parameterChanged("granulator_pitch", parameterInitialValue[(int)Parameters::PITCH]);
@@ -523,8 +523,11 @@ bool Granulator::setup(const float sampleRate_, const uint blockSize_)
     parameterChanged("granulator_highcut", parameterInitialValue[(int)Parameters::HIGHCUT]);
     parameterChanged("granulator_filterresonance", parameterInitialValue[(int)Parameters::FILTER_RESONANCE]);
     
-    // initailize wetness parameter
-    parameterChanged("granulator_wetmess", parameterInitialValue[(int)Parameters::WETNESS]);
+    for (uint ch = 0; ch < 2; ++ch)
+    {
+        nextInterOnset[ch] = manager.getNextInterOnset();
+        onsetCounter[ch] = nextInterOnset[ch];
+    }
     
     return true;
 }
@@ -628,20 +631,19 @@ StereoFloat Granulator::processAudioSamples(const StereoFloat input_, const uint
     // process dc offset filter
 //    output_simd = dcOffsetFilter.processAudioSamples(output_simd);
     
-    // wetness
-    output_simd = vmul_n_f32(output_simd, wet);
-    
     // turn neon vector back into a StereoFloat
     output[LEFT] = vget_lane_f32(output_simd, 0);
     output[RIGHT] = vget_lane_f32(output_simd, 1);
     
     // return processed wet output + dry input
-    return output + input_ * dry;
+    return output;
 }
 
 
 void Granulator::parameterChanged (const String parameterID, float newValue)
 {
+    bool parameterReceived = true;
+    
     if (parameterID == "granulator_grainlength")
     {
         int lengthSamples = (int)(newValue * sampleRate * 0.001f); // ms to samples
@@ -717,12 +719,6 @@ void Granulator::parameterChanged (const String parameterID, float newValue)
     {
         manager.setReverse(newValue);
     }
-    else if (parameterID == "granulator_wetness")
-    {
-        wet = newValue * 0.01f; // percent to gain
-        dry = 1.f - wet;
-        wet *= GAIN_COMPENSATION;
-    }
     else if (parameterID == "granulator_delayspeedratio")
     {
         delaySpeedRatio = 1.f / (newValue + 1);
@@ -739,6 +735,18 @@ void Granulator::parameterChanged (const String parameterID, float newValue)
     {
         FilterStereo::Model model = newValue == 0 ? FilterStereo::MOOGLADDER : FilterStereo::MOOGHALFLADDER;
         filter.setFilterModel(model);
+    }
+    else
+    {
+        parameterReceived = false;
+    }
+    
+    if (parameterReceived)
+    {
+        #ifdef CONSOLE_PRINT
+        consoleprint("Granulator received new Value for Paramaeter: " + parameterID + " = " + TOSTRING(newValue),
+                     __FILE__, __LINE__);
+        #endif
     }
 }
 

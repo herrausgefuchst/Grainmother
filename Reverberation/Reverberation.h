@@ -70,7 +70,7 @@ enum class Parameters
     SIZE,
     FEEDBACK,
     HIGHCUT,
-    WETNESS,
+    MIX,
     TYPE,
     LOWCUT,
     MULTFREQ,
@@ -86,7 +86,7 @@ static const std::string parameterID[NUM_PARAMETERS] = {
     "reverb_size",
     "reverb_feedback",
     "reverb_highcut",
-    "reverb_wetness",
+    "reverb_mix",
     "reverb_type",
     "reverb_lowcut",
     "reverb_multfreq",
@@ -102,7 +102,7 @@ static const std::string parameterName[NUM_PARAMETERS] = {
     "Size",
     "Feedback",
     "Highcut",
-    "Wetness",
+    "Mix",
     "Reverb Type",
     "Lowcut",
     "Multiplier Freq",
@@ -198,7 +198,7 @@ static const unsigned int RAMP_UPDATE_RATE = 2;
 static const unsigned int LFO_UPDATE_RATE = 8;
 
 /** @brief compensates for gain loss in effect chain */
-static const float WETNESS_GAIN_COMPENSATION = 1.1f;
+static const float32_t GAIN_COMPENSATION = 1.1f;
 
 /** @} */
 
@@ -650,9 +650,6 @@ private:
     ParametricEQStereo inputMultiplier;
     ButterworthLowcutStereo lowcut;
     ButterworthHighcutStereo highcut;
-
-    float32_t dry; ///< amount of returned input signal
-    LinearRamp wet; ///< amount of returned effect signal
     
     bool settingType = false;
 };

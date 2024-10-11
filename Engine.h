@@ -113,6 +113,10 @@ public:
      */
     void updateRamps();
     
+    
+    void setGlobalMix();
+    
+    
     /**
      * @brief Retrieves an audio parameter by its ID.
      *
@@ -197,6 +201,7 @@ private:
     
     bool bypassed = false;  ///< Flag indicating whether the engine is currently bypassed.
     LinearRamp globalWet;  ///< Ramp for controlling the wet signal in the global bypass control.
+    float globalWetCache;
     float globalDry;  ///< Multiplier for the dry signal in the global bypass control.
     
     ProcessFunctionPointer processFunction[3][3];  ///< Function pointers for processing audio through the effects.
@@ -493,6 +498,9 @@ private:
      * to control the appropriate parameter, and adjusts the LED indicators to reflect which effect is currently being edited.
      */
     void setEffectEditFocus();
+    
+    
+    void mixPotentiometerChanged();
     
     
     /**

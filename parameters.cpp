@@ -1,6 +1,6 @@
 #include "parameters.hpp"
 
-//#define CONSOLE_PRINT
+#define CONSOLE_PRINT
 
 // =======================================================================================
 // MARK: - Audio Parameter (Base Class)
@@ -77,10 +77,9 @@ void ChoiceParameter::setValue(const int value_, const bool withPrint_)
 
     // console print
     #ifdef CONSOLE_PRINT
-    if (withPrint_)
-        consoleprint("AudioParameter(Choice) '" + name + "' received new value: " 
-                     + TOSTRING(choice) + ", name: " + choiceNames[choice],
-                     __FILE__, __LINE__);
+    consoleprint("AudioParameter(Choice) '" + name + "' received new value: "
+                 + TOSTRING(choice) + ", name: " + choiceNames[choice],
+                 __FILE__, __LINE__);
     #endif
 }
 
@@ -237,7 +236,7 @@ void SlideParameter::setValue(float value_, const bool withPrint_)
     
     #ifdef CONSOLE_PRINT
     consoleprint("AudioParameter(Slide) '" + name + "' received new value: "
-                 + TOSTRING(value.getTarget()),
+                 + TOSTRING(value),
                  __FILE__, __LINE__);
     #endif
     
@@ -288,7 +287,7 @@ void SlideParameter::setNormalizedValue(float value_, const bool withPrint_)
     
     #ifdef CONSOLE_PRINT
     consoleprint("AudioParameter(Slide) '" + name + "' received new value: "
-                 + TOSTRING(printValue),
+                 + TOSTRING(value),
                  __FILE__, __LINE__);
     #endif
     
@@ -473,7 +472,7 @@ void ButtonParameter::toggle()
     consoleprint("AudioParameter(Button) '" + name
                  + "' received Click of button "
                  + ", toggle: " + TOSTRING(value)
-                 + ", print: " + getPrintValueAsString()
+                 + ", print: " + getValueAsString()
                  , __FILE__, __LINE__);
     #endif
     
@@ -557,7 +556,7 @@ void ToggleParameter::buttonClicked(UIElement* uielement_)
     consoleprint("AudioParameter(Button) '" + name
                  + "' received Click of button "
                  + ", toggle: " + TOSTRING(value)
-                 + ", print: " + getPrintValueAsString()
+                 + ", print: " + getValueAsString()
                  , __FILE__, __LINE__);
     #endif
     

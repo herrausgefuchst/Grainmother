@@ -388,9 +388,6 @@ void Reverb::setup(const float& sampleRate_, const unsigned int& blocksize_)
     inputMultiplier.setup(initialMultFreq, initialMultGain, 1.5f, sampleRate);
     lowcut.setup(initialLowcutFreq, sampleRate);
     highcut.setup(initialHighcutFreq, sampleRate);
-    
-    dry = 1.f - 0.01f * parameterInitialValue[static_cast<int>(Parameters::WETNESS)];
-    wet.setup(WETNESS_GAIN_COMPENSATION * 0.01f * parameterInitialValue[static_cast<int>(Parameters::WETNESS)], sampleRate, RAMP_UPDATE_RATE);
 }
 
 
@@ -401,13 +398,6 @@ void Reverb::updateRamps()
     {
         decayDelaySamples.processRamp();
         delayedDecay.setDelay(decayDelaySamples());
-    }
-    
-    // wetness ramp
-    if (!wet.rampFinished)
-    {
-        wet.processRamp();
-        dry = 1.f - (wet() / WETNESS_GAIN_COMPENSATION);
     }
 }
 
@@ -442,9 +432,8 @@ StereoFloat Reverb::processAudioSamples(const StereoFloat input_, const unsigned
         if (lowcut.enabled) lowcut.processAudioSamples(output);
         if (highcut.enabled) highcut.processAudioSamples(output);
         
-        // mix dry input signal with wet effect signal
-        if (wet() < 1.f)
-            output = vadd_f32(vmul_n_f32(output, wet()), vmul_n_f32(input, dry));
+        // apply output gain compensation
+        output = vmul_n_f32(output, GAIN_COMPENSATION);
         
         // return as StereoFloat
         return { vget_lane_f32(output, 0), vget_lane_f32(output, 1) };
@@ -639,10 +628,6 @@ void Reverb::parameterChanged(const std::string& parameterID, float newValue)
         EarlyReflectionsParameters params = earlyReflections.getParameters();
         params.feedback = newValue;
         earlyReflections.setParameters(params);
-    }
-    else if (parameterID == "reverb_wetness")
-    {
-        wet.setRampTo(WETNESS_GAIN_COMPENSATION * newValue * 0.01f, 0.02f); // % to scaler
     }
     else if (parameterID == "reverb_lowcut")
     {

@@ -68,7 +68,7 @@ static const size_t NUM_PARAMETERGROUPS = 4;
 namespace Engine
 {
 
-static const size_t NUM_PARAMETERS = 8;
+static const size_t NUM_PARAMETERS = 9;
 
 enum Parameters {
     TEMPO,
@@ -78,7 +78,8 @@ enum Parameters {
     EFFECT3_ENGAGED,
     EFFECT_EDIT_FOCUS,
     EFFECT_ORDER,
-    TEMPO_SET
+    TEMPO_SET,
+    GLOBAL_MIX
 };
 
 static const String parameterName[NUM_PARAMETERS] {
@@ -89,7 +90,8 @@ static const String parameterName[NUM_PARAMETERS] {
     "Effect 3 Engaged",
     "Effect Edit Focus",
     "Effect Order",
-    "Set Tempo To"
+    "Set Tempo To",
+    "Global Mix"
 };
 
 static const String parameterID[NUM_PARAMETERS] {
@@ -100,7 +102,8 @@ static const String parameterID[NUM_PARAMETERS] {
     "effect3_engaged",
     "effect_edit_focus",
     "effect_order",
-    "tempo_set"
+    "tempo_set",
+    "global_mix"
 };
 
 } // namespace Engine

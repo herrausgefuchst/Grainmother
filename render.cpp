@@ -160,6 +160,19 @@ void updateUserInterface(void* arg_)
 {
     BelaContext* context = static_cast<BelaContext*>(arg_);
     
+    static bool firstFunctionCall = true;
+    if (firstFunctionCall)
+    {
+        firstFunctionCall = false;
+        
+        for (unsigned int n = 0; n < NUM_POTENTIOMETERS; ++n)
+        {
+            float initialRawPotValue = analogRead(context, 0, HARDWARE_PIN_POTENTIOMETER[n]);
+            userinterface.potentiometer[n].setAnalogDefault(initialRawPotValue);
+            rt_printf("raw pot %i: %f \n", n, userinterface.potentiometer[n].getValue());
+        }
+    }
+    
     // Initializing UI
     if (guiIsInitializing)
     {

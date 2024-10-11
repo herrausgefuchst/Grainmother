@@ -3,7 +3,7 @@
 #define USING_ANALOG_INS
 //#define USING_GUI
 
-//#define CONSOLE_PRINT
+#define CONSOLE_PRINT
 
 // =======================================================================================
 // MARK: - UIELEMENT
@@ -26,10 +26,7 @@ void UIElement::swapListener(Listener* listener_)
 // MARK: - POTENTIOMETER
 // =======================================================================================
 
-
-static const float POT_CATCHING_TOLERANCE = 0.008f; /**< Tolerance for catching potentiometer */
 static const float POT_NOISE = 0.005f; /**< Noise threshold for potentiometer */
-static const float POT_MAX_VOLTAGE = 0.831f; /**< Maximum voltage for potentiometer */
 
 PotBehaviour Potentiometer::potBehaviour = PotBehaviour::CATCH;
 
@@ -159,6 +156,8 @@ void Potentiometer::setNewMIDIMessage(const float midivalue_)
 void Potentiometer::notifyListener(const int specifier_)
 {
     if (listener) listener->potChanged(this);
+    
+    if (onChange) onChange();
 }
 
 

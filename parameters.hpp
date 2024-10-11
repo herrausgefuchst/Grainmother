@@ -32,7 +32,7 @@ public:
 
     /** Virtual destructor for AudioParameter. */
     virtual ~AudioParameter() {}
-
+    
     /**
      * @class Listener
      * @brief A listener class to observe changes in AudioParameter.

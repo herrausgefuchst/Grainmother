@@ -53,6 +53,7 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     
     // Set up the wet ramp for global bypass control and initialize the corresponding dry multiplier
     globalWet.setup(1.f, sampleRate, RAMP_BLOCKSIZE);
+    globalWetCache = globalWet();
     globalDry = 1.f - globalWet();
 }
 
@@ -109,6 +110,9 @@ void AudioEngine::initializeEngineParameters()
     engineParameters.addParameter<ChoiceParameter>
     (MENUPARAMETER, parameterID[TEMPO_SET], parameterName[TEMPO_SET],
      std::initializer_list<String>{ "Current Effect", "All Effects" });
+    
+    engineParameters.addParameter<SlideParameter>(NUM_POTENTIOMETERS-1, parameterID[GLOBAL_MIX], parameterName[GLOBAL_MIX],
+                                                  " %", 0.f, 100.f, 0.5f, 70.f, sampleRate);
 }
 
 
@@ -138,7 +142,7 @@ StereoFloat AudioEngine::processAudioSamples(StereoFloat input_, uint sampleInde
                 // Apply the processing function to the input, and accumulate the result into 'output'.
                 // The result is weighted by the parallelWeight associated with the current effect chain,
                 // as precalculated in recalculateParallelWeighting()
-                output += processFunction[m][n](input, sampleIndex_) * parallelWeight[m];
+                output += processFunction[m][n](input, sampleIndex_); /** parallelWeight[m];*/
                 
                 // Increment the processed effects counter.
                 // Exit if all effects have been processed.
@@ -297,17 +301,26 @@ void AudioEngine::setBypass(bool bypassed_)
     // If bypass is enabled, ramp down the wet signal to 0 over 0.05 seconds.
     if (bypassed_)
     {
-        globalWet.setRampTo(0.f, 0.05f);
+        globalWetCache = globalWet();
+        globalWet.setRampTo(-0.01f, 0.05f);
     }
     // If bypass is disabled, ramp up the wet signal to 1 over 0.05 seconds and set bypassed to false.
     else
     {
-        globalWet.setRampTo(1.f, 0.05f);
+        globalWet.setRampTo(globalWetCache, 0.05f);
         bypassed = false;
     }
     
     // Update the dry signal to be the inverse of the wet signal.
     globalDry = 1.f - globalWet();
+}
+
+
+void AudioEngine::setGlobalMix()
+{
+    globalWet.setRampTo(getParameter("global_mix")->getValueAsFloat() * 0.01f, 0.01f);
+    
+    rt_printf("global mix changed! \n");
 }
 
 
@@ -322,7 +335,7 @@ void AudioEngine::updateRamps()
         globalDry = 1.f - globalWet();
     }
     // If the ramp is finished and the wet signal has reached 0, set bypassed to true.
-    else if (!bypassed && globalWet() == 0.f)
+    else if (!bypassed && globalWet() < 0.f)
     {
         bypassed = true;
     }
@@ -584,12 +597,15 @@ void UserInterface::initializeListeners()
     // POTENTIOMETER ACTIONS
     // ==================================================================================
     
+    potentiometer[NUM_POTENTIOMETERS-1].onChange = [this] { mixPotentiometerChanged(); };
+    potentiometer[NUM_POTENTIOMETERS-1].decouple(engine->getParameter("global_mix")->getNormalizedValue());
+    
     // If a potentiometer reaches its cached value, the Action parameter LED blinks once.
-    for (uint n = 0; n < NUM_POTENTIOMETERS; ++n)
+    for (uint n = 0; n < NUM_POTENTIOMETERS-1; ++n)
         potentiometer[n].onCatch = [this] { alertLEDs(LED::State::BLINKONCE); };
         
     // When a potentiometer is touched, the display shows its associated parameter.
-    for (uint n = 0; n < NUM_POTENTIOMETERS; ++n)
+    for (uint n = 0; n < NUM_POTENTIOMETERS-1; ++n)
         potentiometer[n].onTouch = [this, n] { displayTouchedParameter(n); };
 
     
@@ -631,6 +647,8 @@ void UserInterface::initializeListeners()
     engine->getParameter("global_bypass")->onChange.push_back([this] {
         engine->setBypass(engine->getParameter("global_bypass")->getValueAsFloat());
     });
+    
+    engine->getParameter("global_mix")->onChange.push_back([this] { engine->setGlobalMix(); });
     
     // MENU ACTIONS
     // ==================================================================================
@@ -740,7 +758,7 @@ void UserInterface::setEffectEditFocus()
     auto effect = engine->getEffect(focus->getValueAsInt());
     
     // for all potentiometers:
-    for (unsigned int n = 0; n < NUM_POTENTIOMETERS; n++)
+    for (unsigned int n = 0; n < NUM_POTENTIOMETERS-1; n++)
     {
         // focus the corresponding effect parameter
         potentiometer[n].swapListener(effect->getParameter(n));
@@ -771,6 +789,53 @@ void UserInterface::setEffectEditFocus()
     led[focussedEffectLedIndex].setState(LED::State::VALUEFOCUS);
     led[ledIndices[0]].setState(LED::State::VALUE);
     led[ledIndices[1]].setState(LED::State::VALUE);
+}
+
+
+void UserInterface::mixPotentiometerChanged()
+{
+    static AudioParameter* lastAttachedParameter = nullptr;
+    
+    float potValue = potentiometer[UIPARAM_POT8].getValue();
+    
+    rt_printf("PotValue: %f\n", potValue);
+    
+    AudioParameter* focusedParameter;
+    
+    if (button[BUTTON_FX1].getPhase() == Button::LOW)
+        focusedParameter = engine->getParameter("reverb", "reverb_mix");
+    else if (button[BUTTON_FX2].getPhase() == Button::LOW)
+        focusedParameter = engine->getParameter("granulator", "granulator_mix");
+    // TODO: add third effect
+//    else if (button[BUTTON_FX3].getPhase() == Button::LOW)
+//        rt_printf("FX3 Wetness changed \n");
+    else
+        focusedParameter = engine->getParameter("global_mix");
+    
+    rt_printf("ParameterNormalized: %f\n", focusedParameter->getNormalizedValue());
+    
+    bool sameParameter;
+    if (lastAttachedParameter == nullptr) sameParameter = false;
+    else if (focusedParameter->getID() == lastAttachedParameter->getID()) sameParameter = true;
+    else sameParameter = false;
+    
+    if (sameParameter
+        || isClose(focusedParameter->getNormalizedValue(), potValue, POT_CATCHING_TOLERANCE)
+        || Potentiometer::potBehaviour == PotBehaviour::JUMP)
+    {
+        rt_printf("Pot Is Close to value\n");
+        focusedParameter->potChanged(&potentiometer[UIPARAM_POT8]);
+        
+        if (!sameParameter)
+        {
+            alertLEDs(LED::State::BLINKONCE);
+            lastAttachedParameter = focusedParameter;
+        }
+    }
+    
+    else potentiometer[UIPARAM_POT8].decouple(focusedParameter->getNormalizedValue());
+    
+    display.parameterCalledDisplay(focusedParameter);
 }
 
 
