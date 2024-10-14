@@ -102,7 +102,7 @@ static const std::string parameterName[NUM_PARAMETERS] = {
     "Size",
     "Feedback",
     "Highcut",
-    "Mix",
+    "Reverb Mix",
     "Reverb Type",
     "Lowcut",
     "Multiplier Freq",

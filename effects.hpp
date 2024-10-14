@@ -19,6 +19,8 @@
 class EffectProcessor : public AudioParameter::Listener
 {
 public:
+    enum ExecutionFlow { PARALLEL, SERIES };
+    
     EffectProcessor() {}
     
     /**
@@ -57,10 +59,11 @@ public:
 
     void engage(bool engaged_);
     
-    void setInputGain(const float inGain_);
+    void setExecutionFlow(const ExecutionFlow flow_);
+    
+    void setMix(const float mixGain_);
     
     void parameterChanged(AudioParameter *param_) override;
-    
     
     /**
      * @brief Gets the parameter group associated with the effect.
@@ -91,10 +94,11 @@ protected:
     AudioParameterGroup parameters; /**< The group of parameters specific to this effect */
     AudioParameterGroup* engineParameters = nullptr; /**< Pointer to engine-wide parameters */
     
-    float dry = 0.f;
-    LinearRamp wet;
-    LinearRamp inputGain;
-    float inputGainCache;
+    ExecutionFlow isProcessedIn = PARALLEL;
+    
+    float dryGain = 0.f;
+    LinearRamp wetGain;
+    LinearRamp muteGain;
     
     static const uint RAMP_BLOCKSIZE;
     static const uint RAMP_BLOCKSIZE_WRAP;

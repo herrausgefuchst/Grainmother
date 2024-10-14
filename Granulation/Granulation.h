@@ -91,7 +91,7 @@ static const std::string parameterName[NUM_PARAMETERS] = {
     "Glide",
     "Delay",
     "Highcut",
-    "Mix",
+    "Granulator Mix",
     "Reverse",
     "Delay Speed Ratio",
     "Filter Resonance",

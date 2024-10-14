@@ -16,10 +16,10 @@ EffectProcessor::EffectProcessor(AudioParameterGroup* engineParameters_,
     , parameters(name_, numParameters_)
     , engineParameters(engineParameters_)
 {
-    inputGain.setup(1.f, sampleRate, RAMP_BLOCKSIZE);
-    inputGainCache = inputGain();
+    wetGain.setup(1.f, sampleRate, RAMP_BLOCKSIZE);
+    dryGain = 0.f;
     
-    wet.setup(1.f, sampleRate, RAMP_BLOCKSIZE);
+    muteGain = 1.f;
 }
 
 
@@ -32,31 +32,35 @@ void EffectProcessor::parameterChanged(AudioParameter *param_)
 
 void EffectProcessor::engage(bool engaged_)
 {
-    if (engaged_) inputGain.setRampTo(inputGainCache, 0.35f);
+    if (engaged_) muteGain.setRampTo(1.f, 0.35f);
     
-    else 
-    {
-        inputGainCache = inputGain();
-        inputGain.setRampTo(0.f, 0.1f);
-    }
+    else muteGain.setRampTo(0.f, 0.1f);
 }
 
 
-void EffectProcessor::setInputGain(const float inGain_)
+void EffectProcessor::setMix(const float mixGain_)
 {
-    inputGain.setRampTo(inGain_, 0.05f);
+    wetGain.setRampTo(mixGain_, 0.05f);
+    
+    consoleprint("wet = " + TOSTRING(wetGain.getTarget()), __FILE__, __LINE__);
+}
+
+
+void EffectProcessor::setExecutionFlow(const ExecutionFlow flow_)
+{
+    isProcessedIn = flow_;
 }
 
 
 void EffectProcessor::updateRamps()
 {
-    if (!inputGain.rampFinished) inputGain.processRamp();
+    if (!muteGain.rampFinished) muteGain.processRamp();
     
-    if (!wet.rampFinished)
+    if (!wetGain.rampFinished)
     {
-        wet.processRamp();
+        wetGain.processRamp();
         
-        dry = 1.f - wet();
+        dryGain = 1.f - wetGain();
     }
 }
 
@@ -78,13 +82,14 @@ StereoFloat ReverbProcessor::processAudioSamples(const StereoFloat input_, const
 {
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
     
-//    StereoFloat drySignal = input_ * dry;
-//    
-//    StereoFloat wetSignal = reverb.processAudioSamples(input_ * inputGain(), sampleIndex_) * wet();
-//        
-//    return wetSignal + drySignal;
+    StereoFloat output;
     
-    return reverb.processAudioSamples(input_ * inputGain(), sampleIndex_);
+    if (isProcessedIn == PARALLEL)
+        output = reverb.processAudioSamples(input_ * muteGain() * wetGain(), sampleIndex_);
+    else // if (isProcessedIN == SERIES)
+        output = reverb.processAudioSamples(input_ * muteGain(), sampleIndex_) * wetGain() + input_ * dryGain;
+    
+    return output;
 }
 
 
@@ -156,9 +161,7 @@ void ReverbProcessor::parameterChanged(AudioParameter *param_)
     
     else if (param_->getID() == "reverb_mix")
     {
-        setInputGain(param_->getValueAsFloat() * 0.01f);
-//        wet.setRampTo(0.01f * param_->getValueAsFloat(), 0.05f);
-//        dry = 1.f - wet();
+        setMix(param_->getValueAsFloat() * 0.01f);
     }
 }
 
@@ -181,13 +184,14 @@ StereoFloat GranulatorProcessor::processAudioSamples(const StereoFloat input_, c
 {
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
     
-//    StereoFloat drySignal = input_ * dry;
-//    
-//    StereoFloat wetSignal = granulator.processAudioSamples(input_ * inputGain(), sampleIndex_) * wet();
-//    
-//    return wetSignal + drySignal;
+    StereoFloat output;
     
-    return granulator.processAudioSamples(input_ * inputGain(), sampleIndex_);
+    if (isProcessedIn == PARALLEL)
+        output = granulator.processAudioSamples(input_ * muteGain() * wetGain(), sampleIndex_);
+    else // if (isProcessedIN == SERIES)
+        output = granulator.processAudioSamples(input_ * muteGain(), sampleIndex_) * wetGain() + input_ * dryGain;
+    
+    return output;
 }
 
 
@@ -266,10 +270,7 @@ void GranulatorProcessor::parameterChanged(AudioParameter *param_)
     
     else if (param_->getID() == "granulator_mix")
     {
-        setInputGain(param_->getValueAsFloat() * 0.01f);
-        
-//        wet.setRampTo(0.01f * param_->getValueAsFloat(), 0.05f);
-//        dry = 1.f - wet();
+        setMix(param_->getValueAsFloat() * 0.01f);
     }
 }
 
@@ -285,9 +286,14 @@ StereoFloat ResonatorProcessor::processAudioSamples(const StereoFloat input_, co
     
 //    rt_printf("processing effect %s\n", id.c_str());
 
-    StereoFloat effect = { 0.f, 0.f };
+    StereoFloat output = { 0.f, 0.f };
     
-    return effect;
+    if (isProcessedIn == PARALLEL)
+        output = { 0.f, 0.f };
+    else // if (isProcessedIN == SERIES)
+        output = input_ * wetGain() + input_ * dryGain;
+    
+    return output * muteGain();
 }
 
 void ResonatorProcessor::updateAudioBlock()

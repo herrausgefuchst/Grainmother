@@ -285,7 +285,7 @@ private:
         float b0_coef = tan_half_wc * tan_half_wc;
         
         // sets resonance, lower cutoff frequencys = more resonance
-        float Q = 1.0f + (4800.f / (cutoffFrequency + 1.0f));
+        float Q = 1.0f + (2000.f / (cutoffFrequency + 1.0f));
         
         float sqrt2tanhalfwc = sqrt_2 * tan_half_wc / Q;
         float denom_inv = 1.f / (1.0f + sqrt2tanhalfwc + b0_coef);

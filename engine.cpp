@@ -7,6 +7,9 @@
 // =======================================================================================
 
 
+//TODO: change mix parameter weighting to dB
+// TODO: parllel weighting is depricated?
+
 const uint AudioEngine::RAMP_BLOCKSIZE = 8;
 const uint AudioEngine::RAMP_BLOCKSIZE_WRAP = RAMP_BLOCKSIZE - 1;
 
@@ -93,12 +96,6 @@ void AudioEngine::initializeEngineParameters()
     (MENUPARAMETER, parameterID[EFFECT_ORDER], parameterName[EFFECT_ORDER],
      std::initializer_list<String>{
         "1 - 2 - 3",
-        "2 | 3 - 1",
-        "1 | 3 - 2",
-        "1 | 2 - 3",
-        "3 - 1 | 2",
-        "2 - 1 | 3",
-        "1 - 2 | 3",
         "1 | 2 | 3",
         "3 - 2 - 1",
         "3 - 1 - 2",
@@ -223,6 +220,7 @@ void AudioEngine::setEffectOrder()
                 // check if effect Index is in valid range
                 if (effectIndex >= 0 && effectIndex < NUM_EFFECTS)
                 {
+                    
                     // insert the process function of this effect to the precise array slot
                     processFunction[row][col] = [this, effectIndex](StereoFloat input, uint sampleIndex) {
                         return effectProcessor[effectIndex]->processAudioSamples(input, sampleIndex);
@@ -230,6 +228,41 @@ void AudioEngine::setEffectOrder()
                     
                     // insert the process effect index to the precise array slot
                     processIndex[row][col] = effectIndex;
+                    
+                    if (col > 0)
+                    {
+                        effectProcessor[effectIndex]->setExecutionFlow(EffectProcessor::PARALLEL);
+                        
+                        if (col == 1)
+                        {
+                            effectProcessor[processIndex[row][0]]->setExecutionFlow(EffectProcessor::PARALLEL);
+#ifdef CONSOLE_PRINT
+                        
+                        consoleprint("Effect " + TOSTRING(processIndex[row][0]) + "processed in: PARALLEL", __FILE__, __LINE__);
+#endif
+                        }
+                        if (col == 2)
+                        {
+                            effectProcessor[processIndex[row][1]]->setExecutionFlow(EffectProcessor::PARALLEL);
+#ifdef CONSOLE_PRINT
+                            
+                            consoleprint("Effect " + TOSTRING(processIndex[row][1]) + "processed in: PARALLEL", __FILE__, __LINE__);
+#endif
+                        }
+#ifdef CONSOLE_PRINT
+                        
+                        consoleprint("Effect " + TOSTRING(effectIndex) + "processed in: PARALLEL", __FILE__, __LINE__);
+#endif
+                    }
+                    
+                    else
+                    {
+                        effectProcessor[effectIndex]->setExecutionFlow(EffectProcessor::SERIES);
+#ifdef CONSOLE_PRINT
+                        
+                        consoleprint("Effect " + TOSTRING(effectIndex) + "processed in: SERIES", __FILE__, __LINE__);
+#endif
+                    }
                     
                     // increment column for the next parallel effect
                     ++col;
