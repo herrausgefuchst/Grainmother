@@ -85,14 +85,6 @@ public:
     void setEffectOrder();
     
     /**
-     * @brief Recalculates the parallel weighting for effects.
-     *
-     * This function calculates the weights for parallel processing of effects. It determines how much
-     * each effect should contribute to the final output when multiple effects are processed in parallel.
-     */
-    void recalculateParallelWeighting();
-    
-    /**
      * @brief Sets the bypass state of the audio engine.
      *
      * This function enables or disables bypass for the entire audio engine by ramping the global wet
@@ -204,7 +196,6 @@ private:
     
     ProcessFunctionPointer processFunction[3][3];  ///< Function pointers for processing audio through the effects.
     int processIndex[3][3];  ///< Indexes associated with the process functions.
-    float parallelWeight[NUM_EFFECTS] = { 0.f, 0.f, 0.f };  ///< Weights for parallel effect processing.
     
     float sampleRate;  ///< Sample rate of the audio engine.
     unsigned int blockSize;  ///< Block size for audio processing.

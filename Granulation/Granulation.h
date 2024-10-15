@@ -46,8 +46,15 @@ static const std::string delaySpeedRatios[numDelaySpeedRatios] {
     "1 : 4"
 };
 
+static const size_t numEnvelopeTypes = 3;
+static const std::string envelopeTypeNames[numEnvelopeTypes] {
+    "Parabolic",
+    "Hann",
+    "Triangular"
+};
+
 /** @brief the number of user definable parameters */
-static const unsigned int NUM_PARAMETERS = 12;
+static const unsigned int NUM_PARAMETERS = 13;
 
 /** @brief an enum to save the parameter Indexes */
 enum class Parameters
@@ -63,7 +70,8 @@ enum class Parameters
     REVERSE,
     DELAY_SPEED_RATIO,
     FILTER_RESONANCE,
-    FILTER_MODEL
+    FILTER_MODEL,
+    ENVELOPE_TYPE
 };
 
 /** @brief ids of parameters */
@@ -79,7 +87,8 @@ static const std::string parameterID[NUM_PARAMETERS] = {
     "granulator_reverse",
     "granulator_delayspeedratio",
     "granulator_filterresonance",
-    "granulator_filtermodel"
+    "granulator_filtermodel",
+    "granulator_envelopetype"
 };
 
 /** @brief names of parameters */
@@ -95,7 +104,8 @@ static const std::string parameterName[NUM_PARAMETERS] = {
     "Reverse",
     "Delay Speed Ratio",
     "Filter Resonance",
-    "Filter Model"
+    "Filter Model",
+    "Envelope Type"
 };
 
 /** @brief minimum values of parameters */
@@ -110,6 +120,7 @@ static const float parameterMin[NUM_PARAMETERS] = {
     0.f,
     0.f,
     0,
+    0.f,
     0.f,
     0.f
 };
@@ -127,7 +138,8 @@ static const float parameterMax[NUM_PARAMETERS] = {
     1.f,
     3,
     100.f,
-    1.f
+    1.f,
+    numEnvelopeTypes-1
 };
 
 /** @brief step values of parameters */
@@ -143,6 +155,7 @@ static const float parameterStep[NUM_PARAMETERS] = {
     1.f,
     1.f,
     0.5f,
+    1.f,
     1.f
 };
 
@@ -159,6 +172,7 @@ static const std::string parameterSuffix[NUM_PARAMETERS] = {
     "",
     "",
     " %",
+    "",
     ""
 };
 
@@ -175,6 +189,7 @@ static const float parameterInitialValue[NUM_PARAMETERS] = {
     0.f,
     1,
     70.f,
+    0.f,
     0.f
 };
 
@@ -699,6 +714,8 @@ private:
 class Envelope
 {
 public:
+    enum class Type { PARABOLIC, HANN, TRIANGULAR };
+    
     /**
      * @brief Constructor for the Envelope class.
      *
@@ -768,6 +785,32 @@ private:
 };
 
 
+class HannEnvelope : public Envelope
+{
+public:
+    HannEnvelope(const uint durationSamples_, const float grainAmplitude_);
+    
+    float getNextAmplitude() override;
+    
+private:
+    uint phase = 0;
+    float invMaxPhase = 0;
+};
+
+
+class TriangularEnvelope : public Envelope
+{
+public:
+    TriangularEnvelope(const uint durationSamples_, const float grainAmplitude_);
+    
+    float getNextAmplitude() override;
+    
+private:
+    uint phase = 0;
+    float invMaxPhase = 0;
+};
+
+
 // =======================================================================================
 // MARK: - GRAIN PROPERTIES
 // =======================================================================================
@@ -784,6 +827,9 @@ struct GrainProperties
 {
     /** @brief Amplitude of the envelope (range: 0.0 to 1.0). */
     float envelopeAmplitude = 1.f;
+    
+    /** @brief Type of Envelope */
+    Envelope::Type envelopeType = Envelope::Type::PARABOLIC;
     
     /** @brief Length of the grain in samples. */
     int length = 2200;
@@ -846,6 +892,8 @@ public:
      * @return Pointer to the next grain's properties.
      */
     GrainProperties* getNextGrainProperties();
+    
+    void setEnvelopeType(const Envelope::Type type_) { props.envelopeType = type_; }
     
     /**
      * @brief Sets the center length for grain duration.

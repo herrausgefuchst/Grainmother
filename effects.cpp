@@ -240,6 +240,9 @@ void GranulatorProcessor::initializeParameters()
     n = 11;
     parameters.addParameter<ChoiceParameter>(n, parameterID[n], parameterName[n], std::initializer_list<String>{ "Moog Ladder -24db", "Moog Half Ladder -12dB" });
     
+    n = 12;
+    parameters.addParameter<ChoiceParameter>(n, parameterID[n], parameterName[n], envelopeTypeNames, numEnvelopeTypes);
+    
     // special cases: scaling and ramps:
     static_cast<SlideParameter*>(parameters.getParameter("granulator_density"))->setScaling(SlideParameter::Scaling::FREQ);
 }

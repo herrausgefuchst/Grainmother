@@ -406,7 +406,8 @@ void Menu::initializePages()
     addPage<NavigationPage>("granulator_additionalParameters", "Granulator", std::initializer_list<Page*>{
         getPage("granulator_delayspeedratio"),
         getPage("granulator_filterresonance"),
-        getPage("granulator_filtermodel")
+        getPage("granulator_filtermodel"),
+        getPage("granulator_envelopetype")
     });
     
     // Preset Settings
@@ -463,6 +464,7 @@ void Menu::initializePageHierarchy()
     getPage("granulator_delayspeedratio")->addParent(getPage("granulator_additionalParameters"));
     getPage("granulator_filterresonance")->addParent(getPage("granulator_additionalParameters"));
     getPage("granulator_filtermodel")->addParent(getPage("granulator_additionalParameters"));
+    getPage("granulator_envelopetype")->addParent(getPage("granulator_additionalParameters"));
     
     // Global Settings
     getPage("midi_in_channel")->addParent(getPage("global_settings"));

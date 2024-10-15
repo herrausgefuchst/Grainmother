@@ -170,6 +170,44 @@ float ParabolicEnvelope::getNextAmplitude()
 }
 
 
+HannEnvelope::HannEnvelope(const uint durationSamples_, const float grainAmplitude_)
+    : Envelope(durationSamples_, grainAmplitude_)
+{
+    phase = 0;
+    invMaxPhase = 1.f / (float)(durationSamples - 1);
+}
+
+
+float HannEnvelope::getNextAmplitude()
+{
+    nextAmplitude = 0.5f * (1.f - cosf_neon(TWOPI * phase * invMaxPhase));
+    nextAmplitude *= grainAmplitude;
+    
+    ++phase;
+    
+    return nextAmplitude;
+}
+
+
+TriangularEnvelope::TriangularEnvelope(const uint durationSamples_, const float grainAmplitude_)
+    : Envelope(durationSamples_, grainAmplitude_)
+{
+    phase = 0;
+    invMaxPhase = 1.f / (float)(durationSamples - 1);
+}
+
+
+float TriangularEnvelope::getNextAmplitude()
+{
+    nextAmplitude = 1.f - fabsf_neon(2.f * phase * invMaxPhase - 1.f);
+    nextAmplitude *= grainAmplitude;
+    
+    ++phase;
+    
+    return nextAmplitude;
+}
+
+
 // =======================================================================================
 // MARK: - GRAIN PROPERTIES MANAGER
 // =======================================================================================
@@ -452,7 +490,18 @@ Grain::Grain(GrainProperties* props_, SourceData* sourceData_)
     data = new GrainData(sourceData_, props_);
     
     // create an envelope object
-    envelope = new ParabolicEnvelope(props_->length, props_->envelopeAmplitude);
+    switch (props_->envelopeType)
+    {
+        case Envelope::Type::PARABOLIC:
+            envelope = new ParabolicEnvelope(props_->length, props_->envelopeAmplitude);
+            break;
+        case Envelope::Type::HANN:
+            envelope = new HannEnvelope(props_->length, props_->envelopeAmplitude);
+            break;
+        case Envelope::Type::TRIANGULAR:
+            envelope = new TriangularEnvelope(props_->length, props_->envelopeAmplitude);
+            break;
+    }
     
     // set the life counter to the samplelength of the grain
     lifeCounter = props_->length;
@@ -735,6 +784,11 @@ void Granulator::parameterChanged (const String parameterID, float newValue)
     {
         FilterStereo::Model model = newValue == 0 ? FilterStereo::MOOGLADDER : FilterStereo::MOOGHALFLADDER;
         filter.setFilterModel(model);
+    }
+    else if (parameterID == "granulator_envelopetype")
+    {
+        Envelope::Type type = INT2ENUM(newValue, Envelope::Type);
+        manager.setEnvelopeType(type);
     }
     else
     {

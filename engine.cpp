@@ -135,9 +135,7 @@ StereoFloat AudioEngine::processAudioSamples(StereoFloat input_, uint sampleInde
             if (processFunction[m][n])
             {
                 // Apply the processing function to the input, and accumulate the result into 'output'.
-                // The result is weighted by the parallelWeight associated with the current effect chain,
-                // as precalculated in recalculateParallelWeighting()
-                output += processFunction[m][n](input, sampleIndex_); /** parallelWeight[m];*/
+                output += processFunction[m][n](input, sampleIndex_);
                 
                 // Increment the processed effects counter.
                 // Exit if all effects have been processed.
@@ -227,40 +225,23 @@ void AudioEngine::setEffectOrder()
                     // insert the process effect index to the precise array slot
                     processIndex[row][col] = effectIndex;
                     
+                    // need to tell the effect how it is getting processed. this affects how the wet variable is used
+                    // in the process function. parallel: wet controls the input gain, series: wet controls dry/wet
+                    // if the column in the process index array is greater than one = processed in parallel and all
+                    // other effects in the same row are processed in parallel too
                     if (col > 0)
                     {
                         effectProcessor[effectIndex]->setExecutionFlow(EffectProcessor::PARALLEL);
                         
                         if (col == 1)
-                        {
                             effectProcessor[processIndex[row][0]]->setExecutionFlow(EffectProcessor::PARALLEL);
-#ifdef CONSOLE_PRINT
-                        
-                        consoleprint("Effect " + TOSTRING(processIndex[row][0]) + "processed in: PARALLEL", __FILE__, __LINE__);
-#endif
-                        }
                         if (col == 2)
-                        {
                             effectProcessor[processIndex[row][1]]->setExecutionFlow(EffectProcessor::PARALLEL);
-#ifdef CONSOLE_PRINT
-                            
-                            consoleprint("Effect " + TOSTRING(processIndex[row][1]) + "processed in: PARALLEL", __FILE__, __LINE__);
-#endif
-                        }
-#ifdef CONSOLE_PRINT
-                        
-                        consoleprint("Effect " + TOSTRING(effectIndex) + "processed in: PARALLEL", __FILE__, __LINE__);
-#endif
                     }
                     
+                    // otherwise: processed in series
                     else
-                    {
                         effectProcessor[effectIndex]->setExecutionFlow(EffectProcessor::SERIES);
-#ifdef CONSOLE_PRINT
-                        
-                        consoleprint("Effect " + TOSTRING(effectIndex) + "processed in: SERIES", __FILE__, __LINE__);
-#endif
-                    }
                     
                     // increment column for the next parallel effect
                     ++col;
@@ -278,52 +259,6 @@ void AudioEngine::setEffectOrder()
         // increment row for the next series effect(s)
         ++row;
     }
-    
-    recalculateParallelWeighting();
-}
-
-
-void AudioEngine::recalculateParallelWeighting()
-{
-    // Iterate over each effect chain
-    for (uint i = 0; i < NUM_EFFECTS; ++i)
-    {
-        // Counter to track the number of parallel effects in the current chain
-        uint numParallelEffects = 0;
-        
-        // Iterate through all effects within the current chain
-        for(uint j = 0; j < NUM_EFFECTS; ++j)
-        {
-            // Check if there is a valid processing function for the current effect in the chain
-            if (processFunction[i][j] != nullptr)
-            {
-                #ifdef CONSOLE_PRINT
-                // Print debug information about the processing function and its index
-                consoleprint("processFunction[" + TOSTRING(i) + "][" + TOSTRING(j)
-                             + "] is set to processIndex[" + TOSTRING(processIndex[i][j]) + "]",
-                             __FILE__, __LINE__);
-                #endif
-                
-                // Increment the count of parallel effects for this chain
-                ++numParallelEffects;
-            }
-        }
-        
-        // Calculate the parallel weight for the current chain
-        // If there are parallel effects, set the weight as the inverse of their count
-        // If there are no parallel effects, set the weight to 0
-        if (numParallelEffects > 0)
-            parallelWeight[i] = 1.f / (float)numParallelEffects;
-        else
-            parallelWeight[i] = 0.f;
-    }
-    
-    #ifdef CONSOLE_PRINT
-    // Print the calculated parallel weights for debugging
-    consoleprint("parallel Weights are set to " + TOSTRING(parallelWeight[0]) + ", "
-                 + TOSTRING(parallelWeight[1]) + ", " + TOSTRING(parallelWeight[2]),
-                 __FILE__, __LINE__);
-    #endif
 }
 
 
@@ -342,16 +277,18 @@ void AudioEngine::setBypass(bool bypassed_)
         bypassed = false;
     }
     
-    // Update the dry signal to be the inverse of the wet signal.
-    globalDry = sqrtf_neon(1.f - globalWet() * globalWet());   
+    // Update the dry signal to be the cosine inverse of the wet signal.
+    globalDry = sqrtf_neon(1.f - globalWet() * globalWet());
 }
 
 
 void AudioEngine::setGlobalMix()
 {
+    // scale linear raw value to sine value
     float raw = getParameter("global_mix")->getValueAsFloat() * 0.01f;
     float wet = sinf_neon(raw * PIo2);
     
+    // set the ramps target to the new value
     globalWet.setRampTo(wet, 0.01f);
 }
 
@@ -557,6 +494,7 @@ void UserInterface::initializeMenu()
     menu.addPage<Menu::ParameterPage>("granulator_delayspeedratio", engine->getParameter("granulator", "granulator_delayspeedratio"));
     menu.addPage<Menu::ParameterPage>("granulator_filterresonance", engine->getParameter("granulator", "granulator_filterresonance"));
     menu.addPage<Menu::ParameterPage>("granulator_filtermodel", engine->getParameter("granulator", "granulator_filtermodel"));
+    menu.addPage<Menu::ParameterPage>("granulator_envelopetype", engine->getParameter("granulator", "granulator_envelopetype"));
     
     // Configure the menu: pass in the complete set of parameters.
     menu.setup(engine->getProgramParameters());
@@ -826,14 +764,16 @@ void UserInterface::setEffectEditFocus()
 
 void UserInterface::mixPotentiometerChanged()
 {
+    // static variable saves the last parameter that was attached to this potentiometer
     static AudioParameter* lastAttachedParameter = nullptr;
     
+    // receive the potentiometer value (0...1)
     float potValue = potentiometer[UIPARAM_POT8].getValue();
     
-    rt_printf("PotValue: %f\n", potValue);
-    
+    // receive the momentary focussed parameter
+    // if one of the effect buttons is pressed: this effects wet parameter should be focussed
+    // else its the global wet parameter
     AudioParameter* focusedParameter;
-    
     if (button[BUTTON_FX1].getPhase() == Button::LOW)
         focusedParameter = engine->getParameter("reverb", "reverb_mix");
     else if (button[BUTTON_FX2].getPhase() == Button::LOW)
@@ -844,20 +784,21 @@ void UserInterface::mixPotentiometerChanged()
     else
         focusedParameter = engine->getParameter("global_mix");
     
-    rt_printf("ParameterNormalized: %f\n", focusedParameter->getNormalizedValue());
-    
+    // find out if the focussed parameter is the same than the last attached one
     bool sameParameter;
     if (lastAttachedParameter == nullptr) sameParameter = false;
     else if (focusedParameter->getID() == lastAttachedParameter->getID()) sameParameter = true;
     else sameParameter = false;
     
+    // this is needed to make the pot catching function work correctly
     if (sameParameter
         || isClose(focusedParameter->getNormalizedValue(), potValue, POT_CATCHING_TOLERANCE)
         || Potentiometer::potBehaviour == PotBehaviour::JUMP)
     {
-        rt_printf("Pot Is Close to value\n");
+        // send over the new value to the parameter
         focusedParameter->potChanged(&potentiometer[UIPARAM_POT8]);
         
+        // if catched, save the new attached parameter and let the LEDs blink
         if (!sameParameter)
         {
             alertLEDs(LED::State::BLINKONCE);
@@ -865,8 +806,10 @@ void UserInterface::mixPotentiometerChanged()
         }
     }
     
+    // send over a new reference to the potentiometer
     else potentiometer[UIPARAM_POT8].decouple(focusedParameter->getNormalizedValue());
     
+    // show the parameter on the display
     display.parameterCalledDisplay(focusedParameter);
 }
 
