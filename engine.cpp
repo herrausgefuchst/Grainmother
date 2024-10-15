@@ -6,8 +6,6 @@
 // MARK: - AUDIO ENGINE
 // =======================================================================================
 
-
-//TODO: change mix parameter weighting to dB
 // TODO: parllel weighting is depricated?
 
 const uint AudioEngine::RAMP_BLOCKSIZE = 8;
@@ -345,15 +343,16 @@ void AudioEngine::setBypass(bool bypassed_)
     }
     
     // Update the dry signal to be the inverse of the wet signal.
-    globalDry = 1.f - globalWet();
+    globalDry = sqrtf_neon(1.f - globalWet() * globalWet());   
 }
 
 
 void AudioEngine::setGlobalMix()
 {
-    globalWet.setRampTo(getParameter("global_mix")->getValueAsFloat() * 0.01f, 0.01f);
+    float raw = getParameter("global_mix")->getValueAsFloat() * 0.01f;
+    float wet = sinf_neon(raw * PIo2);
     
-    rt_printf("global mix changed! \n");
+    globalWet.setRampTo(wet, 0.01f);
 }
 
 

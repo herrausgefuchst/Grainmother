@@ -41,8 +41,6 @@ void EffectProcessor::engage(bool engaged_)
 void EffectProcessor::setMix(const float mixGain_)
 {
     wetGain.setRampTo(mixGain_, 0.05f);
-    
-    consoleprint("wet = " + TOSTRING(wetGain.getTarget()), __FILE__, __LINE__);
 }
 
 
@@ -60,7 +58,7 @@ void EffectProcessor::updateRamps()
     {
         wetGain.processRamp();
         
-        dryGain = 1.f - wetGain();
+        dryGain = sqrtf_neon(1.f - wetGain() * wetGain());
     }
 }
 
@@ -161,7 +159,10 @@ void ReverbProcessor::parameterChanged(AudioParameter *param_)
     
     else if (param_->getID() == "reverb_mix")
     {
-        setMix(param_->getValueAsFloat() * 0.01f);
+        float raw = param_->getValueAsFloat() * 0.01f;
+        float wet = sinf_neon(raw * PIo2);
+        
+        setMix(wet);
     }
 }
 
@@ -270,7 +271,10 @@ void GranulatorProcessor::parameterChanged(AudioParameter *param_)
     
     else if (param_->getID() == "granulator_mix")
     {
-        setMix(param_->getValueAsFloat() * 0.01f);
+        float raw = param_->getValueAsFloat() * 0.01f;
+        float wet = sinf_neon(raw * PIo2);
+        
+        setMix(wet);
     }
 }
 

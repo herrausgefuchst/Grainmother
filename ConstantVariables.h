@@ -36,6 +36,7 @@
 #define ceilf_neon(x) ceilf(x)
 #define fabsf_neon(x) fabsf(x)
 #define fmodf_neon(x, y) fmodf(x, y)
+#define log10f_neon(x) log10f(x)
 
 #define rt_printf(...) printf(__VA_ARGS__)
 

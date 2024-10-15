@@ -266,6 +266,19 @@ inline float sec2samples(float sec, float sampleRate)
 }
 
 
+inline float lin2db(float lin, float minDb = -85.f, float maxDb = 0.f)
+{
+    if (lin <= 0.f) return minDb; // avoid log(0.f)
+    else if (lin >= 1.f) return maxDb;
+    
+    float db = 20.f * log10f_neon(lin);
+    
+    if (db < minDb) return minDb;
+    else if (db > maxDb) return maxDb;
+    else return db;
+}
+
+
 /**
  * @brief Rounds a floating-point number to one decimal place.
  *

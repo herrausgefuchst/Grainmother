@@ -6,8 +6,6 @@
 #include "Reverberation/Reverberation.h"
 #include "Granulation/Granulation.h"
 
-//TODO: add engaging functionality to the two other effects
-
 // =======================================================================================
 // MARK: - EFFECT PROCESSOR
 // =======================================================================================
