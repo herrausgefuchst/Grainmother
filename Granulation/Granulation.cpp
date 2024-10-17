@@ -545,13 +545,14 @@ bool Granulator::setup(const float sampleRate_, const uint blockSize_)
     manager.setup(sampleRate);
     
     // initialize all manager parameters
-    consoleprint("gonna initialize parameters:", __FILE__, __LINE__);
     parameterChanged("granulator_grainlength", parameterInitialValue[(int)Parameters::GRAINLENGTH]);
     parameterChanged("granulator_density", parameterInitialValue[(int)Parameters::DENSITY]);
     parameterChanged("granulator_pitch", parameterInitialValue[(int)Parameters::PITCH]);
     parameterChanged("granulator_glide", parameterInitialValue[(int)Parameters::GLIDE]);
     parameterChanged("granulator_reverse", parameterInitialValue[(int)Parameters::REVERSE]);
     parameterChanged("granulator_variation", parameterInitialValue[(int)Parameters::VARIATION]);
+    parameterChanged("granulator_envelopetype", parameterInitialValue[(int)Parameters::ENVELOPE_TYPE]);
+    parameterChanged("granulator_feedback", parameterInitialValue[(int)Parameters::FEEDBACK]);
     
     // reserve the necessary space in the grain cloud of each channel
     grainCloud[LEFT].reserve(MAX_NUM_GRAINS);
@@ -771,13 +772,7 @@ void Granulator::parameterChanged (const String parameterID, float newValue)
     }
     else if (parameterID == "granulator_highcut")
     {
-        // turn around the slider input and scale it to 0...1
-        // high slider values should represent low cutoff frequencys
-        float multiplier = lin2log(1.f - 0.01f * newValue);
-        float range = MAX_CUTOFF - MIN_CUTOFF;
-        float cutoff = multiplier * range + MIN_CUTOFF;
-        
-        filter.setCutoffFrequency(cutoff);
+        filter.setCutoffFrequency(newValue);
     }
     else if (parameterID == "granulator_reverse")
     {

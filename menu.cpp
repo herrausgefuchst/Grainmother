@@ -405,10 +405,10 @@ void Menu::initializePages()
     // parent page for naviagting through the menu parameters
     addPage<NavigationPage>("granulator_additionalParameters", "Granulator", std::initializer_list<Page*>{
         getPage("granulator_delayspeedratio"),
+        getPage("granulator_glide"),
         getPage("granulator_filterresonance"),
         getPage("granulator_filtermodel"),
-        getPage("granulator_envelopetype"),
-        getPage("granulator_glide")
+        getPage("granulator_envelopetype")
     });
     
     // Preset Settings

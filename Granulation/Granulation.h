@@ -69,10 +69,10 @@ enum class Parameters
     MIX,
     REVERSE,
     DELAY_SPEED_RATIO,
+    GLIDE,
     FILTER_RESONANCE,
     FILTER_MODEL,
-    ENVELOPE_TYPE,
-    GLIDE
+    ENVELOPE_TYPE
 };
 
 /** @brief ids of parameters */
@@ -87,10 +87,10 @@ static const std::string parameterID[NUM_PARAMETERS] = {
     "granulator_mix",
     "granulator_reverse",
     "granulator_delayspeedratio",
+    "granulator_glide",
     "granulator_filterresonance",
     "granulator_filtermodel",
-    "granulator_envelopetype",
-    "granulator_glide"
+    "granulator_envelopetype"
 };
 
 /** @brief names of parameters */
@@ -105,10 +105,10 @@ static const std::string parameterName[NUM_PARAMETERS] = {
     "Granulator Mix",
     "Reverse",
     "Delay Speed Ratio",
+    "Glide",
     "Filter Resonance",
     "Filter Model",
-    "Envelope Type",
-    "Glide"
+    "Envelope Type"
 };
 
 /** @brief minimum values of parameters */
@@ -119,14 +119,14 @@ static const float parameterMin[NUM_PARAMETERS] = {
     -12.f,
     0.f,
     0.f,
-    0.f,
+    120.f,
     0.f,
     0.f,
     0,
+    -1.f,
     0.f,
     0.f,
-    0.f,
-    -1.f
+    0.f
 };
 
 /** @brief maximum values of parameters */
@@ -137,14 +137,14 @@ static const float parameterMax[NUM_PARAMETERS] = {
     12.f,
     100.f,
     0.9999f,
-    100.f,
+    10000.f,
     100.f,
     1.f,
     3,
+    1.f,
     100.f,
     1.f,
-    numEnvelopeTypes-1,
-    1.f
+    numEnvelopeTypes-1
 };
 
 /** @brief step values of parameters */
@@ -155,14 +155,14 @@ static const float parameterStep[NUM_PARAMETERS] = {
     0.25f,
     0.5f,
     0.02f,
-    0.5f,
-    0.5f,
-    1.f,
-    1.f,
+    10.f,
     0.5f,
     1.f,
     1.f,
-    0.02f
+    0.02f,
+    0.5f,
+    1.f,
+    1.f
 };
 
 /** @brief units of parameters */
@@ -173,14 +173,14 @@ static const std::string parameterSuffix[NUM_PARAMETERS] = {
     " semitones",
     " %",
     "",
-    " %",
-    " %",
-    "",
-    "",
+    " hertz",
     " %",
     "",
     "",
-    " down/up"
+    " down/up",
+    " %",
+    "",
+    ""
 };
 
 /** @brief initial values of parameters */
@@ -191,13 +191,13 @@ static const float parameterInitialValue[NUM_PARAMETERS] = {
     0.f,
     0.f,
     0.f,
-    0.f,
+    10000.f,
     100.f,
     0.f,
     1,
+    0.f,
     70.f,
-    0.f,
-    0.f,
+    1.f,
     0.f
 };
 
