@@ -300,12 +300,14 @@ void AudioEngine::updateRamps()
     {
         globalWet.processRamp();
         
+        // TODO: change this to cosine
         // Update the dry signal to be the inverse of the wet signal.
         globalDry = 1.f - globalWet();
     }
     // If the ramp is finished and the wet signal has reached 0, set bypassed to true.
     else if (!bypassed && globalWet() < 0.f)
     {
+        // TODO: globalWet = 0 ?
         bypassed = true;
     }
 }
@@ -495,6 +497,7 @@ void UserInterface::initializeMenu()
     menu.addPage<Menu::ParameterPage>("granulator_filterresonance", engine->getParameter("granulator", "granulator_filterresonance"));
     menu.addPage<Menu::ParameterPage>("granulator_filtermodel", engine->getParameter("granulator", "granulator_filtermodel"));
     menu.addPage<Menu::ParameterPage>("granulator_envelopetype", engine->getParameter("granulator", "granulator_envelopetype"));
+    menu.addPage<Menu::ParameterPage>("granulator_glide", engine->getParameter("granulator", "granulator_glide"));
     
     // Configure the menu: pass in the complete set of parameters.
     menu.setup(engine->getProgramParameters());

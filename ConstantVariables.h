@@ -25,6 +25,7 @@
 #else
 
 #define tanf_neon(x) tanf(x)
+#define tanhf_neon(x) tanhf(x)
 #define sqrtf_neon(x) sqrtf(x)
 #define powf_neon(x, y) powf(x, y)
 #define sinhf_neon(x) sinhf(x)

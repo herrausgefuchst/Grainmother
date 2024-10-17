@@ -34,7 +34,7 @@ static const float MAX_DENSITY = 85.f;
 static const float MIN_CUTOFF = 120.f;
 static const float MAX_CUTOFF = 20000.f;
 
-static const int BUFFERSIZE = 32768;
+static const int BUFFERSIZE = 65536;
 
 static const int MAX_NUM_GRAINS = 100;
 
@@ -54,7 +54,7 @@ static const std::string envelopeTypeNames[numEnvelopeTypes] {
 };
 
 /** @brief the number of user definable parameters */
-static const unsigned int NUM_PARAMETERS = 13;
+static const unsigned int NUM_PARAMETERS = 14;
 
 /** @brief an enum to save the parameter Indexes */
 enum class Parameters
@@ -63,15 +63,16 @@ enum class Parameters
     DENSITY,
     VARIATION,
     PITCH,
-    GLIDE,
     DELAY,
+    FEEDBACK,
     HIGHCUT,
     MIX,
     REVERSE,
     DELAY_SPEED_RATIO,
     FILTER_RESONANCE,
     FILTER_MODEL,
-    ENVELOPE_TYPE
+    ENVELOPE_TYPE,
+    GLIDE
 };
 
 /** @brief ids of parameters */
@@ -80,15 +81,16 @@ static const std::string parameterID[NUM_PARAMETERS] = {
     "granulator_density",
     "granulator_variation",
     "granulator_pitch",
-    "granulator_glide",
     "granulator_delay",
+    "granulator_feedback",
     "granulator_highcut",
     "granulator_mix",
     "granulator_reverse",
     "granulator_delayspeedratio",
     "granulator_filterresonance",
     "granulator_filtermodel",
-    "granulator_envelopetype"
+    "granulator_envelopetype",
+    "granulator_glide"
 };
 
 /** @brief names of parameters */
@@ -97,15 +99,16 @@ static const std::string parameterName[NUM_PARAMETERS] = {
     "Density",
     "Variation",
     "Pitch",
-    "Glide",
     "Delay",
+    "Feedback",
     "Highcut",
     "Granulator Mix",
     "Reverse",
     "Delay Speed Ratio",
     "Filter Resonance",
     "Filter Model",
-    "Envelope Type"
+    "Envelope Type",
+    "Glide"
 };
 
 /** @brief minimum values of parameters */
@@ -114,7 +117,7 @@ static const float parameterMin[NUM_PARAMETERS] = {
     MIN_DENSITY,
     0.f,
     -12.f,
-    -1.f,
+    0.f,
     0.f,
     0.f,
     0.f,
@@ -122,7 +125,8 @@ static const float parameterMin[NUM_PARAMETERS] = {
     0,
     0.f,
     0.f,
-    0.f
+    0.f,
+    -1.f
 };
 
 /** @brief maximum values of parameters */
@@ -131,15 +135,16 @@ static const float parameterMax[NUM_PARAMETERS] = {
     MAX_DENSITY,
     100.f,
     12.f,
-    1.f,
     100.f,
+    0.9999f,
     100.f,
     100.f,
     1.f,
     3,
     100.f,
     1.f,
-    numEnvelopeTypes-1
+    numEnvelopeTypes-1,
+    1.f
 };
 
 /** @brief step values of parameters */
@@ -148,15 +153,16 @@ static const float parameterStep[NUM_PARAMETERS] = {
     0.5f,
     0.5f,
     0.25f,
+    0.5f,
     0.02f,
     0.5f,
     0.5f,
-    0.5f,
     1.f,
     1.f,
     0.5f,
     1.f,
-    1.f
+    1.f,
+    0.02f
 };
 
 /** @brief units of parameters */
@@ -165,15 +171,16 @@ static const std::string parameterSuffix[NUM_PARAMETERS] = {
     " grains/sec",
     " %",
     " semitones",
-    " down/up",
     " %",
+    "",
     " %",
     " %",
     "",
     "",
     " %",
     "",
-    ""
+    "",
+    " down/up"
 };
 
 /** @brief initial values of parameters */
@@ -189,6 +196,7 @@ static const float parameterInitialValue[NUM_PARAMETERS] = {
     0.f,
     1,
     70.f,
+    0.f,
     0.f,
     0.f
 };
@@ -264,6 +272,82 @@ public:
 private:
     MovingAveragerStereo mMA1;
     MovingAveragerStereo mMA2;
+};
+
+
+// =======================================================================================
+// MARK: - HIGHPASS FILTER
+// =======================================================================================
+
+
+class HighPassFilter 
+{
+public:
+    void setup(float cutoffFreq_, float sampleRate_)
+    {
+        sampleRate = sampleRate_;
+        setCutoffFrequency(cutoffFreq_);
+        reset();
+    }
+
+    void setCutoffFrequency(float cutoffFreq) 
+    {
+        float omega = 2.0f * PI * cutoffFreq / sampleRate;
+        float alpha = sinf(omega) / (2.0f * sqrtf(2.0f)); // Q = sqrt(2)/2 for 12dB/oct Butterworth
+
+        float cos_omega = cosf(omega);
+
+        // Filter coefficients (biquad)
+        float b0 = (1.0f + cos_omega) / 2.0f;
+        float b1 = -(1.0f + cos_omega);
+        float b2 = (1.0f + cos_omega) / 2.0f;
+        float a0 = 1.0f + alpha;
+        float a1 = -2.0f * cos_omega;
+        float a2 = 1.0f - alpha;
+
+        // Normalize coefficients by a0 and initialize NEON vectors
+        b0v = vdup_n_f32(b0 / a0);
+        b1v = vdup_n_f32(b1 / a0);
+        b2v = vdup_n_f32(b2 / a0);
+        a1v = vdup_n_f32(a1 / a0);
+        a2v = vdup_n_f32(a2 / a0);
+    }
+
+    StereoFloat process(StereoFloat input_)
+    {
+        float32x2_t inputv = { input_[0], input_[1] };
+        
+        // Calculate output = b0*input + b1*x1 + b2*x2 - a1*y1 - a2*y2 (NEON parallel computation)
+        float32x2_t output = vmla_f32(vmla_f32(vmul_f32(b0v, inputv), b1v, x1), b2v, x2);
+        output = vmls_f32(vmls_f32(output, a1v, y1), a2v, y2);
+        
+        // Shift history of samples for both channels
+        x2 = x1;
+        x1 = inputv;
+        y2 = y1;
+        y1 = output;
+        
+        return { vget_lane_f32(output, 0), vget_lane_f32(output, 1) };
+    }
+
+    // Reset the filter history (for initializing or resetting the filter)
+    void reset()
+    {
+        x1 = vdup_n_f32(0.0f);
+        x2 = vdup_n_f32(0.0f);
+        y1 = vdup_n_f32(0.0f);
+        y2 = vdup_n_f32(0.0f);
+    }
+
+private:
+    // Filter coefficients as NEON vectors
+    float32x2_t b0v, b1v, b2v, a1v, a2v;
+
+    // Previous input and output samples (for history) as NEON vectors
+    float32x2_t x1, x2, y1, y2;
+
+    // Sample rate as a member variable
+    float sampleRate;
 };
 
 
@@ -835,7 +919,7 @@ struct GrainProperties
     int length = 2200;
     
     /** @brief Initial delay for the read pointer in samples. */
-    int initDelay = 5;
+    int initDelay = 0;
     
     /** @brief Read pointer increment for pitching (range: 0.5 to 2.0, one octave down/up). */
     float pitchIncrement = 1.f;
@@ -986,7 +1070,7 @@ private:
     int lengthCenter = 2200;                ///< Center value for the grain length in samples.
     int lengthRange = 0;                    ///< Range of variation for the grain length.
     
-    int initDelayCenter = 5;                ///< Center value for the initial delay in samples.
+    int initDelayCenter = 0;                ///< Center value for the initial delay in samples.
     int initDelayRange = 0;                 ///< Range of variation for the initial delay.
     
     float panningRange = 0.f;               ///< Range of variation for the grain's panning value.
@@ -1210,6 +1294,11 @@ private:
     FilterStereo filter;          ///< Stereo filter applied to the output.
     Delay delay;                  ///< Delay effect applied to the output.
     DCOffsetFilterStereo dcOffsetFilter; ///< DC offset filter applied to the output.
+    
+    float32_t feedback;
+    float32_t dynamicFeedback;
+    HighPassFilter feedbackHighpass;
+    StereoFloat previousOutput = { 0.f, 0.f };
 };
 
 } // namespace Granulation

@@ -407,7 +407,8 @@ void Menu::initializePages()
         getPage("granulator_delayspeedratio"),
         getPage("granulator_filterresonance"),
         getPage("granulator_filtermodel"),
-        getPage("granulator_envelopetype")
+        getPage("granulator_envelopetype"),
+        getPage("granulator_glide")
     });
     
     // Preset Settings
@@ -465,6 +466,7 @@ void Menu::initializePageHierarchy()
     getPage("granulator_filterresonance")->addParent(getPage("granulator_additionalParameters"));
     getPage("granulator_filtermodel")->addParent(getPage("granulator_additionalParameters"));
     getPage("granulator_envelopetype")->addParent(getPage("granulator_additionalParameters"));
+    getPage("granulator_glide")->addParent(getPage("granulator_additionalParameters"));
     
     // Global Settings
     getPage("midi_in_channel")->addParent(getPage("global_settings"));

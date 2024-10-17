@@ -101,6 +101,13 @@ inline float approximateSine(float angle)
     return j;
 }
 
+
+inline float approximateTanh(float x)
+{
+    float x2 = x * x;
+    return (x * (27.0f + x2)) / (27.0f + 9.0f * x2);
+}
+
 /**
  * @brief checks is a value is close to another value
  *

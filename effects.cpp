@@ -82,10 +82,18 @@ StereoFloat ReverbProcessor::processAudioSamples(const StereoFloat input_, const
     
     StereoFloat output;
     
-    if (isProcessedIn == PARALLEL)
-        output = reverb.processAudioSamples(input_ * muteGain() * wetGain(), sampleIndex_);
-    else // if (isProcessedIN == SERIES)
-        output = reverb.processAudioSamples(input_ * muteGain(), sampleIndex_) * wetGain() + input_ * dryGain;
+    if (muteGain() <= 0.f)
+    {
+        if (isProcessedIn == PARALLEL) output = { 0.f, 0.f };
+        else output = input_;
+    }
+    else
+    {
+        if (isProcessedIn == PARALLEL)
+            output = reverb.processAudioSamples(input_ * muteGain() * wetGain(), sampleIndex_);
+        else // if (isProcessedIN == SERIES)
+            output = reverb.processAudioSamples(input_ * muteGain(), sampleIndex_) * wetGain() + input_ * dryGain;
+    }
     
     return output;
 }
@@ -187,10 +195,18 @@ StereoFloat GranulatorProcessor::processAudioSamples(const StereoFloat input_, c
     
     StereoFloat output;
     
-    if (isProcessedIn == PARALLEL)
-        output = granulator.processAudioSamples(input_ * muteGain() * wetGain(), sampleIndex_);
-    else // if (isProcessedIN == SERIES)
-        output = granulator.processAudioSamples(input_ * muteGain(), sampleIndex_) * wetGain() + input_ * dryGain;
+    if (muteGain() <= 0.f)
+    {
+        if (isProcessedIn == PARALLEL) output = { 0.f, 0.f };
+        else output = input_;
+    }
+    else
+    {
+        if (isProcessedIn == PARALLEL)
+            output = granulator.processAudioSamples(input_ * muteGain() * wetGain(), sampleIndex_);
+        else // if (isProcessedIN == SERIES)
+            output = granulator.processAudioSamples(input_ * muteGain(), sampleIndex_) * wetGain() + input_ * dryGain;
+    }
     
     return output;
 }
@@ -242,6 +258,16 @@ void GranulatorProcessor::initializeParameters()
     
     n = 12;
     parameters.addParameter<ChoiceParameter>(n, parameterID[n], parameterName[n], envelopeTypeNames, numEnvelopeTypes);
+    
+    n = 13;
+    parameters.addParameter<SlideParameter>(n, parameterID[n],
+                                            parameterName[n],
+                                            parameterSuffix[n],
+                                            parameterMin[n],
+                                            parameterMax[n],
+                                            parameterStep[n],
+                                            parameterInitialValue[n],
+                                            sampleRate);
     
     // special cases: scaling and ramps:
     static_cast<SlideParameter*>(parameters.getParameter("granulator_density"))->setScaling(SlideParameter::Scaling::FREQ);

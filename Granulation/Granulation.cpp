@@ -578,6 +578,8 @@ bool Granulator::setup(const float sampleRate_, const uint blockSize_)
         onsetCounter[ch] = nextInterOnset[ch];
     }
     
+    feedbackHighpass.setup(80.f, sampleRate);
+    
     return true;
 }
 
@@ -619,7 +621,12 @@ StereoFloat Granulator::processAudioSamples(const StereoFloat input_, const uint
     for (uint ch = 0; ch < 2; ++ch)
     {
         // write input samples to buffer
-        data[ch].writeBuffer(input_[ch]);
+        if (feedback == 0.f)
+            data[ch].writeBuffer(input_[ch]);
+        else
+        {
+            data[ch].writeBuffer(input_[ch] + dynamicFeedback * previousOutput[ch]);
+        }
         
         // counting to next onset of grain
         // if reached, the pre-added grain (see update() function)
@@ -668,21 +675,29 @@ StereoFloat Granulator::processAudioSamples(const StereoFloat input_, const uint
     // write the channel outputs into a stereo neon vector
     float32x2_t output_simd = { output[LEFT], output[RIGHT] };
     
+    // process highcut filter
+    output_simd = filter.processAudioSamples(output_simd);
+    
     // process the delay
     float32x2_t delayOutput = delay.processAudioSamples(output_simd, sampleIndex_);
     
     // dry granulator output + wet delay output
     output_simd = vadd_f32(vmul_n_f32(output_simd, delayDry), vmul_n_f32(delayOutput, delayWet));
     
-    // process highcut filter
-    output_simd = filter.processAudioSamples(output_simd);
-    
-    // process dc offset filter
-//    output_simd = dcOffsetFilter.processAudioSamples(output_simd);
-    
     // turn neon vector back into a StereoFloat
     output[LEFT] = vget_lane_f32(output_simd, 0);
     output[RIGHT] = vget_lane_f32(output_simd, 1);
+    
+    // calculate dynamic feedback
+    float absOutput[2] = { fabsf_neon(output[LEFT]), fabsf_neon(output[RIGHT])};
+    float maxOutput = (absOutput[LEFT] >= absOutput[RIGHT]) ? absOutput[LEFT] : absOutput[RIGHT];
+    dynamicFeedback = (maxOutput >= 1.f) ? 0.f : feedback * (1.f - maxOutput);
+    
+    // saturate the output signal
+    output[LEFT] = approximateTanh(output[LEFT]);
+    output[RIGHT] = approximateTanh(output[RIGHT]);
+    
+    previousOutput = feedbackHighpass.process(output);
     
     // return processed wet output + dry input
     return output;
@@ -789,6 +804,10 @@ void Granulator::parameterChanged (const String parameterID, float newValue)
     {
         Envelope::Type type = INT2ENUM(newValue, Envelope::Type);
         manager.setEnvelopeType(type);
+    }
+    else if (parameterID == "granulator_feedback")
+    {
+        feedback = newValue;
     }
     else
     {
