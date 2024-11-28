@@ -169,7 +169,6 @@ void updateUserInterface(void* arg_)
         {
             float initialRawPotValue = analogRead(context, 0, HARDWARE_PIN_POTENTIOMETER[n]);
             userinterface.potentiometer[n].setAnalogDefault(initialRawPotValue);
-            rt_printf("raw pot %i: %f \n", n, userinterface.potentiometer[n].getValue());
         }
     }
     

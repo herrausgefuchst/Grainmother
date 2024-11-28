@@ -6,7 +6,6 @@
 // MARK: - AUDIO ENGINE
 // =======================================================================================
 
-// TODO: parllel weighting is depricated?
 
 const uint AudioEngine::RAMP_BLOCKSIZE = 8;
 const uint AudioEngine::RAMP_BLOCKSIZE_WRAP = RAMP_BLOCKSIZE - 1;
@@ -300,15 +299,14 @@ void AudioEngine::updateRamps()
     {
         globalWet.processRamp();
         
-        // TODO: change this to cosine
         // Update the dry signal to be the inverse of the wet signal.
-        globalDry = 1.f - globalWet();
+        globalDry = sqrtf_neon(1.f - globalWet() * globalWet());
     }
     // If the ramp is finished and the wet signal has reached 0, set bypassed to true.
     else if (!bypassed && globalWet() < 0.f)
     {
-        // TODO: globalWet = 0 ?
         bypassed = true;
+        globalWet = 0.f;
     }
 }
 
@@ -881,9 +879,13 @@ void UserInterface::setTempoRelatedParameters()
             auto density = engine->getParameter("granulator", "granulator_density");
             
             // Convert BPM to milliseconds.
-            // TODO: Adjust the values to ensure they are in the correct range.
             float tempoMs = bpm2msec(tempoBpm);
             float tempoRate = 1000.f / tempoMs;
+            
+            tempoRate *= 2.f;
+            //TODO: uncomment this?
+//            if (tempoRate < Granulation::MIN_DENSITY) tempoRate *= 2.f;
+//            else if (tempoRate > Granulation::MAX_DENSITY) tempoRate = Granulation::MAX_DENSITY;
             
             // Set the new density value without triggering a print notification.
             density->setValue(tempoRate, false);

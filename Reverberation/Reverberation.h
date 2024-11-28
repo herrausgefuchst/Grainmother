@@ -1,6 +1,4 @@
 // TODO: Modulation Rate doesnt initalize correctly
-// TODO: resonance of highcut filter is too strong
-// TODO: documentation renaming
 
 // =======================================================================================
 //

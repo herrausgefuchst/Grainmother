@@ -745,7 +745,7 @@ void Granulator::parameterChanged (const String parameterID, float newValue)
         // Spatialize
         manager.setPanningVariation(0.01f * newValue);
 
-        // if we return to zero variation, onsetctr have to be resynced to restore mono
+        // if we return to zero variation, onsetctr has to be resynced to restore mono
         if (newValue == 0.f)
         {
             if (onsetCounter[0] > onsetCounter[1]) onsetCounter[1] = onsetCounter[0];

@@ -81,19 +81,11 @@ StereoFloat ReverbProcessor::processAudioSamples(const StereoFloat input_, const
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
     
     StereoFloat output;
-    
-    if (muteGain() <= 0.f)
-    {
-        if (isProcessedIn == PARALLEL) output = { 0.f, 0.f };
-        else output = input_;
-    }
-    else
-    {
-        if (isProcessedIn == PARALLEL)
-            output = reverb.processAudioSamples(input_ * muteGain() * wetGain(), sampleIndex_);
-        else // if (isProcessedIN == SERIES)
-            output = reverb.processAudioSamples(input_ * muteGain(), sampleIndex_) * wetGain() + input_ * dryGain;
-    }
+
+    if (isProcessedIn == PARALLEL)
+        output = reverb.processAudioSamples(input_ * muteGain() * wetGain(), sampleIndex_);
+    else // if (isProcessedIN == SERIES)
+        output = reverb.processAudioSamples(input_ * muteGain(), sampleIndex_) * wetGain() + input_ * dryGain;
     
     return output;
 }
@@ -195,18 +187,10 @@ StereoFloat GranulatorProcessor::processAudioSamples(const StereoFloat input_, c
     
     StereoFloat output;
     
-    if (muteGain() <= 0.f)
-    {
-        if (isProcessedIn == PARALLEL) output = { 0.f, 0.f };
-        else output = input_;
-    }
-    else
-    {
-        if (isProcessedIn == PARALLEL)
-            output = granulator.processAudioSamples(input_ * muteGain() * wetGain(), sampleIndex_);
-        else // if (isProcessedIN == SERIES)
-            output = granulator.processAudioSamples(input_ * muteGain(), sampleIndex_) * wetGain() + input_ * dryGain;
-    }
+    if (isProcessedIn == PARALLEL)
+        output = granulator.processAudioSamples(input_ * muteGain() * wetGain(), sampleIndex_);
+    else // if (isProcessedIN == SERIES)
+        output = granulator.processAudioSamples(input_ * muteGain(), sampleIndex_) * wetGain() + input_ * dryGain;
     
     return output;
 }

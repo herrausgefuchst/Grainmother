@@ -3,7 +3,7 @@
 #define USING_ANALOG_INS
 //#define USING_GUI
 
-#define CONSOLE_PRINT
+//#define CONSOLE_PRINT
 
 // =======================================================================================
 // MARK: - UIELEMENT

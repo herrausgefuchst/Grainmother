@@ -353,7 +353,7 @@ Decay::CombFilterDualStereoPtr Decay::createAlignedCombFilters(size_t count)
 
 
 // =======================================================================================
-// MARK: - BELA REVERB
+// MARK: - REVERB
 // =======================================================================================
 
 void Reverb::setup(const float& sampleRate_, const unsigned int& blocksize_)
@@ -502,7 +502,7 @@ void Reverb::setReverbType(ReverbTypes type_)
             earlyReflections.setTypeParameters(earliesTypeParams);
             
             DecayTypeParameters decayTypeParams
-            ("Plate", // name
+            ("Digital Vintage", // name
             -0.68f, // diffusion
             0.13f, // damping
             8, { 1847, 1979, 2111, 2239, 2371, 2503, 2633, 2767 }, // combfilters
@@ -530,7 +530,7 @@ void Reverb::setReverbType(ReverbTypes type_)
             earlyReflections.setTypeParameters(earliesTypeParams);
             
             DecayTypeParameters decayTypeParams
-            ("Metallic Resonator", // name
+            ("Seasick", // name
             -0.94f, // diffusion
             0.1f, // damping
             4, { 3109, 3631, 4153, 4673 }, // combfilters
@@ -556,7 +556,7 @@ void Reverb::setReverbType(ReverbTypes type_)
              earliesLatestDelaySamples[Room::FOYER]); // latestDelaySamples
                         
             DecayTypeParameters decayTypeParams
-            ("Bathroom", // name
+            ("Room", // name
             -0.64f, // diffusion
             0.29f, // damping
             6, { 1759, 1933, 2113, 2293, 2467, 2647 }, // combfilters
