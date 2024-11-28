@@ -6,7 +6,7 @@
 #include <libraries/Scope/Scope.h>
 #include <libraries/Midi/Midi.h>
 
-#include "inputs.hpp"
+#include "Inputs.hpp"
 #include "Engine.h"
 
 #define SCOPE_ACTIVE

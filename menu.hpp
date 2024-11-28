@@ -3,9 +3,9 @@
 
 #include <fstream>
 
-#include "functions.h"
-#include "uielements.hpp"
-#include "parameters.hpp"
+#include "Functions.h"
+#include "UIElements.hpp"
+#include "Parameters.hpp"
 
 #include "json.h"
 using json = nlohmann::json;

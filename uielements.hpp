@@ -1,8 +1,8 @@
 #ifndef uielements_hpp
 #define uielements_hpp
 
-#include "functions.h"
-#include "helpers.hpp"
+#include "Functions.h"
+#include "Helpers.hpp"
 
 // =======================================================================================
 // MARK: - UIELEMENT

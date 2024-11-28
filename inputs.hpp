@@ -1,7 +1,7 @@
 #ifndef inputs_hpp
 #define inputs_hpp
 
-#include "functions.h"
+#include "Functions.h"
 
 #ifdef BELA_CONNECTED
 #include <Bela.h>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ConstantVariables.h"
+#include "Wavetables.h"
 #include "EngineVariables.h"
 
 #define TOSTRING(x) std::to_string(x)
@@ -63,50 +64,6 @@ inline void boundValue(T& value, const T min, const T max)
     value = value < min ? min : value;
 }
 
-/**
- * @brief approximates a sine output
- *
- * by René G. Ceballos <rene@rgcaudio.com>
- * input range: 0.0 to 2.0 * Pi
- * output range: -1.0 to 1.0
- *
- * @param angle the x position (0.0 to 2PI)
- *
- * @return the y position (-1.0 to 1.0)
- */
-inline float approximateSine(float angle)
-{
-    float x,j;
-    
-    if (angle < PIo2){
-        x = angle * TWOoPI - 0.5f;
-        j = -(x * x) + 0.75f + x;
-    }
-    else if(angle < PI) {
-        angle = PI - angle;
-        x = angle * TWOoPI - 0.5f;
-        j = -(x * x) + 0.75f + x;
-    }
-    else if (angle < PI3o2) {
-        angle -= PI;
-        x = angle * TWOoPI - 0.5f;
-        j = x * x - 0.75f - x;
-    }
-    else {
-        angle = TWOPI - angle;
-        x = angle * TWOoPI - 0.5f;
-        j = x * x - 0.75f - x;
-    }
-    
-    return j;
-}
-
-
-inline float approximateTanh(float x)
-{
-    float x2 = x * x;
-    return (x * (27.0f + x2)) / (27.0f + 9.0f * x2);
-}
 
 /**
  * @brief checks is a value is close to another value
@@ -231,6 +188,81 @@ inline float lin2log (float x) // fixed Slope 0.75, a & 1/log(b) precalculated
 }
 
 
+
+/**
+ * @brief approximates a sine output
+ *
+ * by René G. Ceballos <rene@rgcaudio.com>
+ * input range: 0.0 to 2.0 * Pi
+ * output range: -1.0 to 1.0
+ *
+ * @param angle the x position (0.0 to 2PI)
+ *
+ * @return the y position (-1.0 to 1.0)
+ */
+inline float approximateSine(float angle)
+{
+    float x,j;
+    
+    if (angle < PIo2){
+        x = angle * TWOoPI - 0.5f;
+        j = -(x * x) + 0.75f + x;
+    }
+    else if(angle < PI) {
+        angle = PI - angle;
+        x = angle * TWOoPI - 0.5f;
+        j = -(x * x) + 0.75f + x;
+    }
+    else if (angle < PI3o2) {
+        angle -= PI;
+        x = angle * TWOoPI - 0.5f;
+        j = x * x - 0.75f - x;
+    }
+    else {
+        angle = TWOPI - angle;
+        x = angle * TWOoPI - 0.5f;
+        j = x * x - 0.75f - x;
+    }
+    
+    return j;
+}
+
+
+inline float getSign(float value)
+{
+    return (value >= 0.f) ? 1.f : -1.f;
+}
+
+
+//inline float approximateTanh(float x)
+//{
+//    float x2 = x * x;
+//    return (x * (27.0f + x2)) / (27.0f + 9.0f * x2);
+//}
+
+
+inline float approximateTanh(const float x)
+{
+    float sign = getSign(x);
+    float input = (sign > 0.f) ? x : -x;
+    
+    if (input > 8.f) return 1.f * (float)sign;
+    
+    float readPointer = mapValue(input, 0.f, 8.f, 0.f, 4095.f);
+    int readPointerLo = (int)readPointer;
+    int readPointerHi = readPointerLo + 1;
+    float frac = readPointer - (float)readPointerLo;
+    
+    float lowValue = TANH_WAVETABLE_POSITIVEONLY_4096[readPointerLo];
+    
+    if (frac == 0.f) return lowValue * (float)sign;
+    
+    float highValue = (readPointerHi < 4096) ? TANH_WAVETABLE_POSITIVEONLY_4096[readPointerHi] : 1.f;
+    
+    return (lowValue + frac * (highValue - lowValue)) * sign;
+}
+
+
 inline float bpm2msec(float bpm)
 {
     return 60000.0f / bpm;
@@ -283,6 +315,15 @@ inline float lin2db(float lin, float minDb = -85.f, float maxDb = 0.f)
     if (db < minDb) return minDb;
     else if (db > maxDb) return maxDb;
     else return db;
+}
+
+
+inline float absf_bitwise(float value)
+{
+    uint32_t mask = 0x7FFFFFFF; // Mask to clear the MSB
+    uint32_t asInt = *reinterpret_cast<uint32_t*>(&value); // Reinterpret float as int
+    asInt &= mask; // Clear the MSB
+    return *reinterpret_cast<float*>(&asInt); // Reinterpret back to float
 }
 
 

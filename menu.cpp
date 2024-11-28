@@ -1,4 +1,4 @@
-#include "menu.hpp"
+#include "Menu.hpp"
 
 //#define CONSOLE_PRINT
 
@@ -760,8 +760,7 @@ void Menu::loadPreset(uint index_)
     auto engine = programParameters[0];
     auto effect1= programParameters[1];
     auto effect2 = programParameters[2];
-    //TODO: add third effect
-//    auto effect3 = programParameters[3];
+    auto effect3 = programParameters[3];
     
     // load and set parameters from JSON file (without display notification)
     for (unsigned int n = 0; n < engine->getNumParametersInGroup(); ++n)
@@ -772,10 +771,9 @@ void Menu::loadPreset(uint index_)
     
     for (unsigned int n = 0; n < effect2->getNumParametersInGroup(); ++n)
         effect2->getParameter(n)->setValue((float)JSONpresets[index_]["effect2"][n], false);
-    
-    //TODO: add third effect
-//    for (unsigned int n = 0; n < effect3->getNumParametersInGroup(); ++n)
-//        effect3->getParameter(n)->setValue((float)JSONpresets[index_]["effect3"][n], withPrint);
+
+    for (unsigned int n = 0; n < effect3->getNumParametersInGroup(); ++n)
+        effect3->getParameter(n)->setValue((float)JSONpresets[index_]["effect3"][n], false);
     
     // last used preset is now the current one
     lastUsedPresetIndex = index_;
@@ -808,8 +806,7 @@ void Menu::savePreset()
     auto engine = programParameters[0];
     auto effect1= programParameters[1];
     auto effect2 = programParameters[2];
-    //TODO: add third effect
-//    auto effect3 = programParameters[3];
+    auto effect3 = programParameters[3];
     
     // save Data to JSON
     JSONpresets[index]["name"] = name;
@@ -823,9 +820,8 @@ void Menu::savePreset()
     for (unsigned int n = 0; n < effect2->getNumParametersInGroup(); ++n)
         JSONpresets[index]["effect2"][n] = effect2->getParameter(n)->getValueAsFloat();
     
-    //TODO: add third effect
-//    for (unsigned int n = 0; n < effect3->getNumParametersInGroup(); ++n)
-//        JSONpresets[index]["effect3"][n] = effect3->getParameter(n)->getPrintValueAsFloat();
+    for (unsigned int n = 0; n < effect3->getNumParametersInGroup(); ++n)
+        JSONpresets[index]["effect3"][n] = effect3->getParameter(n)->getValueAsFloat();
 
     #ifdef CONSOLE_PRINT
     consoleprint("Saved preset with name " + name + " to JSON!", __FILE__, __LINE__);

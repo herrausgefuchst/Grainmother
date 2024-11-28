@@ -14,12 +14,12 @@
 #ifndef Engine_h
 #define Engine_h
 
-#include "functions.h"
-#include "uielements.hpp"
-#include "effects.hpp"
-#include "parameters.hpp"
-#include "menu.hpp"
-#include "outputs.hpp"
+#include "Functions.h"
+#include "UIElements.hpp"
+#include "EffectProcessor.hpp"
+#include "Parameters.hpp"
+#include "Menu.hpp"
+#include "Outputs.hpp"
 
 // =======================================================================================
 // MARK: - AUDIO ENGINE

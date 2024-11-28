@@ -34,17 +34,17 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     
     if (posix_memalign(&memEffect1, alignment, sizeof(ReverbProcessor)) != 0) { throw std::bad_alloc(); }
     if (posix_memalign(&memEffect2, alignment, sizeof(GranulatorProcessor)) != 0) { throw std::bad_alloc(); }
-    if (posix_memalign(&memEffect3, alignment, sizeof(ResonatorProcessor)) != 0) { throw std::bad_alloc(); }
+    if (posix_memalign(&memEffect3, alignment, sizeof(RingModulatorProcessor)) != 0) { throw std::bad_alloc(); }
     
     effectProcessor[0] = new (memEffect1) ReverbProcessor(&engineParameters, Reverberation::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
     effectProcessor[1] = new (memEffect2) GranulatorProcessor(&engineParameters, Granulation::NUM_PARAMETERS, "granulator", sampleRate, blockSize);
-    effectProcessor[2] = new (memEffect3) ResonatorProcessor(&engineParameters, 8, "resonator", sampleRate, blockSize);
+    effectProcessor[2] = new (memEffect3) RingModulatorProcessor(&engineParameters, RingModulation::NUM_PARAMETERS, "ringmodulator", sampleRate, blockSize);
     
     // The setup functions of the effect processors create a set of parameters and initialize the listener connections.
     // They also initialize the actual effect objects.
     effectProcessor[0]->setup();
     effectProcessor[1]->setup();
-    // TODO: Add resonator setup
+    effectProcessor[2]->setup();
     
     // Add all parameters to a vector of AudioParameterGroups, which holds all program parameters
     programParameters.at(0) = (&engineParameters);
@@ -416,7 +416,7 @@ void UserInterface::setup(AudioEngine* engine_, const float sampleRate_)
     engine->getParameter("effect3_engaged")->addListener(&led[LED_FX3]);
     engine->getParameter("reverb", NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
     engine->getParameter("granulator", NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
-    // TODO: Add Resonator
+    engine->getParameter("ringmodulator", NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
     engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX1]);
     engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX2]);
     engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX3]);
@@ -592,7 +592,8 @@ void UserInterface::initializeListeners()
         engine->getParameter("reverb", n)->addListener(&display);
     for (unsigned int n = 0; n < Granulation::NUM_PARAMETERS; ++n)
         engine->getParameter("granulator", n)->addListener(&display);
-    // TODO: Add Resonator
+    for (unsigned int n = 0; n < RingModulation::NUM_PARAMETERS; ++n)
+        engine->getParameter("ringmodulator", n)->addListener(&display);
 
     // The Metronome reacts to changes in the Tempo parameter.
     engine->getParameter("tempo")->addListener(&metronome);
@@ -779,9 +780,8 @@ void UserInterface::mixPotentiometerChanged()
         focusedParameter = engine->getParameter("reverb", "reverb_mix");
     else if (button[BUTTON_FX2].getPhase() == Button::LOW)
         focusedParameter = engine->getParameter("granulator", "granulator_mix");
-    // TODO: add third effect
-//    else if (button[BUTTON_FX3].getPhase() == Button::LOW)
-//        rt_printf("FX3 Wetness changed \n");
+    else if (button[BUTTON_FX3].getPhase() == Button::LOW)
+        focusedParameter = engine->getParameter("ringmodulator", "ringmod_mix");
     else
         focusedParameter = engine->getParameter("global_mix");
     

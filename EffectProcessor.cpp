@@ -1,4 +1,4 @@
-#include "effects.hpp"
+#include "EffectProcessor.hpp"
 
 // =======================================================================================
 // MARK: - EFFECT PROCESSOR
@@ -257,6 +257,7 @@ void GranulatorProcessor::initializeParameters()
     static_cast<SlideParameter*>(parameters.getParameter("granulator_density"))->setScaling(SlideParameter::Scaling::FREQ);
 }
 
+
 void GranulatorProcessor::initializeListeners()
 {
     for (unsigned int n = 0; n < Granulation::NUM_PARAMETERS; ++n)
@@ -293,44 +294,97 @@ void GranulatorProcessor::parameterChanged(AudioParameter *param_)
 
 
 // =======================================================================================
-// MARK: - RESONATOR
+// MARK: - RINGMODULATOR
 // =======================================================================================
 
-StereoFloat ResonatorProcessor::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
+void RingModulatorProcessor::setup()
 {
-    // process ramps
-    // ...
+    ringModulator.setup(sampleRate, blockSize);
     
-//    rt_printf("processing effect %s\n", id.c_str());
+    initializeParameters();
+    initializeListeners();
+}
 
-    StereoFloat output = { 0.f, 0.f };
+
+StereoFloat RingModulatorProcessor::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
+{
+    if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
+    
+    StereoFloat output;
     
     if (isProcessedIn == PARALLEL)
-        output = { 0.f, 0.f };
+        output = ringModulator.processAudioSamples(input_ * muteGain() * wetGain(), sampleIndex_);
     else // if (isProcessedIN == SERIES)
-        output = input_ * wetGain() + input_ * dryGain;
+        output = ringModulator.processAudioSamples(input_ * muteGain(), sampleIndex_) * wetGain() + input_ * dryGain;
     
-    return output * muteGain();
+    return output;
 }
 
-void ResonatorProcessor::updateAudioBlock()
-{}
 
-void ResonatorProcessor::initializeParameters()
+void RingModulatorProcessor::updateAudioBlock()
 {
-//    parameters.addParameter("delay1", "Delay1", "%", 0.f, 100.f, 0.f, 0.f);
-//    parameters.addParameter("delay2", "Delay2", "%", 0.f, 100.f, 0.f, 0.f);
-//    parameters.addParameter("delay3", "Delay3", "%", 0.f, 100.f, 0.f, 0.f);
-//    parameters.addParameter("delay4", "Delay4", "%", 0.f, 100.f, 0.f, 0.f);
-//    parameters.addParameter("delay5", "Delay5", "semitones", 0.f, 24.f, 1.f, 0.f);
-//    parameters.addParameter("delay6", "Delay6", "%", 0.f, 100.f, 0.f, 0.f);
-//    parameters.addParameter("delay7", "Delay7", "seconds", 0.f, 2.f, 0.f, 0.f);
-//    parameters.addParameter("delay8", "Delay8", "%", 0.f, 100.f, 0.f, 50.f);
-//    parameters.addParameter("delay9", "Delay9", ButtonParameter::COUPLED);
+    ringModulator.updateAudioBlock();
 }
 
-void ResonatorProcessor::initializeListeners()
+
+void RingModulatorProcessor::initializeParameters()
 {
+    using namespace RingModulation;
     
+    // parameters controlled by potentiometers/sliders (index 0...7)
+    for (unsigned int n = 0; n < NUM_POTENTIOMETERS; ++n)
+        parameters.addParameter<SlideParameter>(n, parameterID[n],
+                                                parameterName[n],
+                                                parameterSuffix[n],
+                                                parameterMin[n],
+                                                parameterMax[n],
+                                                parameterStep[n],
+                                                parameterInitialValue[n],
+                                                sampleRate);
+    
+    // parameter controlled by the Action-Button (index 8)
+    parameters.addParameter<ChoiceParameter>(NUM_POTENTIOMETERS,
+                                             parameterID[NUM_POTENTIOMETERS],
+                                             parameterName[NUM_POTENTIOMETERS],
+                                             waveformNames, NUM_WAVEFORMS);
+    
+    // special cases: scaling and ramps:
+    static_cast<SlideParameter*>(parameters.getParameter("ringmod_tune"))->setScaling(SlideParameter::Scaling::FREQ);
+    static_cast<SlideParameter*>(parameters.getParameter("ringmod_rate"))->setScaling(SlideParameter::Scaling::FREQ);
+    static_cast<SlideParameter*>(parameters.getParameter("ringmod_bitcrush"))->setScaling(SlideParameter::Scaling::FREQ);
 }
 
+
+void RingModulatorProcessor::initializeListeners()
+{
+    for (unsigned int n = 0; n < RingModulation::NUM_PARAMETERS; ++n)
+    {
+        auto param = parameters.getParameter(n);
+        
+        if (param->getID() != "ringmod_mix")
+        {
+            param->onChange.push_back([this, param] {
+                ringModulator.parameterChanged(param->getID(), param->getValueAsFloat());
+            });
+        }
+    }
+    
+    parameters.getParameter("ringmod_mix")->addListener(this);
+}
+
+
+void RingModulatorProcessor::parameterChanged(AudioParameter *param_)
+{
+    if (param_->getID() == "effect3_engaged")
+    {
+        engage(param_->getValueAsInt());
+    }
+    
+    else if (param_->getID() == "ringmod_mix")
+    {
+        float raw = param_->getValueAsFloat() * 0.01f;
+        float wet = sinf_neon(raw * PIo2);
+        
+        setMix(wet);
+    }
+}

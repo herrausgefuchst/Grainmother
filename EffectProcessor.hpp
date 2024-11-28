@@ -1,10 +1,11 @@
 #ifndef effects_hpp
 #define effects_hpp
 
-#include "functions.h"
-#include "parameters.hpp"
+#include "Functions.h"
+#include "Parameters.hpp"
 #include "Reverberation/Reverberation.h"
 #include "Granulation/Granulation.h"
+#include "RingModulation/RingModulator.h"
 
 // =======================================================================================
 // MARK: - EFFECT PROCESSOR
@@ -155,23 +156,29 @@ private:
 
 
 // =======================================================================================
-// MARK: - RESONATOR
+// MARK: - RINGMODULATOR
 // =======================================================================================
 
-class ResonatorProcessor : public EffectProcessor
+class RingModulatorProcessor : public EffectProcessor
 {
 public:
     using EffectProcessor::EffectProcessor;
     
-    ~ResonatorProcessor() {}
+    void setup() override;
+    
+    ~RingModulatorProcessor() {}
     
     StereoFloat processAudioSamples(const StereoFloat input_, const uint sampleIndex_) override;
     
     void updateAudioBlock() override;
+    
+    void parameterChanged(AudioParameter *param_) override;
 
 private:
     void initializeParameters();
     void initializeListeners();
+    
+    RingModulation::RingModulator ringModulator;
 };
 
 #endif /* effects_hpp */

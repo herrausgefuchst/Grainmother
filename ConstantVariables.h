@@ -17,6 +17,7 @@
 #include <numeric>
 #include <cstring>
 #include <arm_neon.h>
+#include <random>
 
 #ifdef BELA_CONNECTED
 
@@ -50,6 +51,7 @@ static const float TWOPI = 2.f * PI; ///< Two times the mathematical constant π
 static const float TWOoPI = 2.f / PI; ///< Two divided by the mathematical constant π, approximately 0.63662.
 static const float PIo2 = PI / 2.f; ///< The mathematical constant π divided by 2, approximately 1.57080.
 static const float PI3o2 = 3.f * PI / 2.f; ///< Three times the mathematical constant π divided by 2, approximately 4.71239.
+static const float PI_INV = 1.f / PI;
 
 static const float sqrt_2 = sqrtf(2.f); ///< The square root of 2, approximately 1.41421.
 static const float log_2 = logf(2.f); ///< The natural logarithm of 2, approximately 0.69315.
@@ -58,3 +60,4 @@ static const float SMALLEST_POSITIVE_FLOATVALUE = 1.17549e-38; ///< The smallest
 static const float SMALLEST_NEGATIVE_FLOATVALUE = -1.17549e-38; ///< The smallest negative representable float value, approximately -1.17549e-38.
 
 static const float RAND_MAX_INVERSED = (float)(1.f / RAND_MAX);
+static const float TWO_RAND_MAX_INVERSED = 2.f * RAND_MAX_INVERSED;

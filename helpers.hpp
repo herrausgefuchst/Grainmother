@@ -1,7 +1,9 @@
 #ifndef helpers_hpp
 #define helpers_hpp
 
-#include "functions.h"
+#include "Functions.h"
+
+//TODO: some of these classes can be killed
 
 // MARK: - RAMP
 // ********************************************************************************

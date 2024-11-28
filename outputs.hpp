@@ -1,7 +1,7 @@
 #ifndef display_hpp
 #define display_hpp
 
-#include "menu.hpp"
+#include "Menu.hpp"
 
 #ifdef BELA_CONNECTED
 #include <libraries/OscSender/OscSender.h>

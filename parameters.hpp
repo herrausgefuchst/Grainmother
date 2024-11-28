@@ -1,7 +1,7 @@
 #ifndef parameters_hpp
 #define parameters_hpp
 
-#include "uielements.hpp"
+#include "UIElements.hpp"
 
 // =======================================================================================
 // MARK: - AUDIO PARAMETER

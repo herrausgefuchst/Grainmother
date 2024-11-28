@@ -1,4 +1,4 @@
-#include "parameters.hpp"
+#include "Parameters.hpp"
 
 //#define CONSOLE_PRINT
 
