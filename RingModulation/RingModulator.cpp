@@ -282,9 +282,9 @@ StereoFloat RingModulator::processAudioSamples(const StereoFloat input_, const u
     // Downsample the processed audio to the original sample rate
     float32x2_t output_vec = vmul_n_f32(decimator.decimateAudio(decimationInput), gainCompensation());
     
-    // apply dry and wet
-    output_vec = vmul_n_f32(output_vec, wet);
-    output_vec = vmla_n_f32(output_vec, input_vec, dry);
+//    // apply dry and wet
+//    output_vec = vmul_n_f32(output_vec, wet);
+//    output_vec = vmla_n_f32(output_vec, input_vec, dry); 
     
     return { vget_lane_f32(output_vec, 0), vget_lane_f32(output_vec, 1) };
 }
@@ -528,7 +528,10 @@ void RingModulator::parameterChanged(const String &parameterID, float newValue)
     
     else if (parameterID == "ringmod_bitcrush")
     {
-        bitCrusher.setBitResolution(newValue);        
+        float mapped = 1.f - 0.01f * newValue;
+        mapped = lin2log(mapped);
+        mapped = mapValue(mapped, 0.f, 1.f, 1.f, 16.f);
+        bitCrusher.setBitResolution(mapped);
     }
     
     else if (parameterID == "ringmod_mix")

@@ -74,7 +74,7 @@ static const std::string parameterName[NUM_PARAMETERS] = {
     "Spread",
     "Noise",
     "Bitcrush",
-    "Mix",
+    "Ringmod Mix",
     "Waveform"
 };
 
@@ -86,7 +86,7 @@ static const std::string parameterSuffix[NUM_PARAMETERS] = {
     " %",
     " %",
     " %",
-    " Bits",
+    " %",
     " %",
     ""
 };
@@ -99,7 +99,7 @@ static const float parameterMin[NUM_PARAMETERS] = {
     0.f,
     0.f,
     0.f,
-    1.f,
+    0.f,
     0.f,
     0.f
 };
@@ -112,21 +112,21 @@ static const float parameterMax[NUM_PARAMETERS] = {
     100.f,
     100.f,
     100.f,
-    16.f,
+    100.f,
     100.f,
     4.f
 };
 
 /** @brief step values of parameters */
 static const float parameterStep[NUM_PARAMETERS] = {
-    0.01f,
-    0.01f,
-    0.01f,
-    0.01f,
-    0.01f,
-    0.01f,
-    0.01f,
-    0.01f,
+    0.5f,
+    0.1f,
+    0.5f,
+    0.5f,
+    0.5f,
+    0.5f,
+    0.5f,
+    0.5f,
     1.f
 };
 
@@ -138,7 +138,7 @@ static const float parameterInitialValue[NUM_PARAMETERS] = {
     0.f,
     0.f,
     0.f,
-    16.f,
+    0.f,
     70.f,
     0.f
 };
