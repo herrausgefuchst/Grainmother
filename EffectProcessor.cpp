@@ -351,7 +351,7 @@ void RingModulatorProcessor::initializeParameters()
     // special cases: scaling and ramps:
     static_cast<SlideParameter*>(parameters.getParameter("ringmod_tune"))->setScaling(SlideParameter::Scaling::FREQ);
     static_cast<SlideParameter*>(parameters.getParameter("ringmod_rate"))->setScaling(SlideParameter::Scaling::FREQ);
-    static_cast<SlideParameter*>(parameters.getParameter("ringmod_bitcrush"))->setScaling(SlideParameter::Scaling::FREQ);
+//    static_cast<SlideParameter*>(parameters.getParameter("ringmod_bitcrush"))->setScaling(SlideParameter::Scaling::FREQ);
 }
 
 

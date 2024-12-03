@@ -165,6 +165,9 @@ void AudioEngine::updateAudioBlock()
 {
     // granulator update function
     effectProcessor[1]->updateAudioBlock();
+    
+    // ringmodulator update function
+    effectProcessor[2]->updateAudioBlock();
 }
 
 

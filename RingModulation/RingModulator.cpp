@@ -528,7 +528,7 @@ void RingModulator::parameterChanged(const String &parameterID, float newValue)
     
     else if (parameterID == "ringmod_bitcrush")
     {
-        bitCrusher.setBitResolution(newValue);
+        bitCrusher.setBitResolution(newValue);        
     }
     
     else if (parameterID == "ringmod_mix")
