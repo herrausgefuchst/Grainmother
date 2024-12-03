@@ -75,6 +75,7 @@ public:
      */
     float32x2_t processAudioSamples(float32x2_t input_, uint sampleIndex_);
     
+    /** @brief should be called every audio block to update internal behaviours */
     void updateAudioBlock();
     
     /**
@@ -104,9 +105,8 @@ public:
      */
     void updateRamps();
     
-    
+    /** @brief Sets the Dry/Wet Gains for the whole Effect Machine */
     void setGlobalMix();
-    
     
     /**
      * @brief Retrieves an audio parameter by its ID.
@@ -192,7 +192,7 @@ private:
     
     bool bypassed = false;  ///< Flag indicating whether the engine is currently bypassed.
     LinearRamp globalWet;  ///< Ramp for controlling the wet signal in the global bypass control.
-    float globalWetCache;
+    float globalWetCache; ///< a small cache variable to not forget the previous wet gain, when global bypass button is pressed
     float globalDry;  ///< Multiplier for the dry signal in the global bypass control.
     
     ProcessFunctionPointer processFunction[3][3];  ///< Function pointers for processing audio through the effects.
@@ -489,10 +489,9 @@ private:
      */
     void setEffectEditFocus();
     
-    
+    /** @brief Evaluates which Mix Parameter should be changed (Global or Effect 1,2 or 3) and sets the corrsponding new value. */
     void mixPotentiometerChanged();
-    
-    
+        
     /**
      * @brief Evaluates whether a new tempo has been detected based on user input and updates the tempo parameter if necessary.
      *

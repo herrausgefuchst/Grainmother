@@ -188,6 +188,11 @@ inline float lin2log (float x) // fixed Slope 0.75, a & 1/log(b) precalculated
 }
 
 
+/** @brief Calculates the dry signal amount based on the wet signal amount.
+ *
+ * @param wetAmount The wet signal amount, constrained between 0.0 and 1.0.
+ * @return The calculated dry signal amount.
+ */
 inline float getDryAmount(float wetAmount)
 {
     boundValue(wetAmount, 0.f, 1.f);
@@ -197,7 +202,6 @@ inline float getDryAmount(float wetAmount)
     
     return sqrtf_neon(1.f - wetAmount * wetAmount);
 }
-
 
 
 /**
@@ -239,19 +243,25 @@ inline float approximateSine(float angle)
 }
 
 
+/** @brief Determines the sign of a given value.
+ *
+ * @param value The input value.
+ * @return 1.0 if the value is non-negative, -1.0 if it is negative.
+ */
 inline float getSign(float value)
 {
     return (value >= 0.f) ? 1.f : -1.f;
 }
 
 
-//inline float approximateTanh(float x)
-//{
-//    float x2 = x * x;
-//    return (x * (27.0f + x2)) / (27.0f + 9.0f * x2);
-//}
-
-
+/** @brief Approximates the hyperbolic tangent (tanh) of a given input.
+ *
+ * Uses a precomputed wavetable for efficient approximation of the tanh function,
+ * with special handling for large inputs to ensure accuracy and stability.
+ *
+ * @param x The input value for which to calculate the approximate tanh.
+ * @return The approximated tanh value of the input.
+ */
 inline float approximateTanh(const float x)
 {
     float sign = getSign(x);
@@ -274,48 +284,49 @@ inline float approximateTanh(const float x)
 }
 
 
+/** @brief Converts beats per minute (BPM) to milliseconds. */
 inline float bpm2msec(float bpm)
 {
     return 60000.0f / bpm;
 }
 
-
+/** @brief Converts beats per minute (BPM) to seconds. */
 inline float bpm2sec(float bpm)
 {
     return 60.f / bpm;
 }
 
-
+/** @brief Converts beats per minute (BPM) to sample count. */
 inline int bpm2samples(float bpm, float sampleRate)
 {
     return (int)((60.0f / bpm) * sampleRate);
 }
 
-
+/** @brief Converts milliseconds to beats per minute (BPM). */
 inline float msec2bpm(float msec)
 {
     return 60000.0f / msec;
 }
 
-
+/** @brief Converts seconds to beats per minute (BPM). */
 inline float sec2bpm(float sec)
 {
     return 60.0f / sec;
 }
 
-
+/** @brief Converts sample count to beats per minute (BPM). */
 inline float samples2bpm(uint samples, float sampleRate)
 {
     return (60.0f * sampleRate) / samples;
 }
 
-
+/** @brief Converts seconds to sample count. */
 inline float sec2samples(float sec, float sampleRate)
 {
     return sampleRate * sec;
 }
 
-
+/** @brief Converts a linear value to decibels (dB) within a specified range. */
 inline float lin2db(float lin, float minDb = -85.f, float maxDb = 0.f)
 {
     if (lin <= 0.f) return minDb; // avoid log(0.f)
@@ -328,7 +339,7 @@ inline float lin2db(float lin, float minDb = -85.f, float maxDb = 0.f)
     else return db;
 }
 
-
+/** @brief Computes the absolute value of a float using bitwise operations. */
 inline float absf_bitwise(float value)
 {
     uint32_t mask = 0x7FFFFFFF; // Mask to clear the MSB
@@ -508,6 +519,15 @@ inline String getDateAsString()
 }
 
 
+/** @brief Removes leading and trailing whitespace from a string.
+ *
+ * This function finds the first non-whitespace character and the last non-whitespace character in the string.
+ * It then returns a substring containing only the meaningful content, without leading or trailing spaces.
+ * If the string is entirely whitespace, it returns an empty string.
+ *
+ * @param str The input string to be trimmed.
+ * @return A string with leading and trailing whitespace removed.
+ */
 inline String trimWhiteSpace(const String& str)
 {
     size_t first = str.find_first_not_of(' ');
@@ -518,6 +538,17 @@ inline String trimWhiteSpace(const String& str)
 }
 
 
+/** @brief Generates a random number based on a Gaussian (normal) distribution.
+ *
+ * Uses the Box-Muller transform to generate a normally distributed random value
+ * with a specified mean and standard deviation. The function alternates between
+ * using the spare value from the last generation and creating two new random values
+ * when needed. This ensures efficient generation of Gaussian-distributed numbers.
+ *
+ * @param mean The mean (center) of the Gaussian distribution.
+ * @param stddev The standard deviation (spread) of the Gaussian distribution.
+ * @return A float value sampled from the Gaussian distribution.
+ */
 inline float generateGaussian(const float mean, const float stddev)
 {
     static bool haveSpare = false;

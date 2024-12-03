@@ -231,14 +231,10 @@ void Menu::NamingPage::update(String name_, uint index_)
     if (name_.size() > nameLength) editedPresetName = name_.substr(0, nameLength);
     
     else if (name_.size() < nameLength) editedPresetName.append(nameLength - name_.size(), ' ');
-    
-    std::cout << "size of editedPresetName = " << editedPresetName.size() << std::endl;
-    
+        
     charPosition = 0;
     
     charIndex = getIndexFromChar(editedPresetName[charPosition]);
-    
-    std::cout << "Current Edit Name: " << editedPresetName << std::endl;
 }
 
 
@@ -251,8 +247,6 @@ void Menu::NamingPage::up()
     menu.display();
     
     if (onUp) onUp();
-    
-    std::cout << "Current Edit Name: " << editedPresetName << std::endl;
 }
 
 
@@ -265,8 +259,6 @@ void Menu::NamingPage::down()
     menu.display();
     
     if (onDown) onDown();
-    
-    std::cout << "Current Edit Name: " << editedPresetName << std::endl;
 }
 
 
@@ -283,8 +275,6 @@ void Menu::NamingPage::enter()
         
         menu.display();
     }
-    
-    std::cout << "Current Edit Name: " << editedPresetName << std::endl;
 }
 
 
@@ -758,23 +748,23 @@ void Menu::buttonReleased (UIElement* _uielement)
 void Menu::loadPreset(uint index_)
 {
     // extract parametergroups (order is fixed!)
-    auto engine = programParameters[0];
-    auto effect1= programParameters[1];
-    auto effect2 = programParameters[2];
-    auto effect3 = programParameters[3];
+    auto engineParams = programParameters[0];
+    auto revParams = programParameters[ENUM2INT(EffectOrder::REVERB) + 1];
+    auto granParams = programParameters[ENUM2INT(EffectOrder::GRANULATOR) + 1];
+    auto ringParams = programParameters[ENUM2INT(EffectOrder::RINGMODULATOR) + 1];
     
     // load and set parameters from JSON file (without display notification)
-    for (unsigned int n = 0; n < engine->getNumParametersInGroup(); ++n)
-        engine->getParameter(n)->setValue((float)JSONpresets[index_]["engine"][n], false);
+    for (unsigned int n = 0; n < engineParams->getNumParametersInGroup(); ++n)
+        engineParams->getParameter(n)->setValue((float)JSONpresets[index_]["engine"][n], false);
     
-    for (unsigned int n = 0; n < effect1->getNumParametersInGroup(); ++n)
-        effect1->getParameter(n)->setValue((float)JSONpresets[index_]["effect1"][n], false);
+    for (unsigned int n = 0; n < revParams->getNumParametersInGroup(); ++n)
+        revParams->getParameter(n)->setValue((float)JSONpresets[index_]["reverb"][n], false);
     
-    for (unsigned int n = 0; n < effect2->getNumParametersInGroup(); ++n)
-        effect2->getParameter(n)->setValue((float)JSONpresets[index_]["effect2"][n], false);
+    for (unsigned int n = 0; n < granParams->getNumParametersInGroup(); ++n)
+        granParams->getParameter(n)->setValue((float)JSONpresets[index_]["granulator"][n], false);
 
-    for (unsigned int n = 0; n < effect3->getNumParametersInGroup(); ++n)
-        effect3->getParameter(n)->setValue((float)JSONpresets[index_]["effect3"][n], false);
+    for (unsigned int n = 0; n < ringParams->getNumParametersInGroup(); ++n)
+        ringParams->getParameter(n)->setValue((float)JSONpresets[index_]["ringmodulator"][n], false);
     
     // last used preset is now the current one
     lastUsedPresetIndex = index_;
@@ -804,25 +794,25 @@ void Menu::savePreset()
     getPage("save_preset")->update(name, index-1);
     
     // extract parametergroups (order is fixed!)
-    auto engine = programParameters[0];
-    auto effect1= programParameters[1];
-    auto effect2 = programParameters[2];
-    auto effect3 = programParameters[3];
+    auto engineParams = programParameters[0];
+    auto revParams = programParameters[ENUM2INT(EffectOrder::REVERB) + 1];
+    auto granParams = programParameters[ENUM2INT(EffectOrder::GRANULATOR) + 1];
+    auto ringParams = programParameters[ENUM2INT(EffectOrder::RINGMODULATOR) + 1];
     
     // save Data to JSON
     JSONpresets[index]["name"] = name;
     
-    for (unsigned int n = 0; n < engine->getNumParametersInGroup(); ++n)
-        JSONpresets[index]["engine"][n] = engine->getParameter(n)->getValueAsFloat();
+    for (unsigned int n = 0; n < engineParams->getNumParametersInGroup(); ++n)
+        JSONpresets[index]["engine"][n] = engineParams->getParameter(n)->getValueAsFloat();
     
-    for (unsigned int n = 0; n < effect1->getNumParametersInGroup(); ++n)
-        JSONpresets[index]["effect1"][n] = effect1->getParameter(n)->getValueAsFloat();
+    for (unsigned int n = 0; n < revParams->getNumParametersInGroup(); ++n)
+        JSONpresets[index]["reverb"][n] = revParams->getParameter(n)->getValueAsFloat();
     
-    for (unsigned int n = 0; n < effect2->getNumParametersInGroup(); ++n)
-        JSONpresets[index]["effect2"][n] = effect2->getParameter(n)->getValueAsFloat();
+    for (unsigned int n = 0; n < granParams->getNumParametersInGroup(); ++n)
+        JSONpresets[index]["granulator"][n] = granParams->getParameter(n)->getValueAsFloat();
     
-    for (unsigned int n = 0; n < effect3->getNumParametersInGroup(); ++n)
-        JSONpresets[index]["effect3"][n] = effect3->getParameter(n)->getValueAsFloat();
+    for (unsigned int n = 0; n < ringParams->getNumParametersInGroup(); ++n)
+        JSONpresets[index]["ringmodulator"][n] = ringParams->getParameter(n)->getValueAsFloat();
 
     #ifdef CONSOLE_PRINT
     consoleprint("Saved preset with name " + name + " to JSON!", __FILE__, __LINE__);

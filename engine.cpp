@@ -2,6 +2,10 @@
 
 #define CONSOLE_PRINT
 
+
+// TODO: LEDS blinking rates
+// TODO: Action Button: only showing current setting when first pressed
+
 // =======================================================================================
 // MARK: - AUDIO ENGINE
 // =======================================================================================
@@ -24,27 +28,30 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     // Initialize engine parameters
     initializeEngineParameters();
     
+    // get the indexi of the predfined effect order
+    uint revEffectIndex = ENUM2INT(EffectOrder::REVERB);
+    uint granEffectIndex = ENUM2INT(EffectOrder::GRANULATOR);
+    uint ringEffectIndex = ENUM2INT(EffectOrder::RINGMODULATOR);
+    
     // Define the alignment - typically 16 bytes for SIMD types
     constexpr std::size_t alignment = 16;
 
     // Aligned allocation and object construction for effects
-    void* memEffect1 = nullptr;
-    void* memEffect2 = nullptr;
-    void* memEffect3 = nullptr;
+    void* revEffect = nullptr;
+    void* granEffect = nullptr;
+    void* ringEffect = nullptr;
     
-    if (posix_memalign(&memEffect1, alignment, sizeof(ReverbProcessor)) != 0) { throw std::bad_alloc(); }
-    if (posix_memalign(&memEffect2, alignment, sizeof(GranulatorProcessor)) != 0) { throw std::bad_alloc(); }
-    if (posix_memalign(&memEffect3, alignment, sizeof(RingModulatorProcessor)) != 0) { throw std::bad_alloc(); }
+    if (posix_memalign(&revEffect, alignment, sizeof(ReverbProcessor)) != 0) { throw std::bad_alloc(); }
+    if (posix_memalign(&granEffect, alignment, sizeof(GranulatorProcessor)) != 0) { throw std::bad_alloc(); }
+    if (posix_memalign(&ringEffect, alignment, sizeof(RingModulatorProcessor)) != 0) { throw std::bad_alloc(); }
     
-    effectProcessor[0] = new (memEffect1) ReverbProcessor(&engineParameters, Reverberation::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
-    effectProcessor[1] = new (memEffect2) GranulatorProcessor(&engineParameters, Granulation::NUM_PARAMETERS, "granulator", sampleRate, blockSize);
-    effectProcessor[2] = new (memEffect3) RingModulatorProcessor(&engineParameters, RingModulation::NUM_PARAMETERS, "ringmodulator", sampleRate, blockSize);
+    effectProcessor[revEffectIndex] = new (revEffect) ReverbProcessor(&engineParameters, Reverberation::NUM_PARAMETERS, "reverb", sampleRate, blockSize);
+    effectProcessor[granEffectIndex] = new (granEffect) GranulatorProcessor(&engineParameters, Granulation::NUM_PARAMETERS, "granulator", sampleRate, blockSize);
+    effectProcessor[ringEffectIndex] = new (ringEffect) RingModulatorProcessor(&engineParameters, RingModulation::NUM_PARAMETERS, "ringmodulator", sampleRate, blockSize);
     
     // The setup functions of the effect processors create a set of parameters and initialize the listener connections.
     // They also initialize the actual effect objects.
-    effectProcessor[0]->setup();
-    effectProcessor[1]->setup();
-    effectProcessor[2]->setup();
+    for (uint n = 0; n < NUM_EFFECTS; ++n) effectProcessor[n]->setup();
     
     // Add all parameters to a vector of AudioParameterGroups, which holds all program parameters
     programParameters.at(0) = (&engineParameters);
@@ -55,8 +62,6 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     globalWet.setup(1.f, sampleRate, RAMP_BLOCKSIZE);
     globalWetCache = globalWet();
     globalDry = 1.f - globalWet();
-    
-    consoleprint("Global Wet Cache: " + TOSTRING(globalWetCache), __FILE__, __LINE__);
 }
 
 
@@ -88,7 +93,7 @@ void AudioEngine::initializeEngineParameters()
     // effect edit focus
     engineParameters.addParameter<ChoiceParameter>
     (MENUPARAMETER, parameterID[EFFECT_EDIT_FOCUS], parameterName[EFFECT_EDIT_FOCUS],
-     std::initializer_list<String>{ "Reverb", "Granulator", "Resonator" });
+     effectNames, NUM_EFFECTS);
     
     // effect order
     engineParameters.addParameter<ChoiceParameter>
@@ -107,8 +112,10 @@ void AudioEngine::initializeEngineParameters()
     (MENUPARAMETER, parameterID[TEMPO_SET], parameterName[TEMPO_SET],
      std::initializer_list<String>{ "Current Effect", "All Effects" });
     
-    engineParameters.addParameter<SlideParameter>(NUM_POTENTIOMETERS-1, parameterID[GLOBAL_MIX], parameterName[GLOBAL_MIX],
-                                                  " %", 0.f, 100.f, 0.5f, 70.f, sampleRate);
+    // global mix
+    engineParameters.addParameter<SlideParameter>
+    (NUM_POTENTIOMETERS-1, parameterID[GLOBAL_MIX], parameterName[GLOBAL_MIX],
+     " %", 0.f, 100.f, 0.5f, 70.f, sampleRate);
 }
 
 
@@ -168,10 +175,10 @@ float32x2_t AudioEngine::processAudioSamples(float32x2_t input_, uint sampleInde
 void AudioEngine::updateAudioBlock()
 {
     // granulator update function
-    effectProcessor[1]->updateAudioBlock();
+    effectProcessor[ENUM2INT(EffectOrder::GRANULATOR)]->updateAudioBlock();
     
     // ringmodulator update function
-    effectProcessor[2]->updateAudioBlock();
+    effectProcessor[ENUM2INT(EffectOrder::RINGMODULATOR)]->updateAudioBlock();
 }
 
 
@@ -309,6 +316,7 @@ void AudioEngine::updateRamps()
         // Update the dry signal to be the inverse of the wet signal.
         globalDry = getDryAmount(globalWet());
     }
+    
     // If the ramp is finished and the wet signal has reached 0, set bypassed to true.
     else if (!bypassed && globalWet() < 0.f)
     {
@@ -421,9 +429,9 @@ void UserInterface::setup(AudioEngine* engine_, const float sampleRate_)
     engine->getParameter("effect1_engaged")->addListener(&led[LED_FX1]);
     engine->getParameter("effect2_engaged")->addListener(&led[LED_FX2]);
     engine->getParameter("effect3_engaged")->addListener(&led[LED_FX3]);
-    engine->getParameter("reverb", NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
-    engine->getParameter("granulator", NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
-    engine->getParameter("ringmodulator", NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
+    engine->getParameter(1, NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
+    engine->getParameter(2, NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
+    engine->getParameter(3, NUM_POTENTIOMETERS)->addListener(&led[LED_ACTION]);
     engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX1]);
     engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX2]);
     engine->getParameter("effect_edit_focus")->addListener(&led[LED_FX3]);
@@ -575,6 +583,7 @@ void UserInterface::initializeListeners()
     // POTENTIOMETER ACTIONS
     // ==================================================================================
     
+    // If the Mix Potentiometer is turned, need to evaluate which mix parameter is changed (global or effect 1 to 3)
     potentiometer[NUM_POTENTIOMETERS-1].onChange = [this] { mixPotentiometerChanged(); };
     potentiometer[NUM_POTENTIOMETERS-1].decouple(engine->getParameter("global_mix")->getNormalizedValue());
     

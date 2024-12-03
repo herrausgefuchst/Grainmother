@@ -2,19 +2,19 @@
 #define predef_h
 
 #include <Bela.h>
-#include <libraries/Gui/Gui.h>
-#include <libraries/Scope/Scope.h>
 #include <libraries/Midi/Midi.h>
 
-#include "Inputs.hpp"
 #include "Engine.h"
 
-#define SCOPE_ACTIVE
+//#define SCOPE_ACTIVE
 
-//void updateGUIdisplay (void* _arg);
-void updateLEDs(void* arg_);
+#ifdef SCOPE_ACTIVE
+#include <libraries/Scope/Scope.h>
+#endif
+
+void updateLEDs();
 void updateUserInterface(void* arg_);
-void updateEffects(void* arg_);
+void updateAudioBlock(void* arg_);
 void updateNonAudioTasks(void* arg_);
 void midiMessageCallback(MidiChannelMessage message, void* arg);
 
@@ -49,27 +49,11 @@ int uiBlockCtr;
 unsigned int SCROLLING_BLOCKS_PER_FRAME;
 int scrollingBlockCtr;
 
-// helpers for gui
-static const unsigned int DISPLAY_NUM_LETTERS_IN_ROW = 30;
-static const unsigned int NUM_GUI_CONTROLS = 4;
-static const unsigned int GUI_INITIALIZATION_TIME_SEC = 2;
-
-enum GuiBuffers { POTS, BUTTONS, GUICTRLS, LEDS, DSP1, DSP2, DSP3, DSP4, DSP5, DSP6, DSP7, DSP8, DSP9, DSP10, NUM_GUIBUFFERS };
-int guiBufferIdx[NUM_GUIBUFFERS];
-int guiInitializationCtr = 0;
-bool guiIsInitializing = true;
-
-// object: BELA
-Gui gui;
-
 #ifdef SCOPE_ACTIVE
 Scope scope;
 #endif
 
 Midi midi;
-
-// object for the audio player and input controls in GUI
-InputHandler inputHandler;
 
 // object for the processing engine
 AudioEngine engine;
@@ -78,11 +62,9 @@ AudioEngine engine;
 UserInterface userinterface;
 
 // threads
-//AuxiliaryTask taskUpdateGUIDisplay;
-AuxiliaryTask THREAD_updateLEDs;
 AuxiliaryTask THREAD_updateUserInterface;
 AuxiliaryTask THREAD_updateNonAudioTasks;
-AuxiliaryTask THREAD_updateEffects;
+AuxiliaryTask THREAD_updateAudioBlock;
 
 }; // namespace BelaVariables
 

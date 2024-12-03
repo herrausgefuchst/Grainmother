@@ -10,6 +10,13 @@
 #include "json.h"
 using json = nlohmann::json;
 
+/**
+ * @class Menu
+ * @brief Represents a user interface menu for managing presets, global settings, and navigation.
+ *
+ * This class handles the initialization, navigation, and actions within a menu system.
+ * It supports scrolling, button interactions, preset loading/saving, and dynamic page creation.
+ */
 class Menu : public UIElement::Listener
 {
 public:

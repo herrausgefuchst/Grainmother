@@ -423,8 +423,6 @@ void Display::createPresetMessage()
 void Display::createNamingPageMessage(Menu::Page *page_)
 {
 #ifdef BELA_CONNECTED
-    std::cout << "Size of name: " << page_->getCurrentPrintValue().size() << std::endl;
-    
     oscTransmitter.newMessage("/namingpage");
     oscTransmitter.add(page_->getName());
     oscTransmitter.add(page_->getCurrentPrintValue());
@@ -439,7 +437,7 @@ void Display::createNamingPageMessage(Menu::Page *page_)
 // =======================================================================================
 
 
-const uint LED::BLINKING_RATE = 10;
+const uint LED::BLINKING_RATE = 20;
 const uint LED::ALERT_RATE = 23;
 const uint LED::NUM_BLINKS = 4;
 

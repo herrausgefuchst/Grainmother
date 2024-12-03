@@ -18,17 +18,16 @@ EffectProcessor::EffectProcessor(AudioParameterGroup* engineParameters_,
 {
     wetGain.setup(1.f, sampleRate, RAMP_BLOCKSIZE);
     dryGain = 0.f;
-    
+
     muteGain = 1.f;
 }
 
 
 void EffectProcessor::parameterChanged(AudioParameter *param_)
 {
+    // Check if "engage" is in the string
     std::string paramID = param_->getID();
     std::string check = "engage";
-
-    // Check if "engage" is in the string
     if (paramID.find(check) == std::string::npos)
         engine_rt_error("The Parameter with ID: " + paramID + " is not allowed to change the engagement of an effect.",
                         __FILE__, __LINE__, true);
@@ -85,24 +84,27 @@ void ReverbProcessor::setup()
 
 float32x2_t ReverbProcessor::processAudioSamples(const float32x2_t input_, const uint sampleIndex_)
 {
+    // process ramps in a predefined rate
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
     
-    float32x2_t output;
-
     if (isProcessedIn == PARALLEL)
     {
+        // input = input * muteGain * wetGain
         float32x2_t input = vmul_n_f32(input_, muteGain());
         input = vmul_n_f32(input, wetGain());
-        output = reverb.processAudioSamples(input, sampleIndex_);
+        
+        // output = process(input)
+        return reverb.processAudioSamples(input, sampleIndex_);
     }
     else // if (isProcessedIN == SERIES)
     {
+        // input = input * muteGain
         float32x2_t input = vmul_n_f32(input_, muteGain());
-        output = vmul_n_f32(reverb.processAudioSamples(input, sampleIndex_), wetGain());
-        output = vmla_n_f32(output, input_, dryGain);
+        
+        // output = process(input) * wetgain + input_ * dryGain;
+        float32x2_t output = vmul_n_f32(reverb.processAudioSamples(input, sampleIndex_), wetGain());
+        return vmla_n_f32(output, input_, dryGain);
     }
-    
-    return output;
 }
 
 
@@ -138,7 +140,7 @@ void ReverbProcessor::initializeParameters()
                                                 parameterInitialValue[n],
                                                 sampleRate);
     
-    // special cases: scaling and ramps:
+    // special cases: scaling:
     static_cast<SlideParameter*>(parameters.getParameter("reverb_highcut"))->setScaling(SlideParameter::Scaling::FREQ);
     static_cast<SlideParameter*>(parameters.getParameter("reverb_lowcut"))->setScaling(SlideParameter::Scaling::FREQ);
     static_cast<SlideParameter*>(parameters.getParameter("reverb_multfreq"))->setScaling(SlideParameter::Scaling::FREQ);
@@ -179,6 +181,12 @@ void ReverbProcessor::parameterChanged(AudioParameter *param_)
         
         setMix(wet);
     }
+    
+    else
+    {
+        engine_rt_error("Effect Processor with ID '" + this->getId() + "' couldn't set parameter with ID '" + param_->getID() + "'",
+                        __FILE__, __LINE__, false);
+    }
 }
 
 
@@ -198,26 +206,28 @@ void GranulatorProcessor::setup()
 
 float32x2_t GranulatorProcessor::processAudioSamples(const float32x2_t input_, const uint sampleIndex_)
 {
+    // process ramps in a predefined rate
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
     
-    float32x2_t output;
-
     if (isProcessedIn == PARALLEL)
     {
+        // input = input * muteGain * wetGain
         float32x2_t input = vmul_n_f32(input_, muteGain());
         input = vmul_n_f32(input, wetGain());
-        output = granulator.processAudioSamples(input, sampleIndex_);
+        
+        // output = process(input)
+        return granulator.processAudioSamples(input, sampleIndex_);
     }
     else // if (isProcessedIN == SERIES)
     {
+        // input = input * muteGain
         float32x2_t input = vmul_n_f32(input_, muteGain());
-        output = vmul_n_f32(granulator.processAudioSamples(input, sampleIndex_), wetGain());
-        output = vmla_n_f32(output, input_, dryGain);
+        
+        // output = process(input) * wetgain + input_ * dryGain;
+        float32x2_t output = vmul_n_f32(granulator.processAudioSamples(input, sampleIndex_), wetGain());
+        return vmla_n_f32(output, input_, dryGain);
     }
-    
-    return output;
 }
-
 
 void GranulatorProcessor::updateAudioBlock()
 {
@@ -319,6 +329,12 @@ void GranulatorProcessor::parameterChanged(AudioParameter *param_)
         
         setMix(wet);
     }
+    
+    else
+    {
+        engine_rt_error("Effect Processor with ID '" + this->getId() + "' couldn't set parameter with ID '" + param_->getID() + "'",
+                        __FILE__, __LINE__, false);
+    }
 }
 
 
@@ -337,25 +353,32 @@ void RingModulatorProcessor::setup()
 
 float32x2_t RingModulatorProcessor::processAudioSamples(const float32x2_t input_, const uint sampleIndex_)
 {
+    // process ramps in a predefined rate
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
     
-    float32x2_t output;
-
+    // since this effect doesnt have any feedbacks or delays, we can skip the process function if
+    // mute is enabled or wet == 0
+    if (muteGain() <= 0.f || wetGain() <= 0.f) return input_;
     
     if (isProcessedIn == PARALLEL)
     {
+        // input = input * muteGain * wetGain
         float32x2_t input = vmul_n_f32(input_, muteGain());
         input = vmul_n_f32(input, wetGain());
-        output = ringModulator.processAudioSamples(input, sampleIndex_);
-    }
-    else // if (isProcessedIN == SERIES)
-    {
-        float32x2_t input = vmul_n_f32(input_, muteGain());
-        output = vmul_n_f32(ringModulator.processAudioSamples(input, sampleIndex_), wetGain());
-        output = vmla_n_f32(output, input_, dryGain);
+        
+        // output = process(input)
+        return ringModulator.processAudioSamples(input, sampleIndex_);
     }
     
-    return output;
+    else // if (isProcessedIN == SERIES)
+    {
+        // input = input * muteGain
+        float32x2_t input = vmul_n_f32(input_, muteGain());
+        
+        // output = process(input) * wetgain + input_ * dryGain;
+        float32x2_t output = vmul_n_f32(ringModulator.processAudioSamples(input, sampleIndex_), wetGain());
+        return vmla_n_f32(output, input_, dryGain);
+    }
 }
 
 
@@ -392,10 +415,9 @@ void RingModulatorProcessor::initializeParameters()
                                              parameterName[NUM_POTENTIOMETERS],
                                              waveformNames, NUM_WAVEFORMS);
     
-    // special cases: scaling and ramps:
+    // special cases: scaling
     static_cast<SlideParameter*>(parameters.getParameter("ringmod_tune"))->setScaling(SlideParameter::Scaling::FREQ);
     static_cast<SlideParameter*>(parameters.getParameter("ringmod_rate"))->setScaling(SlideParameter::Scaling::FREQ);
-//    static_cast<SlideParameter*>(parameters.getParameter("ringmod_bitcrush"))->setScaling(SlideParameter::Scaling::FREQ);
 }
 
 
@@ -430,5 +452,11 @@ void RingModulatorProcessor::parameterChanged(AudioParameter *param_)
         float wet = sinf_neon(raw * PIo2);
         
         setMix(wet);
+    }
+    
+    else
+    {
+        engine_rt_error("Effect Processor with ID '" + this->getId() + "' couldn't set parameter with ID '" + param_->getID() + "'",
+                        __FILE__, __LINE__, false);
     }
 }

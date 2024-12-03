@@ -1,14 +1,30 @@
 #ifndef EngineVariables_h
 #define EngineVariables_h
 
-static const unsigned int NUM_POTENTIOMETERS = 8;
-static const unsigned int NUM_BUTTONS = 10;
-static const unsigned int NUM_LEDS = 6;
+// MARK: - NUMS
+// =======================================================================================
 
-/**
- * @enum ButtonID
- * @brief Enumeration for the button IDs.
- */
+static const size_t NUM_POTENTIOMETERS = 8;
+static const size_t NUM_BUTTONS = 10;
+static const size_t NUM_LEDS = 6;
+static const size_t NUM_EFFECTS = 3;
+static const size_t NUM_PARAMETERGROUPS = 4;
+
+// MARK: - PRESETS
+// =======================================================================================
+
+static const size_t NUM_PRESETS = 4;
+
+static String presetNames[NUM_PRESETS] = {
+    "Default",
+    "Preset 1",
+    "Preset 2",
+    "Preset 3"
+};
+
+// MARK: - UI ELEMENT INDEX
+// =======================================================================================
+
 enum ButtonIndex {
     BUTTON_FX1,
     BUTTON_FX2,
@@ -46,24 +62,31 @@ enum ParameterIndex {
     MENUPARAMETER
 };
 
+// MARK: - EFFECT ORDER
+// =======================================================================================
 
-static const size_t NUM_PRESETS = 4;
-
-static String presetNames[NUM_PRESETS] = {
-    "Default",
-    "Preset 1",
-    "Preset 2",
-    "Preset 3"
+enum class EffectOrder {
+    REVERB,
+    GRANULATOR,
+    RINGMODULATOR
 };
+
+static const String effectNames[NUM_EFFECTS] {
+    "Reverb",
+    "Granulator",
+    "Ringmodulator"
+};
+
+// MARK: - POT BEHAVIOUR
+// =======================================================================================
 
 enum class PotBehaviour {
     JUMP,
     CATCH
 };
 
-static const size_t NUM_EFFECTS = 3;
-
-static const size_t NUM_PARAMETERGROUPS = 4;
+// MARK: - ENGINE PARAMETERS
+// =======================================================================================
 
 namespace Engine
 {
