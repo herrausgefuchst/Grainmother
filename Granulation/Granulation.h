@@ -203,77 +203,6 @@ static const float parameterInitialValue[NUM_PARAMETERS] = {
 
 /** @} */
 
-// =======================================================================================
-// MARK: - MOVING AVERAGER
-// =======================================================================================
-
-
-class MovingAveragerStereo
-{
-public:
-    MovingAveragerStereo()
-    {
-        std::fill(buffer.begin(), buffer.end(), vdup_n_f32(0.f));
-    }
-    
-    float32x2_t processAudioSamples(float32x2_t x)
-    {
-        buffer[pointer] = x;
-        
-        uint zDPointer = pointer + 1;
-        if (zDPointer >= bufferLength) zDPointer -= bufferLength;
-        
-        uint zD1Pointer = pointer + 2;
-        if (zD1Pointer >= bufferLength) zD1Pointer -= bufferLength;
-        
-        ZD1 = buffer[zD1Pointer];
-        
-        // output = x - buffer[zDPointer];
-        float32x2_t output = vsub_f32(x, buffer[zDPointer]);
-        
-        //o utput += integrator;
-        output = vadd_f32(output, integrator);
-        
-        integrator = output;
-        
-        // output *= scalar;
-        output = vmul_n_f32(output, scalar);
-        
-        if (++pointer >= bufferLength) pointer = 0;
-        
-        return output;
-    }
-    
-    const float32x2_t getZD1() const { return ZD1; }
-    
-private:
-    static const uint bufferLength = 1024;
-    static constexpr float32_t scalar = 1.f / (float)bufferLength;
-    uint pointer = 0;
-    std::array<float32x2_t, bufferLength> buffer;
-    float32x2_t integrator;
-    float32x2_t ZD1;
-};
-
-
-// =======================================================================================
-// MARK: - DC OFFSET FILTER
-// =======================================================================================
-
-
-class DCOffsetFilterStereo
-{
-public:
-    float32x2_t processAudioSamples(float32x2_t x)
-    {
-        return mMA1.getZD1() - mMA2.processAudioSamples(mMA1.processAudioSamples(x));
-    }
-    
-private:
-    MovingAveragerStereo mMA1;
-    MovingAveragerStereo mMA2;
-};
-
 
 // =======================================================================================
 // MARK: - HIGHPASS FILTER
@@ -1293,7 +1222,6 @@ private:
     
     FilterStereo filter;          ///< Stereo filter applied to the output.
     Delay delay;                  ///< Delay effect applied to the output.
-    DCOffsetFilterStereo dcOffsetFilter; ///< DC offset filter applied to the output.
     
     float32_t feedback;
     float32_t dynamicFeedback;

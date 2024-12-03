@@ -37,9 +37,8 @@ void BitCrusher::setBitResolution(const float bitResolution_)
     bitResolution = bitResolution_;
     quantizationLevel = (2.f / (powf_neon(2.f, bitResolution) - 1.f));
     quantizationSteps = 1.f / quantizationLevel;
-    
-    consoleprint("Bit Resolution: " + TOSTRING(bitResolution_), __FILE__, __LINE__);
 }
+
 
 void BitCrusher::setSmoothing(const float smoothing_)
 {

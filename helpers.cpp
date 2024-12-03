@@ -1,113 +1,67 @@
 #include "Helpers.hpp"
 
-// MARK: - RAMP
-// ********************************************************************************
+// =======================================================================================
+// MARK: - LINEAR RAMP
+// =======================================================================================
 
-void Ramp::setup(const float value_, const float fs_)
+void LinearRamp::setup(const float& initialValue_, const float& sampleRate_, const unsigned int& blocksize_, const bool& blockwiseProcessing_)
 {
-    current = goal = value_;
-    fs = fs_;
-    step = 0.f;
-    countsteps = 0;
+    value = target = initialValue_;
+    fs = sampleRate_;
+    blocksize_inv = 1.f / (float)blocksize_;
+    blockwiseProcessing = blockwiseProcessing_;
 }
 
-bool Ramp::process()
+
+bool LinearRamp::processRamp()
 {
-    if (countsteps > 0)
+    value += incr;
+    
+    if (--counter <= 0)
     {
-        --countsteps;
-        current += step;
-        return true;
+        rampFinished = true;
+        value = target;
     }
-    return false;
+    
+    return true;
 }
 
-void Ramp::setRampTo(const float goal_, const float time_ms_)
+
+void LinearRamp::setValueWithoutRamping(const float& newValue_)
 {
-    if (goal_ != goal)
+    value = target = newValue_;
+    
+    rampFinished = true;
+    
+    incr = 0.f;
+}
+
+
+void LinearRamp::setRampTo(const float& target_, const float& time_sec)
+{
+    target = target_;
+    
+    if (target != value)
     {
-        if (time_ms_ == 0.f)
-        {
-            setValue(goal_);
-        }
-        else
-        {
-            goal = goal_;
-            float range = fabsf(goal - current);
-            countsteps = fs * 0.001f * time_ms_;
-            step = range / static_cast<float>(countsteps);
-
-            if (goal < current)
-                step *= -1.f;
-        }
+        // calculate the num of steps that the ramp takes
+        // if process will be called blockwise, the counter has to be set accordingly
+        counter = (int)(time_sec * fs);
+        if (blockwiseProcessing) counter *= blocksize_inv;
+        
+        // calculate the increment that's added every call of process
+        if (counter != 0) incr = (target - value) / (float)counter;
+        // counter == 0 would mean that the value will be set immediatly without ramping
+        else setValueWithoutRamping(target);
     }
-}
-
-void Ramp::setValue(const float value_)
-{
-    current = value_;
-    goal = current;
-    countsteps = 0;
-    step = 0.f;
+    else incr = 0.f;
+    
+    rampFinished = false;
 }
 
 
-// MARK: - CHAOS GENERATOR
-// ********************************************************************************
-    
-inline float ChaosGenerator::process()
-{
-    y = coef * y * (1.f - y);
-    return y;
-}
-
-inline void ChaosGenerator::setStartValue (const float _x)
-{
-    y = _x;
-}
-
-inline void ChaosGenerator::setCoefficient(const float _coef)
-{
-    coef = _coef;
-    boundValue(coef, 0.f, 4.f);
-}
-
-// MARK: - MOVING AVERAGER
-// ********************************************************************************
-
-MovingAverager::MovingAverager()
-{
-    for (unsigned int n = 0; n < buffersize; n++)
-        delayline[n] = 0.f;
-}
-
-float MovingAverager::process(const float _x)
-{
-    delayline[pointer] = _x;
-    
-    int zDPointer = pointer + 1;
-    if (zDPointer >= buffersize) zDPointer -= buffersize;
-    
-    int zD1Pointer = pointer + 2;
-    if (zD1Pointer >= buffersize) zD1Pointer -= buffersize;
-    
-    zd1 = delayline[zD1Pointer];
-    
-    float output = _x - delayline[zDPointer];
-    output += integrator;
-    
-    integrator = output;
-    
-    output *= 0.0009765625f; // /= 1024
-
-    if (++pointer >= buffersize) pointer = 0;
-    
-    return output;
-}
-
-
+// =======================================================================================
 // MARK: - DEBOUNCER
-// ********************************************************************************
+// =======================================================================================
 
 bool Debouncer::update (const bool _rawvalue)
 {
