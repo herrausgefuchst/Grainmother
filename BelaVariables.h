@@ -52,7 +52,7 @@ int scrollingBlockCtr;
 // helpers for gui
 static const unsigned int DISPLAY_NUM_LETTERS_IN_ROW = 30;
 static const unsigned int NUM_GUI_CONTROLS = 4;
-static const unsigned int GUI_INITIALIZATION_TIME_SEC = 20;
+static const unsigned int GUI_INITIALIZATION_TIME_SEC = 2;
 
 enum GuiBuffers { POTS, BUTTONS, GUICTRLS, LEDS, DSP1, DSP2, DSP3, DSP4, DSP5, DSP6, DSP7, DSP8, DSP9, DSP10, NUM_GUIBUFFERS };
 int guiBufferIdx[NUM_GUIBUFFERS];

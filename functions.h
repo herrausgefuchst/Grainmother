@@ -188,6 +188,17 @@ inline float lin2log (float x) // fixed Slope 0.75, a & 1/log(b) precalculated
 }
 
 
+inline float getDryAmount(float wetAmount)
+{
+    boundValue(wetAmount, 0.f, 1.f);
+    
+    if (wetAmount <= 0.f) return 1.f;
+    else if (wetAmount >= 1.f) return 0.f;
+    
+    return sqrtf_neon(1.f - wetAmount * wetAmount);
+}
+
+
 
 /**
  * @brief approximates a sine output

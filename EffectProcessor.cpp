@@ -65,7 +65,7 @@ void EffectProcessor::updateRamps()
     {
         wetGain.processRamp();
         
-        dryGain = sqrtf_neon(1.f - wetGain() * wetGain());
+        dryGain = getDryAmount(wetGain());
     }
 }
 

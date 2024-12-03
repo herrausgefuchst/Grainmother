@@ -55,6 +55,8 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     globalWet.setup(1.f, sampleRate, RAMP_BLOCKSIZE);
     globalWetCache = globalWet();
     globalDry = 1.f - globalWet();
+    
+    consoleprint("Global Wet Cache: " + TOSTRING(globalWetCache), __FILE__, __LINE__);
 }
 
 
@@ -112,11 +114,11 @@ void AudioEngine::initializeEngineParameters()
 
 float32x2_t AudioEngine::processAudioSamples(float32x2_t input_, uint sampleIndex_)
 {
-    // don't process anything if the bypassed flag is set true
-    if (bypassed) return input_;
-    
     // process the ramp for wetness in a certain rate
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
+    
+    // don't process anything if the bypassed flag is set true
+    if (bypassed) return input_;
     
     float32x2_t input = input_;
     float32x2_t output = vdup_n_f32(0.f);
@@ -282,7 +284,7 @@ void AudioEngine::setBypass(bool bypassed_)
     }
     
     // Update the dry signal to be the cosine inverse of the wet signal.
-    globalDry = sqrtf_neon(1.f - globalWet() * globalWet());
+    globalDry = getDryAmount(globalWet());
 }
 
 
@@ -305,7 +307,7 @@ void AudioEngine::updateRamps()
         globalWet.processRamp();
         
         // Update the dry signal to be the inverse of the wet signal.
-        globalDry = sqrtf_neon(1.f - globalWet() * globalWet());
+        globalDry = getDryAmount(globalWet());
     }
     // If the ramp is finished and the wet signal has reached 0, set bypassed to true.
     else if (!bypassed && globalWet() < 0.f)

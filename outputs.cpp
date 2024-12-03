@@ -383,9 +383,7 @@ void Display::createMenuPageMessage(Menu::Page* page_)
     size_t currentChoice = page_->getCurrentChoiceIndex();
     String* choiceNames = page_->getChoiceNames();
     size_t numChoices = page_->getNumChoices();
-    
-    std::cout << "Display received choiceNames index 0 = " << choiceNames[0] << std::endl;
-    
+        
 #ifdef BELA_CONNECTED
     oscTransmitter.newMessage("/menupage");
     
