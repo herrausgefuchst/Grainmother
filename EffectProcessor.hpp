@@ -61,6 +61,8 @@ public:
     
     void setMix(const float mixGain_);
     
+    virtual void synchronize() {}
+    
     void parameterChanged(AudioParameter *param_) override;
     
     /**
@@ -144,6 +146,8 @@ public:
     
     void updateAudioBlock() override;
     
+    void synchronize() override;
+    
     void parameterChanged(AudioParameter *param_) override;
     
 private:
@@ -170,6 +174,8 @@ public:
     float32x2_t processAudioSamples(const float32x2_t input_, const uint sampleIndex_) override;
     
     void updateAudioBlock() override;
+    
+    void synchronize() override;
     
     void parameterChanged(AudioParameter *param_) override;
 

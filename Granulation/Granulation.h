@@ -1189,6 +1189,8 @@ public:
      */
     float32x2_t processAudioSamples(const float32x2_t input_, const uint sampleIndex_);
     
+    void resetPhase();
+    
     /**
      * @brief Responds to changes in audio parameters.
      *

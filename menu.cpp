@@ -182,7 +182,8 @@ Menu::SettingPage::SettingPage(const String& id_, const String& name_,
 
 void Menu::SettingPage::update(String presetName_, uint index_)
 {
-    // TODO: Saftey check!
+    if (index_ >= choiceNames.size())
+        engine_rt_error("The index that is passed in exceeds the size of the vector!", __FILE__, __LINE__, true);
     
     choiceNames[index_] = presetName_;
 }

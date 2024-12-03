@@ -203,6 +203,8 @@ public:
      */
     void setWaveform(Waveform waveform_);
     
+    void resetPhases();
+    
 private:
     /**
      * @brief Generates the next value of the sine waveform.
@@ -341,6 +343,8 @@ public:
      * @brief Updates internal parameters for the audio processing block.
      */
     void updateAudioBlock();
+    
+    void resetPhases();
     
     /**
      * @brief Handles changes to parameters.

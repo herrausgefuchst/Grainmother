@@ -25,7 +25,14 @@ EffectProcessor::EffectProcessor(AudioParameterGroup* engineParameters_,
 
 void EffectProcessor::parameterChanged(AudioParameter *param_)
 {
-    // TODO: no safety guards here
+    std::string paramID = param_->getID();
+    std::string check = "engage";
+
+    // Check if "engage" is in the string
+    if (paramID.find(check) == std::string::npos)
+        engine_rt_error("The Parameter with ID: " + paramID + " is not allowed to change the engagement of an effect.",
+                        __FILE__, __LINE__, true);
+        
     engage(param_->getValueAsInt());
 }
 
@@ -218,6 +225,12 @@ void GranulatorProcessor::updateAudioBlock()
 }
 
 
+void GranulatorProcessor::synchronize()
+{
+    granulator.resetPhase();
+}
+
+
 void GranulatorProcessor::initializeParameters()
 {
     using namespace Granulation;
@@ -349,6 +362,12 @@ float32x2_t RingModulatorProcessor::processAudioSamples(const float32x2_t input_
 void RingModulatorProcessor::updateAudioBlock()
 {
     ringModulator.updateAudioBlock();
+}
+
+
+void RingModulatorProcessor::synchronize()
+{
+    ringModulator.resetPhases();
 }
 
 

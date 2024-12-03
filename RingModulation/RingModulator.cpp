@@ -101,6 +101,12 @@ void LFO::setWaveform(Waveform waveform_)
 }
 
 
+void LFO::resetPhases()
+{
+    phase = 0.f;
+}
+
+
 // =======================================================================================
 // MARK: - OSCILLATOR
 // =======================================================================================
@@ -364,6 +370,12 @@ void RingModulator::saturate(float& signal_, const float& saturation_, const flo
     
     else
         signal_ = tanhf((saturation_ / asymmetry_) * signal_) / tanhf(saturation_ / asymmetry_);
+}
+
+
+void RingModulator::resetPhases()
+{
+    modulator.getLFO().resetPhases();
 }
 
 

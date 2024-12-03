@@ -867,8 +867,8 @@ void UserInterface::setTempoRelatedParameters()
             
             // Convert BPM to milliseconds.
             // * 8.f: Fit the BPM range to the range of the predelay.
-            // TODO: Adjust the values to ensure they are in the correct range.
             float tempoMs = bpm2msec(tempoBpm * 8.f);
+            boundValue(tempoMs, predelay->getMin(), predelay->getMax());
             
             // Set the new predelay value without triggering a print notification.
             predelay->setValue(tempoMs, false);
@@ -886,20 +886,36 @@ void UserInterface::setTempoRelatedParameters()
             // Convert BPM to milliseconds.
             float tempoMs = bpm2msec(tempoBpm);
             float tempoRate = 1000.f / tempoMs;
-            
             tempoRate *= 2.f;
-            //TODO: uncomment this?
-//            if (tempoRate < Granulation::MIN_DENSITY) tempoRate *= 2.f;
-//            else if (tempoRate > Granulation::MAX_DENSITY) tempoRate = Granulation::MAX_DENSITY;
             
             // Set the new density value without triggering a print notification.
+            effect->synchronize();
             density->setValue(tempoRate, false);
             
             // Decouple the corresponding potentiometer and set its cache to the new normalized value.
             if (effectIndex == 1) potentiometer[density->getIndex()].decouple(density->getNormalizedValue());
         }
         
-        // TODO: Add Resonator
+        // Adjust tempo-related parameters for the ringmodulator effect.
+        if (effect->getId() == "ringmodulator" || tempoSetOption == "All Effects")
+        {
+            // Retrieve the Rate parameter for the granulator effect.
+            auto rate = engine->getParameter("ringmodulator", "ringmod_rate");
+            
+            // Convert BPM to milliseconds.
+            float tempoMs = bpm2msec(tempoBpm);
+            float tempoRate = 1000.f / tempoMs;
+            tempoRate *= 2.f;
+            
+            boundValue(tempoRate, rate->getMin(), rate->getMax());
+            
+            // Set the new density value without triggering a print notification.
+            effect->synchronize();
+            rate->setValue(tempoRate, false);
+            
+            // Decouple the corresponding potentiometer and set its cache to the new normalized value.
+            if (effectIndex == 2) potentiometer[rate->getIndex()].decouple(rate->getNormalizedValue());
+        }
     }
     
     else

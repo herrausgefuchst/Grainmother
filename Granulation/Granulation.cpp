@@ -705,6 +705,12 @@ float32x2_t Granulator::processAudioSamples(const float32x2_t input_, const uint
 }
 
 
+void Granulator::resetPhase()
+{
+    for (uint ch = 0; ch < 2; ++ch) onsetCounter[ch] = 1;
+}
+
+
 void Granulator::parameterChanged (const String parameterID, float newValue)
 {
     bool parameterReceived = true;
