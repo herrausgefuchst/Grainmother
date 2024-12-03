@@ -110,15 +110,16 @@ void render (BelaContext *context, void *userData)
     {
         userinterface.processNonAudioTasks();
         
-        StereoFloat output = engine.processAudioSamples({audioRead(context, sampleIndex, 0), audioRead(context, sampleIndex, 1)}, sampleIndex);
+        float32x2_t input = { audioRead(context, sampleIndex, 0), audioRead(context, sampleIndex, 1) };
+        float32x2_t output = engine.processAudioSamples(input, sampleIndex);
         
         // write output buffer
-        audioWrite(context, sampleIndex, 0, output.leftSample);
-        audioWrite(context, sampleIndex, 1, output.rightSample);
+        audioWrite(context, sampleIndex, 0, output[0]);
+        audioWrite(context, sampleIndex, 1, output[1]);
         
 #ifdef SCOPE_ACTIVE
         // scope output
-        scope.log(output.leftSample, output.rightSample);
+        scope.log(output[0], output[1]);
 #endif
     }
 }

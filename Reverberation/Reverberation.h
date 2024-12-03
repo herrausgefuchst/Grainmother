@@ -609,7 +609,7 @@ public:
      * @param sampleIndex_ (0...blocksize-1) the momentary index of the processing loop
      * @return returns the processed samples
      */
-    StereoFloat processAudioSamples(StereoFloat input_, const unsigned int& sampleIndex_);
+    float32x2_t processAudioSamples(float32x2_t input_, const unsigned int& sampleIndex_);
     
     /**
      * @brief handles new incoming values from UI

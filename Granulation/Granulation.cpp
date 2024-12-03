@@ -614,7 +614,7 @@ void Granulator::update()
 }
 
 
-StereoFloat Granulator::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
+float32x2_t Granulator::processAudioSamples(const float32x2_t input_, const uint sampleIndex_)
 {
     StereoFloat output = { 0.f, 0.f };
     
@@ -701,7 +701,7 @@ StereoFloat Granulator::processAudioSamples(const StereoFloat input_, const uint
     previousOutput = feedbackHighpass.process(output);
     
     // return processed wet output + dry input
-    return output;
+    return { output[LEFT], output[RIGHT] };
 }
 
 

@@ -46,8 +46,7 @@ public:
      * @param input_ The stereo input to process.
      * @return The processed stereo output.
      */
-    // TODO: could they all pass in a float32x2_t vector instead?
-    virtual StereoFloat processAudioSamples(const StereoFloat input_, const uint sampleIndex_) = 0;
+    virtual float32x2_t processAudioSamples(const float32x2_t input_, const uint sampleIndex_) = 0;
 
     /**
      * @brief Updates the audio block for the effect.
@@ -116,7 +115,7 @@ public:
     
     void setup() override;
     
-    StereoFloat processAudioSamples(const StereoFloat input_, const uint sampleIndex_) override;
+    float32x2_t processAudioSamples(const float32x2_t input_, const uint sampleIndex_) override;
         
     void parameterChanged(AudioParameter *param_) override;
     
@@ -141,7 +140,7 @@ public:
     
     ~GranulatorProcessor() {}
     
-    StereoFloat processAudioSamples(const StereoFloat input_, const uint sampleIndex_) override;
+    float32x2_t processAudioSamples(const float32x2_t input_, const uint sampleIndex_) override;
     
     void updateAudioBlock() override;
     
@@ -168,7 +167,7 @@ public:
     
     ~RingModulatorProcessor() {}
     
-    StereoFloat processAudioSamples(const StereoFloat input_, const uint sampleIndex_) override;
+    float32x2_t processAudioSamples(const float32x2_t input_, const uint sampleIndex_) override;
     
     void updateAudioBlock() override;
     

@@ -1258,7 +1258,7 @@ public:
      * @param sampleIndex_ The index of the current sample within the block.
      * @return The processed stereo samples.
      */
-    StereoFloat processAudioSamples(const StereoFloat input_, const uint sampleIndex_);
+    float32x2_t processAudioSamples(const float32x2_t input_, const uint sampleIndex_);
     
     /**
      * @brief Responds to changes in audio parameters.

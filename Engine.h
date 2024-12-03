@@ -25,7 +25,8 @@
 // MARK: - AUDIO ENGINE
 // =======================================================================================
 
-typedef std::function<StereoFloat(StereoFloat, uint)> ProcessFunctionPointer;
+//typedef std::function<StereoFloat(StereoFloat, uint)> ProcessFunctionPointer;
+typedef std::function<float32x2_t(float32x2_t, uint)> ProcessFunctionPointer;
 
 /**
  * @class AudioEngine
@@ -72,7 +73,7 @@ public:
      * @param sampleIndex_ The index of the sample within the current block.
      * @return The processed stereo output.
      */
-    StereoFloat processAudioSamples(StereoFloat input_, uint sampleIndex_);
+    float32x2_t processAudioSamples(float32x2_t input_, uint sampleIndex_);
     
     void updateAudioBlock();
     

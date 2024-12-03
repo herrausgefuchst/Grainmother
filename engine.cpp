@@ -110,7 +110,7 @@ void AudioEngine::initializeEngineParameters()
 }
 
 
-StereoFloat AudioEngine::processAudioSamples(StereoFloat input_, uint sampleIndex_)
+float32x2_t AudioEngine::processAudioSamples(float32x2_t input_, uint sampleIndex_)
 {
     // don't process anything if the bypassed flag is set true
     if (bypassed) return input_;
@@ -118,8 +118,8 @@ StereoFloat AudioEngine::processAudioSamples(StereoFloat input_, uint sampleInde
     // process the ramp for wetness in a certain rate
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
     
-    StereoFloat input = input_;
-    StereoFloat output = {0.f, 0.f};
+    float32x2_t input = input_;
+    float32x2_t output = vdup_n_f32(0.f);
     
     // Counter to keep track of how many effects have been processed.
     uint processedEffects = 0;
@@ -134,7 +134,7 @@ StereoFloat AudioEngine::processAudioSamples(StereoFloat input_, uint sampleInde
             if (processFunction[m][n])
             {
                 // Apply the processing function to the input, and accumulate the result into 'output'.
-                output += processFunction[m][n](input, sampleIndex_);
+                output = vadd_f32(output, processFunction[m][n](input, sampleIndex_));
                 
                 // Increment the processed effects counter.
                 // Exit if all effects have been processed.
@@ -151,13 +151,15 @@ StereoFloat AudioEngine::processAudioSamples(StereoFloat input_, uint sampleInde
             input = output;
             
             // Reset the output for the next iteration of processing.
-            output = { 0.f, 0.f };
+            output = vdup_n_f32(0.f);
         }
     }
 
     // Return the final output after applying the global wet/dry mix.
     // The output is mixed with the original input, weighted by globalWet and globalDry parameters.
-    return output * globalWet() + input_ * globalDry;
+    output = vmul_n_f32(output, globalWet());
+    output = vmla_n_f32(output, input_, globalDry);
+    return output;
 }
 
 
@@ -220,7 +222,7 @@ void AudioEngine::setEffectOrder()
                 {
                     
                     // insert the process function of this effect to the precise array slot
-                    processFunction[row][col] = [this, effectIndex](StereoFloat input, uint sampleIndex) {
+                    processFunction[row][col] = [this, effectIndex](float32x2_t input, uint sampleIndex) {
                         return effectProcessor[effectIndex]->processAudioSamples(input, sampleIndex);
                     };
                     

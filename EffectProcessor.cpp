@@ -76,16 +76,24 @@ void ReverbProcessor::setup()
 }
 
 
-StereoFloat ReverbProcessor::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
+float32x2_t ReverbProcessor::processAudioSamples(const float32x2_t input_, const uint sampleIndex_)
 {
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
     
-    StereoFloat output;
+    float32x2_t output;
 
     if (isProcessedIn == PARALLEL)
-        output = reverb.processAudioSamples(input_ * muteGain() * wetGain(), sampleIndex_);
+    {
+        float32x2_t input = vmul_n_f32(input_, muteGain());
+        input = vmul_n_f32(input, wetGain());
+        output = reverb.processAudioSamples(input, sampleIndex_);
+    }
     else // if (isProcessedIN == SERIES)
-        output = reverb.processAudioSamples(input_ * muteGain(), sampleIndex_) * wetGain() + input_ * dryGain;
+    {
+        float32x2_t input = vmul_n_f32(input_, muteGain());
+        output = vmul_n_f32(reverb.processAudioSamples(input, sampleIndex_), wetGain());
+        output = vmla_n_f32(output, input_, dryGain);
+    }
     
     return output;
 }
@@ -181,16 +189,24 @@ void GranulatorProcessor::setup()
 }
 
 
-StereoFloat GranulatorProcessor::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
+float32x2_t GranulatorProcessor::processAudioSamples(const float32x2_t input_, const uint sampleIndex_)
 {
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
     
-    StereoFloat output;
-    
+    float32x2_t output;
+
     if (isProcessedIn == PARALLEL)
-        output = granulator.processAudioSamples(input_ * muteGain() * wetGain(), sampleIndex_);
+    {
+        float32x2_t input = vmul_n_f32(input_, muteGain());
+        input = vmul_n_f32(input, wetGain());
+        output = granulator.processAudioSamples(input, sampleIndex_);
+    }
     else // if (isProcessedIN == SERIES)
-        output = granulator.processAudioSamples(input_ * muteGain(), sampleIndex_) * wetGain() + input_ * dryGain;
+    {
+        float32x2_t input = vmul_n_f32(input_, muteGain());
+        output = vmul_n_f32(granulator.processAudioSamples(input, sampleIndex_), wetGain());
+        output = vmla_n_f32(output, input_, dryGain);
+    }
     
     return output;
 }
@@ -306,16 +322,25 @@ void RingModulatorProcessor::setup()
 }
 
 
-StereoFloat RingModulatorProcessor::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
+float32x2_t RingModulatorProcessor::processAudioSamples(const float32x2_t input_, const uint sampleIndex_)
 {
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
     
-    StereoFloat output;
+    float32x2_t output;
+
     
     if (isProcessedIn == PARALLEL)
-        output = ringModulator.processAudioSamples(input_ * muteGain() * wetGain(), sampleIndex_);
+    {
+        float32x2_t input = vmul_n_f32(input_, muteGain());
+        input = vmul_n_f32(input, wetGain());
+        output = ringModulator.processAudioSamples(input, sampleIndex_);
+    }
     else // if (isProcessedIN == SERIES)
-        output = ringModulator.processAudioSamples(input_ * muteGain(), sampleIndex_) * wetGain() + input_ * dryGain;
+    {
+        float32x2_t input = vmul_n_f32(input_, muteGain());
+        output = vmul_n_f32(ringModulator.processAudioSamples(input, sampleIndex_), wetGain());
+        output = vmla_n_f32(output, input_, dryGain);
+    }
     
     return output;
 }

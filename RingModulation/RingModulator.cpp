@@ -241,19 +241,16 @@ void RingModulator::updateRamps()
 }
 
 
-StereoFloat RingModulator::processAudioSamples(const StereoFloat input_, const uint sampleIndex_)
+float32x2_t RingModulator::processAudioSamples(const float32x2_t input_, const uint sampleIndex_)
 {
     // update ramps in a predefined rate
     if ((sampleIndex_ & (RingModulation::RAMP_UPDATE_RATE-1)) == 0) updateRamps();
-    
-    // convert StereoFloat to arm_neon vector
-    float32x2_t input_vec = { input_[0], input_[1] };
     
     InterpolatorStereoOutput interpolatedOutput;
     DecimatorStereoInput decimationInput;
     
     // Upsample the incoming audio sample
-    interpolatedOutput = interpolator.interpolateAudio(input_vec);
+    interpolatedOutput = interpolator.interpolateAudio(input_);
     
     // Process each upsampled audio sample (oversample ratio times)
     for (uint n = 0; n < oversampleRatio; ++n)
@@ -280,13 +277,9 @@ StereoFloat RingModulator::processAudioSamples(const StereoFloat input_, const u
     }
         
     // Downsample the processed audio to the original sample rate
-    float32x2_t output_vec = vmul_n_f32(decimator.decimateAudio(decimationInput), gainCompensation());
+    float32x2_t output = vmul_n_f32(decimator.decimateAudio(decimationInput), gainCompensation());
     
-//    // apply dry and wet
-//    output_vec = vmul_n_f32(output_vec, wet);
-//    output_vec = vmla_n_f32(output_vec, input_vec, dry); 
-    
-    return { vget_lane_f32(output_vec, 0), vget_lane_f32(output_vec, 1) };
+    return output;
 }
 
 

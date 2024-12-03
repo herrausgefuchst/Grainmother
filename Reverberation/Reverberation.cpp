@@ -403,14 +403,13 @@ void Reverb::updateRamps()
 
 // MARK: processAudioSamples
 // ------------------------------------------------------------------------------
-StereoFloat Reverb::processAudioSamples(const StereoFloat input_, const unsigned int& sampleIndex_)
+float32x2_t Reverb::processAudioSamples(const float32x2_t input_, const unsigned int& sampleIndex_)
 {
     if (!settingType)
     {
         if ((sampleIndex_ & (RAMP_UPDATE_RATE-1)) == 0) updateRamps();
     
-        float32x2_t input = { input_.leftSample, input_.rightSample };
-        float32x2_t output = input;
+        float32x2_t output = input_;
         
         // parametric eq shapes the input signal
         if (inputMultiplier.enabled) inputMultiplier.processAudioSamples(output);
@@ -436,9 +435,9 @@ StereoFloat Reverb::processAudioSamples(const StereoFloat input_, const unsigned
         output = vmul_n_f32(output, GAIN_COMPENSATION);
         
         // return as StereoFloat
-        return { vget_lane_f32(output, 0), vget_lane_f32(output, 1) };
+        return output;
     }
-    return { 0.f, 0.f };
+    return vdup_n_f32(0.f);
 }
 
 
