@@ -1,6 +1,6 @@
 #pragma once
 
-#define BELA_CONNECTED
+//#define BELA_CONNECTED
 
 #include <iostream>
 #include <vector>

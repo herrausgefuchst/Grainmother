@@ -1,6 +1,12 @@
 #ifndef EngineVariables_h
 #define EngineVariables_h
 
+/**
+ * @defgroup UserInterfaceParameters
+ * @brief a group of static constant variables used in the whole UI structrure
+ * @{
+ */
+
 // MARK: - NUMS
 // =======================================================================================
 
@@ -84,6 +90,9 @@ enum class PotBehaviour {
     JUMP,
     CATCH
 };
+
+/** @} */
+
 
 // MARK: - ENGINE PARAMETERS
 // =======================================================================================

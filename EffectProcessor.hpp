@@ -12,7 +12,7 @@
 // =======================================================================================
 
 /**
- * @class Effect
+ * @class EffectProcessor
  * @brief A base class representing an audio effect processor, with setup and processing capabilities.
  *
  * This class wraps the actual effect class, handling dry/wet and mute processing and the parameter layout

@@ -2,10 +2,6 @@
 
 #define CONSOLE_PRINT
 
-
-// TODO: LEDS blinking rates
-// TODO: Action Button: only showing current setting when first pressed
-
 // =======================================================================================
 // MARK: - AUDIO ENGINE
 // =======================================================================================
@@ -706,9 +702,6 @@ void UserInterface::globalSettingChanged(Menu::Page* page_)
     {
         Potentiometer::setPotBevaviour(INT2ENUM(page_->getCurrentChoiceIndex(), PotBehaviour));
     }
-    
-    //TODO: midi in
-    //TODO: midi out
     
     alertLEDs(LED::ALERT);
 }

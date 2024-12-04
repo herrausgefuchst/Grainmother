@@ -1,10 +1,8 @@
-// TODO: Modulation Rate doesnt initalize correctly
-
 // =======================================================================================
 //
-// BelaReverb.h
+// Reverberation.h
 /**
- * @file BelaReverb.h
+ * @file Reverberation.h
  * @author Julian Fuchs
  * @date 04-August-2024
  * @version 1.0.0
@@ -29,7 +27,7 @@
 #include "ReverbModules.h"
 
 /**
- * @defgroup BelaReverbParameters
+ * @defgroup ReverbParameters
  * @brief all static variables concerning the reverb UI parameters
  * @{
  */
@@ -653,21 +651,3 @@ private:
 };
 
 } // namespace Reverberation
-
-/**
- * @mainpage BelaReverb
- *
- * @section intro_sec Introduction
- * The BelaReverb simulates 24 early reflections using a tap delay, then sends this signal into a late reverberation algorithm similar to those from Schroeder and Moorer. The late reverberation consists of a series of all-pass filters, a set of parallel comb filters, and another set of series all-pass filters. To combine these two elements correctly, the decay has to be delayed to align right after the latest early reflection. In addition, some equalizers can shape the sound. A parametric EQ is implemented pre-FX and used as a “multiplier” of the input signal. A low-cut and high-cut filter can be set upon request; these are implemented post-FX.
- *
- * @section type_sec The Reverb Types
- * The user can change the reverb type, which involves many internal parameter changes (referred to as typeParameters). The EarlyReflections class includes three different reflection simulations: Church, Foyer, and Bathroom. This set of tap delays changes according to the type, as well as a diffusion factor (the all-pass filter gain in the early reflections) and a damping factor (low-pass gain in the early reflections). The decay primarily adjusts the composition of all-pass and comb filters and their corresponding delays. Additionally, damping, diffusion, and the rate and depth of modulating the all-pass filter delay times are type parameters.
- *
- * Four different types have been implemented:
- * •    CHURCH
- * •    DIGITAL VINTAGE REVERB
- * •    SEASICK
- * •    ROOM
- *
- * You can look up the corresponding parameter sets in the BelaReverb::setReverbType() function.
- */

@@ -9,7 +9,7 @@
 // =======================================================================================
 
 /**
- * @class RampLinear
+ * @class LinearRamp
  * @brief The RampLinear object implements a linear fade between two values.
  *
  * This class is used for parameters that glitch or crackle when changing them in the UI too fast. One can set the time, the ramp needs to process.
@@ -78,24 +78,72 @@ public:
 // MARK: - DEBOUNCER
 // =======================================================================================
 
+/**
+ * @class Debouncer
+ * @brief A class for debouncing digital signals.
+ *
+ * The Debouncer class is designed to filter out noise in digital input signals by
+ * implementing a time-based debounce mechanism. It transitions between stable states
+ * (OPENED and CLOSED) and intermediate states (JUSTOPENED and JUSTCLOSED) based on a
+ * configurable debounce time.
+ */
 class Debouncer
 {
 public:
+    /**
+     * @brief Deleted default constructor.
+     *
+     * The Debouncer must be constructed with a specific debounce time and default state.
+     */
     Debouncer() = delete;
-    Debouncer (const int _debounceunits, const int _defaultstate = OPENED)
+
+    /**
+     * @brief Constructs a Debouncer instance with a specified debounce time and default state.
+     * @param _debounceunits The number of units to wait for signal stabilization.
+     * @param _defaultstate The default initial state (OPENED by default).
+     */
+    Debouncer(const int _debounceunits, const int _defaultstate = OPENED)
         : state(INT2ENUM(_defaultstate, State))
         , counter(_debounceunits)
         , debounceunits(_debounceunits)
     {}
 
-    bool update (const bool _rawvalue);
-    
+    /**
+     * @brief Updates the debouncer state based on the raw input value.
+     *
+     * This function processes a raw input signal, transitioning between stable
+     * and intermediate states based on the debounce logic and timing. It returns
+     * the stable state of the signal after debouncing.
+     *
+     * @param _rawvalue The raw input signal (true for CLOSE, false for OPEN).
+     * @return The stable state of the signal (true for CLOSE, false for OPEN).
+     */
+    bool update(const bool _rawvalue);
+
 private:
+    /**
+     * @enum State
+     * @brief Represents the internal states of the debouncer.
+     *
+     * - **OPENED:** Stable open state.
+     * - **CLOSED:** Stable closed state.
+     * - **JUSTOPENED:** Transitioning to open state.
+     * - **JUSTCLOSED:** Transitioning to closed state.
+     */
     enum State { OPENED, CLOSED, JUSTOPENED, JUSTCLOSED };
+
+    /**
+     * @enum Input
+     * @brief Represents the possible raw input states.
+     *
+     * - **CLOSE:** Input signal indicates a closed state.
+     * - **OPEN:** Input signal indicates an open state.
+     */
     enum Input { CLOSE, OPEN };
-    State state;
-    int counter;
-    const int debounceunits;
+
+    State state; ///< Current state of the debouncer.
+    int counter; ///< Countdown timer for transitioning between states.
+    const int debounceunits; ///< Number of units to wait for signal stabilization.
 };
 
 #endif /* helpers_hpp */

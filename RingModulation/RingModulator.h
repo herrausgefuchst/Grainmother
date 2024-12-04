@@ -319,7 +319,16 @@ private:
 // MARK: - RING MODULATOR
 // =======================================================================================
 
-
+/**
+ * @class RingModulator
+ * @brief A class for implementing ring modulation with multiple modulation types.
+ *
+ * The RingModulator class provides functionality for real-time audio ring modulation
+ * with configurable parameters, including modulation type, pitch, depth, saturation,
+ * and more. It supports multiple modulation algorithms such as diode, transistor, and
+ * a hybrid combination of both. Additionally, the class incorporates oversampling,
+ * bit crushing, and noise modulation for extended sound design capabilities.
+ */
 class RingModulator
 {
 public:

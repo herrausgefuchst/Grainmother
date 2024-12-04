@@ -1,5 +1,10 @@
 #include "ConstantVariables.h"
 
+/** @todo Reverb Modulation Rate doesnt initalize correctly */
+/** @todo Midi In */
+/** @todo Midi Out */
+/** @todo Action Button: only showing current setting when first pressed */
+
 #ifdef BELA_CONNECTED
 
 #include "BelaVariables.h"
@@ -210,3 +215,34 @@ void midiMessageCallback(MidiChannelMessage message, void* arg)
 }
 
 #endif // BELA_CONNECTED
+
+
+/**
+ * @mainpage GRAINMOTHER
+ *
+ * @section intro Introduction
+ *
+ * @section reverb Reverb
+ * The Reverb simulates 24 early reflections using a tap delay, then sends this signal into a late reverberation algorithm similar to those from Schroeder and Moorer. The late reverberation consists of a series of all-pass filters, a set of parallel comb filters, and another set of series all-pass filters. To combine these two elements correctly, the decay has to be delayed to align right after the latest early reflection. In addition, some equalizers can shape the sound. A parametric EQ is implemented pre-FX and used as a “multiplier” of the input signal. A low-cut and high-cut filter can be set upon request; these are implemented post-FX.
+ *
+ * @subsection reverbtypes The Reverb Types
+ * The user can change the reverb type, which involves many internal parameter changes (referred to as typeParameters). The EarlyReflections class includes three different reflection simulations: Church, Foyer, and Bathroom. This set of tap delays changes according to the type, as well as a diffusion factor (the all-pass filter gain in the early reflections) and a damping factor (low-pass gain in the early reflections). The decay primarily adjusts the composition of all-pass and comb filters and their corresponding delays. Additionally, damping, diffusion, and the rate and depth of modulating the all-pass filter delay times are type parameters.
+ *
+ * Four different types have been implemented:
+ * •    CHURCH
+ * •    DIGITAL VINTAGE REVERB
+ * •    SEASICK
+ * •    ROOM
+ *
+ * You can look up the corresponding parameter sets in the Reverberation::Reverb::setReverbType() function.
+ *
+ * @section granulator Granulator
+ * The Granulator processes audio in real-time using a Tapped Delay Line approach, decomposing sound into small grains (1–100 ms) and reassembling them into new textures. Grain properties like length, density, delay, and panning can be randomized or adjusted manually. Grain density, measured as the inter-onset interval, defines the temporal spacing between grains.
+ *
+ * @subsection advancedfeatures Advanced Features
+ * - **Pitch and Reverse:** Allows pitch shifts by adjusting grain playback rates; reverse playback avoids real-time pitch-up limitations.
+ * - **Feedback:** Adds harmonic richness with saturation, high-pass filtering, and dynamic feedback to prevent instability.
+ * - **Filter & Delay:** Integrated Moog-style filter and a delay effect tied to grain density for synchronized echoes.
+ *
+ * @section ringmodulator Ringmodulator
+ */
