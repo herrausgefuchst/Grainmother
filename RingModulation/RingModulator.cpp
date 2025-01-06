@@ -535,7 +535,7 @@ void RingModulator::parameterChanged(const String &parameterID, float newValue)
     {
         float mapped = 1.f - 0.01f * newValue;
         mapped = lin2log(mapped);
-        mapped = mapValue(mapped, 0.f, 1.f, 1.f, 16.f);
+        mapped = mapValue(mapped, 0.f, 1.f, 2.f, 16.f);
         bitCrusher.setBitResolution(mapped);
     }
     

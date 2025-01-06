@@ -57,7 +57,7 @@ public:
 private:
     float32x2_t input = vdup_n_f32(0.f); ///< Current stereo input sample.
 
-    float quantizationLevel_16Bit = (2.f / (powf_neon(2.f, 16.f) - 1.f)); ///< Quantization level for 16-bit resolution.
+    float quantizationLevel_16Bit = (2.f / (powf_neon(2.f, 16.f) - 1.f)); ///< Quantization level for 16-bit resolution. 
     float quantizationSteps_16Bit = 1.f / quantizationLevel_16Bit; ///< Quantization steps for 16-bit resolution.
 
     float bitResolution; ///< Current bit resolution.

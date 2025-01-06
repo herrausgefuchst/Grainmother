@@ -747,6 +747,11 @@ void Menu::buttonReleased (UIElement* _uielement)
 
 void Menu::loadPreset(uint index_)
 {
+    if (index_ < 0 || index_ >= NUM_PRESETS)
+        engine_rt_error("Preset Index is out of range!", __FILE__, __LINE__, false);
+    
+    boundValue(index_, 0u, (uint)(NUM_PRESETS-1));
+    
     // extract parametergroups (order is fixed!)
     auto engineParams = programParameters[0];
     auto revParams = programParameters[ENUM2INT(EffectOrder::REVERB) + 1];
@@ -775,6 +780,24 @@ void Menu::loadPreset(uint index_)
     
     // notify listeners
     if (onPresetLoad) onPresetLoad();
+}
+
+void Menu::handleMidiProgramChangeMessage(uint midiValue_)
+{
+    // check for boundaries
+    if (midiValue_ < 0 || midiValue_ >= NUM_PRESETS)
+        engine_rt_error("Preset Index is out of range!", __FILE__, __LINE__, false);
+    
+    boundValue(midiValue_, 0u, (uint)(NUM_PRESETS-1));
+    
+    // menu load page needs to be updated
+    getPage("load_preset")->setCurrentChoice(midiValue_);
+    
+    // menu needs to jump, display needs to be updated
+    setCurrentPage(getPage("load_preset"));
+    
+    // actually load the preset
+    loadPreset(midiValue_);
 }
 
 

@@ -701,9 +701,9 @@ void UserInterface::globalSettingChanged(Menu::Page* page_)
     if (page_->getID() == "pot_behaviour")
     {
         Potentiometer::setPotBevaviour(INT2ENUM(page_->getCurrentChoiceIndex(), PotBehaviour));
+        
+        alertLEDs(LED::ALERT);
     }
-    
-    alertLEDs(LED::ALERT);
 }
 
 

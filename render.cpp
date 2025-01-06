@@ -23,10 +23,10 @@ bool setup (BelaContext *context, void *userData)
     #endif
     
     // midi
-    midi.readFrom("hw:1,0,0");
-    midi.writeTo("hw:1,0,0");
+    midi.readFrom("hw:0,0,0");
+    midi.writeTo("hw:0,0,0");
     midi.enableParser(true);
-    midi.getParser()->setCallback(midiMessageCallback, (void*) "hw:1,0,0");
+    midi.getParser()->setCallback(midiMessageCallback, (void*) "hw:0,0,0");
     
     // display
     DISPLAY_BLOCKS_PER_FRAME = context->audioSampleRate / ( DISPLAY_FRAMERATE * context->audioFrames );
@@ -199,18 +199,29 @@ void updateLEDs()
 
 void midiMessageCallback(MidiChannelMessage message, void* arg)
 {
-    if(arg != NULL)
-    {
-        rt_printf("Message from midi port %s ", (const char*) arg);
-    }
-    
+    if(arg != NULL) rt_printf("Message from midi port %s ", (const char*) arg);
     message.prettyPrint();
     
-    if(message.getType() == kmmProgramChange)
+    int midiInChannel = userinterface.menu.getMidiInChannel() - 1;
+    int midiOutChannel = userinterface.menu.getMidiOutChannel() - 1;
+    
+//    rt_printf("Midi In Channel: %i, Midi Out Channel: %i \n", midiInChannel, midiOutChannel);
+//    rt_printf("Midi Channel of Message: %i \n", message.getChannel());
+    
+    if (message.getChannel() == midiInChannel)
     {
-        rt_printf("Program Change detected!");
+//        rt_printf("Correct IN Channel! \n");
+//        rt_printf("Type of Message: %i \n", message.getType());
+//        rt_printf("Program Change Index: %i \n", kmmProgramChange);
         
-        userinterface.menu.loadPreset(0);
+        if(message.getType() == kmmProgramChange)
+        {
+            uint presetIndex = message.getDataByte(0);
+            
+//            rt_printf("Program Change detected! New Programm Index: %i \n", presetIndex);
+            
+            userinterface.menu.handleMidiProgramChangeMessage(presetIndex);
+        }
     }
 }
 

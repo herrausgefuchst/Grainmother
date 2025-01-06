@@ -222,6 +222,11 @@ public:
     
     void loadPreset(uint index_ = 0);
     
+    void handleMidiProgramChangeMessage(uint midiValue_);
+    
+    size_t getMidiInChannel() { return getPage("midi_in_channel")->getCurrentChoiceIndex()+1; }
+    size_t getMidiOutChannel() { return getPage("midi_out_channel")->getCurrentChoiceIndex()+1; }
+    
 private:
     void initializePages();
     void initializePageHierarchy();
