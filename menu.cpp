@@ -747,7 +747,7 @@ void Menu::buttonReleased (UIElement* _uielement)
 
 void Menu::loadPreset(uint index_)
 {
-    if (index_ < 0 || index_ >= NUM_PRESETS)
+    if (index_ >= NUM_PRESETS)
         engine_rt_error("Preset Index is out of range!", __FILE__, __LINE__, false);
     
     boundValue(index_, 0u, (uint)(NUM_PRESETS-1));
@@ -785,7 +785,7 @@ void Menu::loadPreset(uint index_)
 void Menu::handleMidiProgramChangeMessage(uint midiValue_)
 {
     // check for boundaries
-    if (midiValue_ < 0 || midiValue_ >= NUM_PRESETS)
+    if (midiValue_ >= NUM_PRESETS)
         engine_rt_error("Preset Index is out of range!", __FILE__, __LINE__, false);
     
     boundValue(midiValue_, 0u, (uint)(NUM_PRESETS-1));

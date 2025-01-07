@@ -19,14 +19,7 @@ static const size_t NUM_PARAMETERGROUPS = 4;
 // MARK: - PRESETS
 // =======================================================================================
 
-static const size_t NUM_PRESETS = 4;
-
-static String presetNames[NUM_PRESETS] = {
-    "Default",
-    "Preset 1",
-    "Preset 2",
-    "Preset 3"
-};
+static const size_t NUM_PRESETS = 128;
 
 // MARK: - UI ELEMENT INDEX
 // =======================================================================================

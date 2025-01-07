@@ -356,12 +356,12 @@ float32x2_t RingModulatorProcessor::processAudioSamples(const float32x2_t input_
     // process ramps in a predefined rate
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
     
-    // since this effect doesnt have any feedbacks or delays, we can skip the process function if
-    // mute is enabled or wet == 0
-    if (muteGain() <= 0.f || wetGain() <= 0.f) return input_;
-    
     if (isProcessedIn == PARALLEL)
     {
+        // since this effect doesnt have any feedbacks or delays, we can skip the process function if
+        // mute is enabled or wet == 0
+        if (muteGain() <= 0.f || wetGain() <= 0.f) return vdup_n_f32(0.f);
+        
         // input = input * muteGain * wetGain
         float32x2_t input = vmul_n_f32(input_, muteGain());
         input = vmul_n_f32(input, wetGain());
@@ -372,6 +372,10 @@ float32x2_t RingModulatorProcessor::processAudioSamples(const float32x2_t input_
     
     else // if (isProcessedIN == SERIES)
     {
+        // since this effect doesnt have any feedbacks or delays, we can skip the process function if
+        // mute is enabled or wet == 0
+        if (muteGain() <= 0.f || wetGain() <= 0.f) return vmul_n_f32(input_, dryGain);
+        
         // input = input * muteGain
         float32x2_t input = vmul_n_f32(input_, muteGain());
         
