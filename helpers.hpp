@@ -48,6 +48,8 @@ public:
     void setup(const float& initialValue_, const float& sampleRate_, const unsigned int& blocksize_,
                const bool& blockwiseProcessing_ = true);
     
+    void setID(const String& id_) { id = id_; }
+    
     /** increments value, deincrements counter and sets finished-flag if counter is off */
     bool processRamp();
     
@@ -63,6 +65,7 @@ public:
     const float& getTarget() const { return target; }
 
 private:
+    String id = "";
     float incr = 0.f; ///< the increment step of the ramp
     float value = 0.f; ///< the current value
     float target = 0.f; ///< the target value of the ramp

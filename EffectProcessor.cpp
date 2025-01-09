@@ -19,7 +19,7 @@ EffectProcessor::EffectProcessor(AudioParameterGroup* engineParameters_,
     wetGain.setup(1.f, sampleRate, RAMP_BLOCKSIZE);
     dryGain = 0.f;
 
-    muteGain = 1.f;
+    muteGain.setup(1.f, sampleRate, RAMP_BLOCKSIZE);
 }
 
 
@@ -38,9 +38,9 @@ void EffectProcessor::parameterChanged(AudioParameter *param_)
 
 void EffectProcessor::engage(bool engaged_)
 {
-    if (engaged_) muteGain.setRampTo(1.f, 0.35f);
+    if (engaged_) muteGain.setRampTo(1.f, 0.05f);
     
-    else muteGain.setRampTo(0.f, 0.1f);
+    else muteGain.setRampTo(0.f, 0.05f);
 }
 
 
@@ -169,7 +169,7 @@ void ReverbProcessor::initializeListeners()
 
 void ReverbProcessor::parameterChanged(AudioParameter *param_)
 {
-    if (param_->getID() == "effect1_engaged")
+    if (param_->getID() == "effect3_engaged")
     {
         engage(param_->getValueAsInt());
     }
@@ -445,7 +445,7 @@ void RingModulatorProcessor::initializeListeners()
 
 void RingModulatorProcessor::parameterChanged(AudioParameter *param_)
 {
-    if (param_->getID() == "effect3_engaged")
+    if (param_->getID() == "effect1_engaged")
     {
         engage(param_->getValueAsInt());
     }
