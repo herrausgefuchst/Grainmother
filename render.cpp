@@ -3,7 +3,6 @@
 /** @todo Reverb Modulation Rate doesnt initalize correctly */
 /** @todo Midi In */
 /** @todo Midi Out */
-/** @todo Action Button: only showing current setting when first pressed */
 
 #ifdef BELA_CONNECTED
 

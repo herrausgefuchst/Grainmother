@@ -368,20 +368,20 @@ void Menu::initializePages()
 {
     // Global Settings
     // pages for the different settings
+    addPage<SettingPage>("pot_behaviour", "Pot Behaviour",
+                         std::initializer_list<String>{ "Jump", "Catch" },
+                         2, (size_t)JSONglobals["potBehaviour"], 0);
     addPage<SettingPage>("midi_in_channel", "MIDI Input Channel", nullptr, 16,
                          (size_t)JSONglobals["midiInChannel"] - 1, 1);
     addPage<SettingPage>("midi_out_channel", "MIDI Output Channel", nullptr, 16,
                          (size_t)JSONglobals["midiOutChannel"] - 1, 1);
-    addPage<SettingPage>("pot_behaviour", "Pot Behaviour",
-                         std::initializer_list<String>{ "Jump", "Catch" },
-                         2, (size_t)JSONglobals["potBehaviour"], 0);
     
     // Global Settings
     // parent page for navigating through the settings
     addPage<NavigationPage>("global_settings", "Global Settings", std::initializer_list<Page*>{
-        getPage("midi_in_channel"),
-        getPage("midi_out_channel"),
         getPage("pot_behaviour"),
+        getPage("midi_in_channel"),
+        getPage("midi_out_channel")
     });
     
     // Reverb - Additional Parameters
@@ -759,9 +759,6 @@ void Menu::loadPreset(uint index_)
     auto ringParams = programParameters[ENUM2INT(EffectOrder::RINGMODULATOR) + 1];
     
     // load and set parameters from JSON file (without display notification)
-    for (unsigned int n = 0; n < engineParams->getNumParametersInGroup(); ++n)
-        engineParams->getParameter(n)->setValue((float)JSONpresets[index_]["engine"][n], false);
-    
     for (unsigned int n = 0; n < revParams->getNumParametersInGroup(); ++n)
         revParams->getParameter(n)->setValue((float)JSONpresets[index_]["reverb"][n], false);
     
@@ -770,6 +767,9 @@ void Menu::loadPreset(uint index_)
 
     for (unsigned int n = 0; n < ringParams->getNumParametersInGroup(); ++n)
         ringParams->getParameter(n)->setValue((float)JSONpresets[index_]["ringmodulator"][n], false);
+    
+    for (unsigned int n = 0; n < engineParams->getNumParametersInGroup(); ++n)
+        engineParams->getParameter(n)->setValue((float)JSONpresets[index_]["engine"][n], false);
     
     // last used preset is now the current one
     lastUsedPresetIndex = index_;

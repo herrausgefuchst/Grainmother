@@ -160,8 +160,17 @@ void ChoiceParameter::nudgeValue(const int direction_)
 
 void ChoiceParameter::buttonClicked(UIElement* uielement_)
 {
-    // increment choice + 1
-    int newChoice = (choice + 1) >= numChoices ? 0 : choice + 1;
+    // stay on current choice if parameter is not yet displayed
+    int newChoice = choice;
+    
+    // increment choice + 1 if the parameter is already displayed
+    if (*displayedParameter)
+    {
+        if ((*displayedParameter)->getID() == this->id)
+        {
+            newChoice = (choice + 1) >= numChoices ? 0 : choice + 1;
+        }
+    }
         
     // set new choice
     setValue(newChoice);

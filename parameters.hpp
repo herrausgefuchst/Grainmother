@@ -132,11 +132,14 @@ public:
     /** Gets the range of the parameter. @return The range. */
     virtual float getRange() const { return -1.f; }
     
+    void setDisplayedParameter(AudioParameter** param_) { displayedParameter = param_; }
+    
 protected:
     std::vector<Listener*> listeners; /**< List of listeners observing this parameter */
     const uint index; /**< The index of the parameter */
     const String id; /**< The ID of the parameter */
     const String name; /**< The name of the parameter */
+    AudioParameter** displayedParameter = nullptr;
 };
 
 
@@ -218,7 +221,7 @@ public:
 
     /** @brief Gets the names of the available choices. @return Pointer to an array of choice names. */
     String* getChoiceNames() const { return choiceNames.get(); }
-
+    
 private:
     const size_t numChoices = 0; /**< The number of choices available. */
     unsigned int choice = 0; /**< The current choice. */

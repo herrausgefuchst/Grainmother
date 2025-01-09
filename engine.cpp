@@ -181,9 +181,9 @@ void AudioEngine::updateAudioBlock()
 void AudioEngine::setEffectOrder()
 {
     // clear the effect order array and the effect index array
-    for (uint n = 0; n < 3; ++n)
+    for (uint n = 0; n < NUM_EFFECTS; ++n)
     {
-        for (uint m = 0; m < 3; ++m)
+        for (uint m = 0; m < NUM_EFFECTS; ++m)
         {
             processFunction[n][m] = nullptr;
             processIndex[n][m] = -1;
@@ -575,6 +575,9 @@ void UserInterface::initializeListeners()
     // Adds the parameters of the currently focused effect as listeners to the potentiometers.
     setEffectEditFocus();
     
+    engine->getParameter("reverb", "reverb_type")->setDisplayedParameter(&display.getReferenceTemporaryParameter());
+    engine->getParameter("ringmodulator", "ringmod_waveform")->setDisplayedParameter(&display.getReferenceTemporaryParameter());
+    
     
     // POTENTIOMETER ACTIONS
     // ==================================================================================
@@ -786,11 +789,12 @@ void UserInterface::mixPotentiometerChanged()
     // else its the global wet parameter
     AudioParameter* focusedParameter;
     if (button[BUTTON_FX1].getPhase() == Button::LOW)
-        focusedParameter = engine->getParameter("reverb", "reverb_mix");
+        focusedParameter = engine->getParameter("ringmodulator", "ringmod_mix");
     else if (button[BUTTON_FX2].getPhase() == Button::LOW)
         focusedParameter = engine->getParameter("granulator", "granulator_mix");
     else if (button[BUTTON_FX3].getPhase() == Button::LOW)
-        focusedParameter = engine->getParameter("ringmodulator", "ringmod_mix");
+        focusedParameter = engine->getParameter("reverb", "reverb_mix");
+
     else
         focusedParameter = engine->getParameter("global_mix");
     

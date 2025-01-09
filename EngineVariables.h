@@ -65,15 +65,15 @@ enum ParameterIndex {
 // =======================================================================================
 
 enum class EffectOrder {
-    REVERB,
+    RINGMODULATOR,
     GRANULATOR,
-    RINGMODULATOR
+    REVERB
 };
 
 static const String effectNames[NUM_EFFECTS] {
-    "Reverb",
+    "Ringmodulator",
     "Granulator",
-    "Ringmodulator"
+    "Reverb"
 };
 
 // MARK: - POT BEHAVIOUR

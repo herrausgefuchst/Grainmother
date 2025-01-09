@@ -121,6 +121,8 @@ public:
     /** @brief Gets the current temporary parameter being displayed. @return Pointer to the temporary parameter. */
     AudioParameter* getTemporaryParameter() const { return tempParameter; }
     
+    AudioParameter*& getReferenceTemporaryParameter() { return tempParameter; }
+    
 private:
     /**
      * @brief Displays content related to a slide parameter.
@@ -156,8 +158,8 @@ private:
 #endif
     StateDuration stateDuration = TEMPORARY;  /**< The duration type of the current display state. */
     
-    AudioParameter* tempParameter = nullptr;  /**< Pointer to the parameter being temporarily displayed. */
     Menu::Page* presetPage = nullptr;         /**< Pointer to the current preset menu page. */
+    AudioParameter* tempParameter = nullptr;  /**< Pointer to the parameter being temporarily displayed. */
     
     unsigned int resetDisplayCounter = 0;     /**< Counter for determining when to reset to the home screen. */
     bool newMessageCache = false;             /**< Flag indicating if there is a new message in the cache. */
