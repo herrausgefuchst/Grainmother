@@ -69,7 +69,7 @@ private:
     float incr = 0.f; ///< the increment step of the ramp
     float value = 0.f; ///< the current value
     float target = 0.f; ///< the target value of the ramp
-    unsigned int counter = 0; ///< counts if ramp has finished
+    int counter = 0; ///< counts if ramp has finished
     float fs, blocksize_inv;
     bool blockwiseProcessing = false;
 public:

@@ -29,6 +29,7 @@ void EarlyReflections::setup(const float& sampleRate_, const float& blockSize_)
     
     parameters.size.setup(initialSize, sampleRate_, RAMP_UPDATE_RATE, true);
     parameters.predelay.setup(initialPreDelay, sampleRate_, RAMP_UPDATE_RATE, true);
+    parameters.predelay.setID("predelay");
     parameters.feedback.setup(initialFeedback, sampleRate_, RAMP_UPDATE_RATE, true);
 }
 
@@ -127,7 +128,7 @@ void EarlyReflections::setParameters(const EarlyReflectionsParameters& parameter
 {
     // predelay: ramp to new target
     if (parameters.predelay != parameters_.predelay)
-        parameters.predelay.setRampTo(parameters_.predelay(), 0.03f);
+        parameters.predelay.setRampTo(parameters_.predelay(), 0.0001f);
     
     // size: ramp to new target
     if (parameters.size != parameters_.size)
@@ -596,9 +597,7 @@ void Reverb::parameterChanged(const std::string& parameterID, float newValue)
     }
     else if (parameterID == "reverb_predelay")
     {
-        EarlyReflectionsParameters params = earlyReflections.getParameters();
-        params.predelay = newValue * samplesPerMs; // ms to samples
-        earlyReflections.setParameters(params);
+        earlyReflections.getParameters().predelay.setRampTo(newValue * samplesPerMs, 0.03f); // ms to samples
     }
     else if (parameterID == "reverb_modrate")
     {
@@ -614,9 +613,7 @@ void Reverb::parameterChanged(const std::string& parameterID, float newValue)
     }
     else if (parameterID == "reverb_size")
     {
-        EarlyReflectionsParameters params = earlyReflections.getParameters();
-        params.size = newValue * 0.01f; // % to scaler
-        earlyReflections.setParameters(params);
+        earlyReflections.getParameters().size.setRampTo(newValue * 0.01f, 0.03f); // % to scaler
         
         int delayOfDecay = earlyReflections.getLatestTapDelay() - decay->getEarliestCombDelay();
         if (delayOfDecay < 0) delayOfDecay = 0;
@@ -624,9 +621,7 @@ void Reverb::parameterChanged(const std::string& parameterID, float newValue)
     }
     else if (parameterID == "reverb_feedback")
     {
-        EarlyReflectionsParameters params = earlyReflections.getParameters();
-        params.feedback = newValue;
-        earlyReflections.setParameters(params);
+        earlyReflections.getParameters().feedback.setRampTo(newValue, 0.03f);
     }
     else if (parameterID == "reverb_lowcut")
     {

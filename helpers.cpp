@@ -16,7 +16,7 @@ void LinearRamp::setup(const float& initialValue_, const float& sampleRate_, con
 bool LinearRamp::processRamp()
 {
     value += incr;
-    
+        
     if (--counter <= 0)
     {
         rampFinished = true;
@@ -30,7 +30,7 @@ bool LinearRamp::processRamp()
 void LinearRamp::setValueWithoutRamping(const float& newValue_)
 {
     value = target = newValue_;
-    
+        
     rampFinished = true;
     
     incr = 0.f;
@@ -40,21 +40,21 @@ void LinearRamp::setValueWithoutRamping(const float& newValue_)
 void LinearRamp::setRampTo(const float& target_, const float& time_sec)
 {
     target = target_;
-        
+            
     if (target != value)
     {
         // calculate the num of steps that the ramp takes
         // if process will be called blockwise, the counter has to be set accordingly
         counter = (uint)(time_sec * fs);
         if (blockwiseProcessing) counter *= blocksize_inv;
-                        
+                                
         // calculate the increment that's added every call of process
         if (counter != 0) incr = (target - value) / (float)counter;
         // counter == 0 would mean that the value will be set immediatly without ramping
         else setValueWithoutRamping(target);
     }
     else incr = 0.f;
-        
+            
     rampFinished = false;
 }
 

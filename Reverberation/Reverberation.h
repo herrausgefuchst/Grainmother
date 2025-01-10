@@ -348,7 +348,7 @@ public:
      * @brief returns momentary set of parameters
      * @return momentary set of parameters
      */
-    const EarlyReflectionsParameters& getParameters() const { return parameters; }
+    EarlyReflectionsParameters& getParameters() { return parameters; }
     
     /**
      * @brief return the latest tap delay, gets called when calculating the delay of the decay
