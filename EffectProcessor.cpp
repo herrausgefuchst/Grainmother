@@ -89,20 +89,37 @@ float32x2_t ReverbProcessor::processAudioSamples(const float32x2_t input_, const
     
     if (isProcessedIn == PARALLEL)
     {
+        if (muteGain() <= 0.f || wetGain() <= 0.f)
+            if (averager.isNearZero())
+                return vdup_n_f32(0.f);
+        
         // input = input * muteGain * wetGain
         float32x2_t input = vmul_n_f32(input_, muteGain());
         input = vmul_n_f32(input, wetGain());
         
         // output = process(input)
-        return reverb.processAudioSamples(input, sampleIndex_);
+        float32x2_t output = reverb.processAudioSamples(input, sampleIndex_);
+        
+        // averager
+        averager.processAudioSamples(output);
+        
+        return output;
     }
     else // if (isProcessedIN == SERIES)
     {
+        if (muteGain() <= 0.f || wetGain() <= 0.f)
+            if (averager.isNearZero())
+                return vmul_n_f32(input_, dryGain);
+        
         // input = input * muteGain
         float32x2_t input = vmul_n_f32(input_, muteGain());
         
         // output = process(input) * wetgain + input_ * dryGain;
-        float32x2_t output = vmul_n_f32(reverb.processAudioSamples(input, sampleIndex_), wetGain());
+        float32x2_t output = reverb.processAudioSamples(input, sampleIndex_);
+        
+        averager.processAudioSamples(output);
+        
+        output = vmul_n_f32(output, wetGain());
         return vmla_n_f32(output, input_, dryGain);
     }
 }
@@ -211,20 +228,37 @@ float32x2_t GranulatorProcessor::processAudioSamples(const float32x2_t input_, c
     
     if (isProcessedIn == PARALLEL)
     {
+        if (muteGain() <= 0.f || wetGain() <= 0.f)
+            if (averager.isNearZero())
+                return vdup_n_f32(0.f);
+        
         // input = input * muteGain * wetGain
         float32x2_t input = vmul_n_f32(input_, muteGain());
         input = vmul_n_f32(input, wetGain());
         
         // output = process(input)
-        return granulator.processAudioSamples(input, sampleIndex_);
+        float32x2_t output = granulator.processAudioSamples(input, sampleIndex_);
+        
+        // averager
+        averager.processAudioSamples(output);
+        
+        return output;
     }
     else // if (isProcessedIN == SERIES)
     {
+        if (muteGain() <= 0.f || wetGain() <= 0.f)
+            if (averager.isNearZero())
+                return vmul_n_f32(input_, dryGain);
+        
         // input = input * muteGain
         float32x2_t input = vmul_n_f32(input_, muteGain());
         
         // output = process(input) * wetgain + input_ * dryGain;
-        float32x2_t output = vmul_n_f32(granulator.processAudioSamples(input, sampleIndex_), wetGain());
+        float32x2_t output = granulator.processAudioSamples(input, sampleIndex_);
+        
+        averager.processAudioSamples(output);
+        
+        output = vmul_n_f32(output, wetGain());
         return vmla_n_f32(output, input_, dryGain);
     }
 }

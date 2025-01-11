@@ -116,19 +116,21 @@ public:
 
 protected:
     String id; /**< The unique identifier of the effect processor. */
-        float sampleRate = 44100.f; /**< The sample rate for audio processing. */
-        unsigned int blockSize = 128; /**< The block size for audio processing. */
-        AudioParameterGroup parameters; /**< The group of parameters specific to this effect. */
-        AudioParameterGroup* engineParameters = nullptr; /**< Pointer to engine-wide parameters. */
-        
-        ExecutionFlow isProcessedIn = PARALLEL; /**< Specifies the execution flow (parallel or series). */
-        
-        float dryGain = 0.f; /**< Gain applied to the dry signal (unprocessed input). */
-        LinearRamp wetGain; /**< Linear ramp for the wet (processed) signal gain. */
-        LinearRamp muteGain; /**< Linear ramp for muting transitions. */
-        
-        static const uint RAMP_BLOCKSIZE; /**< Block size used for ramp transitions. */
-        static const uint RAMP_BLOCKSIZE_WRAP; /**< Wrapped block size for ramp transitions. */
+    float sampleRate = 44100.f; /**< The sample rate for audio processing. */
+    unsigned int blockSize = 128; /**< The block size for audio processing. */
+    AudioParameterGroup parameters; /**< The group of parameters specific to this effect. */
+    AudioParameterGroup* engineParameters = nullptr; /**< Pointer to engine-wide parameters. */
+    
+    ExecutionFlow isProcessedIn = PARALLEL; /**< Specifies the execution flow (parallel or series). */
+    
+    float dryGain = 0.f; /**< Gain applied to the dry signal (unprocessed input). */
+    LinearRamp wetGain; /**< Linear ramp for the wet (processed) signal gain. */
+    LinearRamp muteGain; /**< Linear ramp for muting transitions. */
+    
+    EffectAverager averager;
+    
+    static const uint RAMP_BLOCKSIZE; /**< Block size used for ramp transitions. */
+    static const uint RAMP_BLOCKSIZE_WRAP; /**< Wrapped block size for ramp transitions. */
 };
 
 // =======================================================================================

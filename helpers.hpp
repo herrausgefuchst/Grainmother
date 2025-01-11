@@ -149,4 +149,23 @@ private:
     const int debounceunits; ///< Number of units to wait for signal stabilization.
 };
 
+
+class EffectAverager
+{
+public:
+    EffectAverager();
+    ~EffectAverager() {}
+    
+    void processAudioSamples(float32x2_t input_);
+    
+    bool isNearZero();
+
+private:
+    const uint bufferLength = 65536;
+    const float32_t fracment = 1.f / (float)bufferLength;
+    uint writePointer = 0;
+    float32x2_t buffer[65536];
+    float32x2_t average;
+};
+
 #endif /* helpers_hpp */

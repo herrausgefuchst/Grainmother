@@ -97,3 +97,42 @@ bool Debouncer::update (const bool _rawvalue)
         }
     }
 }
+
+
+// =======================================================================================
+// MARK: - EFFECT AVERAGER
+// =======================================================================================
+
+
+EffectAverager::EffectAverager()
+{
+    for (uint n = 0; n < bufferLength; ++n)
+        buffer[n] = vdup_n_f32(0.f);
+}
+
+
+void EffectAverager::processAudioSamples(float32x2_t input_)
+{
+    // average -= buffer[writePointer];
+    average = vsub_f32(average, buffer[writePointer]);
+    
+    // buffer[writePointer] = input_ * fracment;
+    buffer[writePointer] = vmul_n_f32(vabs_f32(input_), fracment);
+    
+    // average += buffer[writePointer];
+    average = vadd_f32(average, buffer[writePointer]);
+    
+    if (++writePointer >= bufferLength) writePointer = 0;
+}
+
+
+bool EffectAverager::isNearZero()
+{
+    static float32x2_t epsilonVec = vdup_n_f32(0.0001f);
+
+    uint32x2_t comparison = vcle_f32(average, epsilonVec);
+    
+    if (vget_lane_u32(comparison, 0) != 0 && vget_lane_u32(comparison, 1) != 0) return true;
+    
+    return false;
+}

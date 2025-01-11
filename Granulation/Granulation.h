@@ -38,6 +38,8 @@ static const int BUFFERSIZE = 65536;
 
 static const int MAX_NUM_GRAINS = 100;
 
+static const float32_t GAIN_COMPENSATION = 1.22f;
+
 static const size_t numDelaySpeedRatios = 4;
 static const std::string delaySpeedRatios[numDelaySpeedRatios] {
     "1 : 1",

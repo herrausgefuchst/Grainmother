@@ -174,16 +174,18 @@ void Display::setup(Menu::Page* presetPage_)
     
 #ifdef BELA_CONNECTED
     oscTransmitter.setup(7562, "192.168.7.2");
-#endif
     
     // create the first message
-    createPresetMessage();
+    oscTransmitter.newMessage("/logo");
+    oscTransmitter.send();
+#endif
     
     // set flag for new message detected
-    newMessageCache = true;
+    newMessageCache = false;
     
     // set the state for duration to permanent
-    stateDuration = PERMANENT;
+    stateDuration = TEMPORARY;
+    resetDisplayCounter = DISPLAY_AUTOHOMESCREEN / 2;
 }
 
 bool Display::update()

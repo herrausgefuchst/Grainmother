@@ -73,6 +73,12 @@ bool setup (BelaContext *context, void *userData)
 
 void render (BelaContext *context, void *userData)
 { 
+    if (Bela_stopRequested())
+    {
+        rt_printf("stop requested true calledn\n");
+        userinterface.display.sendShuttingDownMessage();
+    }
+    
     // BLOCKWISE PROCESSING
     // ===================================================================================
     
@@ -128,7 +134,6 @@ void render (BelaContext *context, void *userData)
 
 void cleanup (BelaContext *context, void *userData)
 {
-
 }
 
 

@@ -676,6 +676,9 @@ float32x2_t Granulator::processAudioSamples(const float32x2_t input_, const uint
     // write the channel outputs into a stereo neon vector
     float32x2_t output_simd = { output[LEFT], output[RIGHT] };
     
+    // gain compensation
+    output_simd = vmul_n_f32(output_simd, GAIN_COMPENSATION);
+    
     // process highcut filter
     output_simd = filter.processAudioSamples(output_simd);
     

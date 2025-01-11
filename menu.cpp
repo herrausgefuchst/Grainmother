@@ -696,6 +696,9 @@ void Menu::buttonPressed (UIElement* _uielement)
         {
             // on long press of exit, the preset will be reloaded
             if (currentPage->getID() == "load_preset") loadPreset(getPage("load_preset")->getCurrentChoiceIndex());
+        
+            setCurrentPage(getPage("load_preset"));
+            
             break;
         }
         case BUTTON_ENTER:
