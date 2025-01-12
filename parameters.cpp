@@ -71,6 +71,15 @@ void ChoiceParameter::setValue(const int value_, const bool withPrint_)
                         + name + "'",
                         __FILE__, __LINE__, true);
     
+    // if the value is the same than the previous value, only call the display
+    if (value_ == choice)
+    {
+        for (uint n = 0; n < listeners.size(); ++n)
+            if (withPrint_) listeners[n]->parameterCalledDisplay(this);
+        
+        return;
+    }
+    
     // set value and notify listeners
     choice = value_;
     notifyListeners(withPrint_);
@@ -136,6 +145,21 @@ void ChoiceParameter::potChanged(UIElement* uielement_)
             }
         }
     }
+}
+
+
+void ChoiceParameter::setMidiValue(const uint ccValue_)
+{
+    if (ccValue_ > 127)
+    {
+        engine_rt_error("CC Value must be 0-indexed!", __FILE__, __LINE__, false);
+        return;
+    }
+    
+    int newChoice = ccValue_;
+    boundValue(newChoice, 0, (int)getNumChoices() - 1);
+    
+    setValue(newChoice, false);
 }
 
 
@@ -220,6 +244,8 @@ void SlideParameter::setValue(float value_, const bool withPrint_)
     // bound value
     boundValue(value_, min, max);
     
+    if (value_ == value) return;
+    
     // calculate and set corresponding normalized value (0...1)
     switch (scaling)
     {
@@ -271,6 +297,8 @@ void SlideParameter::setNormalizedValue(float value_, const bool withPrint_)
     // bound value
     boundValue(value_, 0.f, 1.f);
     
+    if (value_ == normalizedValue) return;
+    
     // set normalized value
     normalizedValue = value_;
     
@@ -316,6 +344,20 @@ void SlideParameter::potChanged(UIElement* uielement_)
     Potentiometer* pot = static_cast<Potentiometer*>(uielement_);
     
     setNormalizedValue(pot->getValue());
+}
+
+
+void SlideParameter::setMidiValue(const uint ccValue_)
+{
+    if (ccValue_ > 127)
+    {
+        engine_rt_error("CC Value must be 0-indexed!", __FILE__, __LINE__, false);
+        return;
+    }
+    
+    float newValue = mapValue((float)ccValue_, 0.f, 127.f, 0.f, 1.f);
+    
+    setNormalizedValue(newValue, false);
 }
 
 
@@ -419,8 +461,12 @@ void ButtonParameter::setValue(const int value_, const bool withPrint_)
         engine_rt_error("Button Parameter '" + name + "' only accepts binary values",
                         __FILE__, __LINE__, true);
     
+    ToggleState newValue = INT2ENUM(value_, ToggleState);
+    
+    if (newValue == value) return;
+    
     // set new value
-    value = INT2ENUM(value_, ToggleState);
+    value = newValue;
     
     // console print
     #ifdef CONSOLE_PRINT
@@ -432,6 +478,20 @@ void ButtonParameter::setValue(const int value_, const bool withPrint_)
     
     // notify listeners
     notifyListeners(withPrint_);
+}
+
+
+void ButtonParameter::setMidiValue(const uint ccValue_)
+{
+    if (ccValue_ > 127)
+    {
+        engine_rt_error("CC Value must be 0-indexed!", __FILE__, __LINE__, false);
+        return;
+    }
+    
+    int newValue = (ccValue_ < 64) ? 0 : 1;
+    
+    setValue(newValue, false);
 }
 
 
@@ -540,8 +600,12 @@ void ToggleParameter::setValue(const int value_, const bool withPrint_)
         engine_rt_error("Button Parameter '" + name + "' only accepts binary values",
                         __FILE__, __LINE__, true);
     
+    ToggleState newValue = INT2ENUM(value_, ToggleState);
+    
+    if (newValue == value) return;
+    
     // set new value
-    value = INT2ENUM(value_, ToggleState);
+    value = newValue;
     
     // console print
     #ifdef CONSOLE_PRINT
@@ -552,6 +616,20 @@ void ToggleParameter::setValue(const int value_, const bool withPrint_)
     
     // notify listeners
     notifyListeners(withPrint_);
+}
+
+
+void ToggleParameter::setMidiValue(const uint ccValue_)
+{
+    if (ccValue_ > 127)
+    {
+        engine_rt_error("CC Value must be 0-indexed!", __FILE__, __LINE__, false);
+        return;
+    }
+    
+    int newValue = (ccValue_ < 64) ? 0 : 1;
+    
+    setValue(newValue, false);
 }
 
 
@@ -651,5 +729,22 @@ AudioParameter* AudioParameterGroup::getParameter(const String id_)
     if (!parameter) engine_rt_error("Parameter with ID " + id_ + " is nullptr", 
                                     __FILE__, __LINE__, true);
 
+    return parameter;
+}
+
+
+AudioParameter* AudioParameterGroup::getParameterFromCCIndex(const uint ccIndex_)
+{
+    AudioParameter* parameter = nullptr;
+    
+    for (unsigned int n = 0; n < parameterGroup.size(); ++n)
+    {
+        if (parameterGroup[n]->getCCIndex() == ccIndex_)
+        {
+            parameter = parameterGroup[n];
+            break;
+        }
+    }
+    
     return parameter;
 }

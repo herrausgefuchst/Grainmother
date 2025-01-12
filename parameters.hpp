@@ -33,6 +33,8 @@ public:
     /** Virtual destructor for AudioParameter. */
     virtual ~AudioParameter() {}
     
+    void setupMIDI(const uint ccIndex_) { ccIndex = ccIndex_; }
+    
     /**
      * @class Listener
      * @brief A listener class to observe changes in AudioParameter.
@@ -89,6 +91,8 @@ public:
      * @param withPrint_ Whether to print the new value to display.
      */
     virtual void setValue(const int value_, const bool withPrint_ = true) {}
+    
+    virtual void setMidiValue(const uint ccValue_) {}
 
     /** Sets the parameter to its default value. */
     virtual void setDefaultValue() {}
@@ -107,6 +111,8 @@ public:
 
     /** Gets the name of the parameter. @return The name of the parameter. */
     String getName() const { return name; }
+    
+    uint getCCIndex() const { return ccIndex; }
 
     /** Gets the current value of the parameter as a float. @return The float value. */
     virtual float getValueAsFloat() const = 0;
@@ -137,6 +143,7 @@ public:
 protected:
     std::vector<Listener*> listeners; /**< List of listeners observing this parameter */
     const uint index; /**< The index of the parameter */
+    uint ccIndex = 0;
     const String id; /**< The ID of the parameter */
     const String name; /**< The name of the parameter */
     AudioParameter** displayedParameter = nullptr;
@@ -198,6 +205,8 @@ public:
      */
     void potChanged(UIElement* uielement_) override;
 
+    void setMidiValue(const uint ccValue_) override;
+    
     /**
      * @brief Handles button clicks from a UI element.
      * @param uielement_ Pointer to the UI element that changed.
@@ -300,6 +309,8 @@ public:
     /** Sets the parameter to its default value. */
     void setDefaultValue() override;
 
+    void setMidiValue(const uint ccValue_) override;
+    
     /** Nudges the parameter value in the specified direction. */
     void nudgeValue(const int direction_) override;
 
@@ -408,6 +419,8 @@ public:
      * @param withPrint_ Whether to print the new value to display.
      */
     void setValue(const int value_, const bool withPrint_ = true) override;
+    
+    void setMidiValue(const uint ccValue_) override;
 
     /** @brief Gets the current value as a float. @return The float value of the parameter. */
     float getValueAsFloat() const override { return static_cast<float>(getValueAsInt()); }
@@ -489,6 +502,8 @@ public:
      * @param withPrint_ Whether to print the new value to display.
      */
     void setValue(const int value_, const bool withPrint_ = true) override;
+    
+    void setMidiValue(const uint ccValue_) override;
 
     /** @brief Gets the current value as a float. @return The float value of the parameter. */
     float getValueAsFloat() const override { return static_cast<float>(getValueAsInt()); }
@@ -580,6 +595,8 @@ public:
      * @return A pointer to the requested AudioParameter.
      */
     AudioParameter* getParameter(const String id_);
+    
+    AudioParameter* getParameterFromCCIndex(const uint ccIndex_);
     
     /** @brief Gets the ID of the parameter group. @return The ID of the parameter group. */
     String getID() const { return id; }

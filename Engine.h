@@ -155,6 +155,8 @@ public:
      */
     AudioParameter* getParameter(const String& paramGroup_, const uint paramIndex_);
     
+    AudioParameter* getParameterFromCCIndex(const uint ccIndex_);
+    
     /**
      * @brief Gets the program parameters.
      *
@@ -446,6 +448,8 @@ public:
      * indicating that the effect order has been successfully updated.
      */
     void effectOrderChanged();
+    
+    void handleMidiControlChangeMessage(const uint ccIndex_, const uint ccValue_);
     
 private:
     /**

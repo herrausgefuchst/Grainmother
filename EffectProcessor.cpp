@@ -163,6 +163,10 @@ void ReverbProcessor::initializeParameters()
     static_cast<SlideParameter*>(parameters.getParameter("reverb_multfreq"))->setScaling(SlideParameter::Scaling::FREQ);
     static_cast<SlideParameter*>(parameters.getParameter("reverb_modrate"))->setScaling(SlideParameter::Scaling::FREQ);
     static_cast<SlideParameter*>(parameters.getParameter("reverb_decay"))->setScaling(SlideParameter::Scaling::FREQ);
+    
+    // set MIDI CC Indexi
+    for (uint n = 0; n < NUM_PARAMETERS; ++n)
+        parameters.getParameter(n)->setupMIDI(41 + n);
 }
 
 
@@ -328,6 +332,10 @@ void GranulatorProcessor::initializeParameters()
     
     // special cases: scaling and ramps:
     static_cast<SlideParameter*>(parameters.getParameter("granulator_density"))->setScaling(SlideParameter::Scaling::FREQ);
+    
+    // set MIDI CC Indexi
+    for (uint n = 0; n < NUM_PARAMETERS; ++n)
+        parameters.getParameter(n)->setupMIDI(21 + n);
 }
 
 
@@ -456,6 +464,10 @@ void RingModulatorProcessor::initializeParameters()
     // special cases: scaling
     static_cast<SlideParameter*>(parameters.getParameter("ringmod_tune"))->setScaling(SlideParameter::Scaling::FREQ);
     static_cast<SlideParameter*>(parameters.getParameter("ringmod_rate"))->setScaling(SlideParameter::Scaling::FREQ);
+    
+    // set MIDI CC Indexi
+    for (uint n = 0; n < NUM_PARAMETERS; ++n)
+        parameters.getParameter(n)->setupMIDI(1 + n);
 }
 
 

@@ -72,13 +72,7 @@ bool setup (BelaContext *context, void *userData)
 // =======================================================================================
 
 void render (BelaContext *context, void *userData)
-{ 
-    if (Bela_stopRequested())
-    {
-        rt_printf("stop requested true calledn\n");
-        userinterface.display.sendShuttingDownMessage();
-    }
-    
+{
     // BLOCKWISE PROCESSING
     // ===================================================================================
     
@@ -204,27 +198,29 @@ void updateLEDs()
 void midiMessageCallback(MidiChannelMessage message, void* arg)
 {
     if(arg != NULL) rt_printf("Message from midi port %s ", (const char*) arg);
-    message.prettyPrint();
     
     int midiInChannel = userinterface.menu.getMidiInChannel() - 1;
     int midiOutChannel = userinterface.menu.getMidiOutChannel() - 1;
     
-//    rt_printf("Midi In Channel: %i, Midi Out Channel: %i \n", midiInChannel, midiOutChannel);
-//    rt_printf("Midi Channel of Message: %i \n", message.getChannel());
-    
     if (message.getChannel() == midiInChannel)
     {
-//        rt_printf("Correct IN Channel! \n");
-//        rt_printf("Type of Message: %i \n", message.getType());
-//        rt_printf("Program Change Index: %i \n", kmmProgramChange);
+        message.prettyPrint();
         
         if(message.getType() == kmmProgramChange)
         {
             uint presetIndex = message.getDataByte(0);
-            
-//            rt_printf("Program Change detected! New Programm Index: %i \n", presetIndex);
-            
+                        
             userinterface.menu.handleMidiProgramChangeMessage(presetIndex);
+        }
+        
+        else if (message.getType() == kmmControlChange)
+        {
+            uint ccIndex = message.getDataByte(0);
+            uint ccValue = message.getDataByte(1);
+            
+            consoleprint("New Control Change detected with Index: " + TOSTRING(ccIndex) + " and Value: " + TOSTRING(ccValue), __FILE__, __LINE__);
+            
+            userinterface.handleMidiControlChangeMessage(ccIndex, ccValue);
         }
     }
 }

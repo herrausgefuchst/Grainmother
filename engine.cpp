@@ -112,6 +112,10 @@ void AudioEngine::initializeEngineParameters()
     engineParameters.addParameter<SlideParameter>
     (NUM_POTENTIOMETERS-1, parameterID[GLOBAL_MIX], parameterName[GLOBAL_MIX],
      " %", 0.f, 100.f, 0.5f, 70.f, sampleRate);
+    
+    // set MIDI CC Indexi
+    for (uint n = 0; n < NUM_PARAMETERS; ++n)
+        engineParameters.getParameter(n)->setupMIDI(61 + n);
 }
 
 
@@ -387,6 +391,29 @@ AudioParameter* AudioEngine::getParameter(const String& paramGroup_, const uint 
         engine_rt_error("AudioEngine couldnt find ParameterGroup with index " + paramGroup_, __FILE__, __LINE__, true);
     
     return parametergroup->getParameter(paramIndex_);
+}
+
+
+AudioParameter* AudioEngine::getParameterFromCCIndex(const uint ccIndex_)
+{
+    AudioParameter* parameter = nullptr;
+    bool found = false;
+    
+    for (auto i : programParameters)
+    {
+        for (uint n = 0; n < i->getNumParametersInGroup(); ++n)
+        {
+            if (i->getParameter(n)->getCCIndex() == ccIndex_)
+            {
+                parameter = i->getParameter(n);
+                found = true;
+                break;
+            }
+        }
+        if (found) break;
+    }
+    
+    return parameter;
 }
 
 
@@ -794,7 +821,6 @@ void UserInterface::mixPotentiometerChanged()
         focusedParameter = engine->getParameter("granulator", "granulator_mix");
     else if (button[BUTTON_FX3].getPhase() == Button::LOW)
         focusedParameter = engine->getParameter("reverb", "reverb_mix");
-
     else
         focusedParameter = engine->getParameter("global_mix");
     
@@ -1071,6 +1097,51 @@ void UserInterface::alertLEDs(LED::State state_)
     else if (state_ == LED::State::BLINKONCE)
         for (unsigned int n = 0; n < NUM_LEDS; ++n)
             led[n].blinkOnce();
+}
+
+
+void UserInterface::handleMidiControlChangeMessage(const uint ccIndex_, const uint ccValue_)
+{
+    if (ccIndex_ > 100)
+    {
+        if (ccIndex_ <= 108)
+        {
+            menu.handleMidiProgramChangeMessage(ccValue_);
+            
+            int ringmodEngaged = (ccIndex_ == 101 || ccIndex_ == 103 || ccIndex_ == 106 || ccIndex_ == 107);
+            int granulatorEngaged = (ccIndex_ == 101 || ccIndex_ == 104 || ccIndex_ == 106 || ccIndex_ == 108);
+            int reverbEngaged = (ccIndex_ == 101 || ccIndex_ == 105 || ccIndex_ == 107 || ccIndex_ == 108);
+            
+            engine->getParameter("engine", "effect1_engaged")->setValue(ringmodEngaged);
+            engine->getParameter("engine", "effect2_engaged")->setValue(granulatorEngaged);
+            engine->getParameter("engine", "effect3_engaged")->setValue(reverbEngaged);
+        }
+        
+        return;
+    }
+    
+    auto param = engine->getParameterFromCCIndex(ccIndex_);
+    
+    if (!param) return;
+    
+    param->setMidiValue(ccValue_);
+    
+    if (param->getIndex() < NUM_POTENTIOMETERS-1)
+    {
+        int currentEffectIndex = engine->getParameter("effect_edit_focus")->getValueAsInt();
+        
+        if (ccIndex_ <= 20 && currentEffectIndex == (int)EffectOrder::RINGMODULATOR)
+            potentiometer[ccIndex_-1].decouple(param->getNormalizedValue());
+        
+        else if (ccIndex_ <= 40 && currentEffectIndex == (int)EffectOrder::GRANULATOR)
+            potentiometer[ccIndex_-21].decouple(param->getNormalizedValue());
+        
+        else if (ccIndex_ <= 60 && currentEffectIndex == (int)EffectOrder::REVERB)
+            potentiometer[ccIndex_-41].decouple(param->getNormalizedValue());
+    }
+    
+    if (param->getID() == "global_mix")
+        potentiometer[NUM_POTENTIOMETERS-1].decouple(param->getNormalizedValue());
 }
 
 
