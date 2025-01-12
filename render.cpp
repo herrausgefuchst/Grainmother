@@ -25,7 +25,7 @@ bool setup (BelaContext *context, void *userData)
     midi.readFrom("hw:0,0,0");
     midi.writeTo("hw:0,0,0");
     midi.enableParser(true);
-    midi.getParser()->setCallback(midiMessageCallback, (void*) "hw:0,0,0");
+    midi.getParser()->setCallback(midiInputMessageCallback, (void*) "hw:0,0,0");
     
     // display
     DISPLAY_BLOCKS_PER_FRAME = context->audioSampleRate / ( DISPLAY_FRAMERATE * context->audioFrames );
@@ -62,6 +62,10 @@ bool setup (BelaContext *context, void *userData)
     for (uint n = 0; n < NUM_POTENTIOMETERS; ++n)
         userinterface.potentiometer[n].setAnalogDefault(analogRead(context, 0, HARDWARE_PIN_POTENTIOMETER[n]));
     userinterface.setup(&engine, context->audioSampleRate);
+    
+    // midi output
+    for (uint n = 0; n < NUM_POTENTIOMETERS; ++n)
+        userinterface.potentiometer[n].setupMIDI(n+1, midiOutputMessageCallback);
         
     return true;
 }
@@ -195,16 +199,13 @@ void updateLEDs()
 }
 
 
-void midiMessageCallback(MidiChannelMessage message, void* arg)
+void midiInputMessageCallback(MidiChannelMessage message, void* arg)
 {
-    if(arg != NULL) rt_printf("Message from midi port %s ", (const char*) arg);
-    
     int midiInChannel = userinterface.menu.getMidiInChannel() - 1;
-    int midiOutChannel = userinterface.menu.getMidiOutChannel() - 1;
     
     if (message.getChannel() == midiInChannel)
     {
-        message.prettyPrint();
+//        message.prettyPrint();
         
         if(message.getType() == kmmProgramChange)
         {
@@ -218,12 +219,21 @@ void midiMessageCallback(MidiChannelMessage message, void* arg)
             uint ccIndex = message.getDataByte(0);
             uint ccValue = message.getDataByte(1);
             
-            consoleprint("New Control Change detected with Index: " + TOSTRING(ccIndex) + " and Value: " + TOSTRING(ccValue), __FILE__, __LINE__);
+//            consoleprint("New Control Change detected with Index: " + TOSTRING(ccIndex) + " and Value: " + TOSTRING(ccValue), __FILE__, __LINE__);
             
             userinterface.handleMidiControlChangeMessage(ccIndex, ccValue);
         }
     }
 }
+
+
+void midiOutputMessageCallback(uint ccIndex_, uint ccValue_)
+{
+    int midiOutChannel = userinterface.menu.getMidiOutChannel() - 1;
+
+    midi.writeControlChange(midiOutChannel, ccIndex_, ccValue_);
+}
+
 
 #endif // BELA_CONNECTED
 

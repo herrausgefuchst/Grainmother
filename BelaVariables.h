@@ -16,7 +16,8 @@ void updateLEDs();
 void updateUserInterface(void* arg_);
 void updateAudioBlock(void* arg_);
 void updateNonAudioTasks(void* arg_);
-void midiMessageCallback(MidiChannelMessage message, void* arg);
+void midiInputMessageCallback(MidiChannelMessage message, void* arg);
+void midiOutputMessageCallback(uint ccIndex_, uint ccValue_);
 
 namespace BelaVariables
 {

@@ -1,8 +1,8 @@
 #include "UIElements.hpp"
 
 #define USING_ANALOG_INS
+#define USING_MIDI
 //#define USING_GUI
-
 //#define CONSOLE_PRINT
 
 // =======================================================================================
@@ -19,6 +19,13 @@ void UIElement::addListener (Listener* listener_)
 void UIElement::swapListener(Listener* listener_)
 {
     listener = listener_;
+}
+
+
+void UIElement::setupMIDI(const uint ccIndex_, std::function<void (uint, uint)> callbackFunction_)
+{
+    ccIndex = ccIndex_;
+    midiCallbackFunction = callbackFunction_;
 }
 
 
@@ -129,6 +136,15 @@ void Potentiometer::update(const float guivalue_, const float analogvalue_)
         {
             if (onTouch) onTouch();
         }
+        
+        #ifdef USING_MIDI
+        uint newMidiValue = (uint)mapValue(value, 0.f, 1.f, 0.f, 127.f);
+        if (newMidiValue != midiCache)
+        {
+            midiCache = newMidiValue;
+            if (midiCallbackFunction) midiCallbackFunction(ccIndex, newMidiValue);
+        }
+        #endif
     }
     #endif // USING_ANALOG_INS
 }

@@ -81,6 +81,8 @@ public:
      */
     virtual void notifyListener(const int specifier_ = -1) = 0;
 
+    void setupMIDI(const uint ccIndex_, std::function<void(uint, uint)> callbackFunction_);
+    
     // getters
     const int getIndex() const { return index; }
     const String getID() const { return id; }
@@ -89,6 +91,8 @@ protected:
     Listener* listener; /**< List of listeners attached to the UIElement */
     unsigned int index; /**< Index of the UIElement */
     String id; /**< Name of the UIElement */
+    unsigned int ccIndex = 0;
+    std::function<void(uint, uint)> midiCallbackFunction = nullptr;
 };
 
 
@@ -198,6 +202,7 @@ private:
     
     float guiCache; /**< Cached GUI value */
     float analogCache; /**< Cached analog value */
+    int midiCache; /**< Cached midi value */
     
     InputSource inputFocus = InputSource::NONE; /**< Current listening focus */
 
