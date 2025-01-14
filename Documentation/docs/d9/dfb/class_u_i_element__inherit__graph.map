@@ -1,0 +1,7 @@
+<map id="UIElement" name="UIElement">
+<area shape="rect" id="Node000001" title="A class representing a UI element with listeners for various events." alt="" coords="45,5,129,31"/>
+<area shape="rect" id="Node000002" href="$d4/d77/class_button.html" title="A class representing a button UI element with various states and actions." alt="" coords="5,79,65,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="72,45,46,80,42,77,67,42"/>
+<area shape="rect" id="Node000003" href="$d3/d10/class_potentiometer.html" title="A class representing a potentiometer UI element with various input sources." alt="" coords="89,79,192,105"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="107,42,133,77,129,80,103,45"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="Button" name="Button">
+<area shape="rect" id="Node000001" title="A class representing a button UI element with various states and actions." alt="" coords="71,94,130,120"/>
+<area shape="rect" id="Node000002" href="$d1/d4c/class_u_i_element.html" title="A class representing a UI element with listeners for various events." alt="" coords="5,5,89,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="65,43,95,92,91,95,60,46"/>
+<area shape="rect" id="Node000006" href="$db/ddf/class_debouncer.html" title="A class for debouncing digital signals." alt="" coords="113,5,197,31"/>
+<area shape="poly" id="edge2_Node000001_Node000006" title=" " alt="" coords="141,46,110,95,106,92,137,43"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="Menu::NamingPage" name="Menu::NamingPage">
+<area shape="rect" id="Node000001" title=" " alt="" coords="9,184,145,210"/>
+<area shape="rect" id="Node000002" href="$d8/d48/class_menu_1_1_page.html" title=" " alt="" coords="159,109,251,135"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="172,145,99,186,97,181,170,140"/>
+<area shape="poly" id="edge3_Node000002_Node000002" title=" " alt="" coords="268,114,277,122,269,129,252,131,251,126,267,124,272,122,265,119"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="5,5,85,31"/>
+<area shape="poly" id="edge4_Node000001_Node000007" title=" " alt="" coords="40,47,34,89,34,112,38,134,51,161,68,182,64,185,47,163,33,136,29,112,28,88,35,46"/>
+<area shape="poly" id="edge2_Node000002_Node000007" title=" " alt="" coords="78,37,187,106,185,111,75,42"/>
+</map>

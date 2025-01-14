@@ -1,0 +1,11 @@
+<map id="EffectProcessor" name="EffectProcessor">
+<area shape="rect" id="Node000001" title="A base class representing an audio effect processor, with setup and processing capabilities." alt="" coords="174,79,289,105"/>
+<area shape="rect" id="Node000003" href="$d3/d82/class_granulator_processor.html" title=" " alt="" coords="5,153,146,178"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="192,114,103,154,101,150,190,109"/>
+<area shape="rect" id="Node000004" href="$d1/d37/class_reverb_processor.html" title=" " alt="" coords="170,153,293,178"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="234,120,234,152,229,152,229,120"/>
+<area shape="rect" id="Node000005" href="$d3/dd0/class_ring_modulator_processor.html" title=" " alt="" coords="317,153,482,178"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="275,109,372,150,370,155,273,114"/>
+<area shape="rect" id="Node000002" href="$de/d6b/class_audio_parameter_1_1_listener.html" title="A listener class to observe changes in AudioParameter." alt="" coords="147,5,316,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="234,46,234,79,229,79,229,46"/>
+</map>

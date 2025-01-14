@@ -1,0 +1,17 @@
+<map id="Reverberation::Reverb" name="Reverberation::Reverb">
+<area shape="rect" id="Node000001" title="processes the whole Reverb" alt="" coords="384,185,536,211"/>
+<area shape="rect" id="Node000002" href="$de/d71/class_reverberation_1_1_early_reflections.html" title="handles processing of the early reflections" alt="" coords="5,5,212,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="228,30,296,49,330,63,361,80,392,104,418,133,453,183,449,186,414,136,388,108,358,84,327,68,294,54,226,35"/>
+<area shape="rect" id="Node000015" title=" " alt="" coords="8,55,209,96"/>
+<area shape="poly" id="edge2_Node000001_Node000015" title=" " alt="" coords="224,95,293,113,361,137,405,159,441,183,438,187,402,164,359,142,291,118,223,100"/>
+<area shape="rect" id="Node000016" href="$d6/dfb/class_reverberation_1_1_simple_delay_stereo.html" title="The SimpleDelayStero object implements a basic delay line. It processes two channels synchronous." alt="" coords="16,120,201,161"/>
+<area shape="poly" id="edge3_Node000001_Node000016" title=" " alt="" coords="216,153,360,176,395,182,394,187,359,181,215,158"/>
+<area shape="rect" id="Node000004" href="$db/d1e/class_linear_ramp.html" title="The RampLinear object implements a linear fade between two values." alt="" coords="63,185,154,211"/>
+<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="170,196,383,196,383,201,170,201"/>
+<area shape="rect" id="Node000018" href="$de/d22/class_reverberation_1_1_parametric_e_q_stereo.html" title="a simple class processing a Parametric EQ Filter, processes two channels synchronous" alt="" coords="22,235,195,276"/>
+<area shape="poly" id="edge5_Node000001_Node000018" title=" " alt="" coords="210,239,359,216,395,209,396,214,360,221,211,245"/>
+<area shape="rect" id="Node000019" href="$de/daf/class_reverberation_1_1_butterworth_lowcut_stereo.html" title="a simple class processing a Butterworth Lowcut Filter, processes two channels synchronous" alt="" coords="20,300,197,341"/>
+<area shape="poly" id="edge6_Node000001_Node000019" title=" " alt="" coords="211,300,285,282,359,256,403,233,439,209,442,214,405,238,361,261,286,287,213,305"/>
+<area shape="rect" id="Node000020" href="$de/d4b/class_reverberation_1_1_butterworth_highcut_stereo.html" title="a simple class processing a Butterworth Highcut Filter, processes two channels synchronous" alt="" coords="20,366,197,406"/>
+<area shape="poly" id="edge7_Node000001_Node000020" title=" " alt="" coords="211,370,286,349,323,334,358,315,388,290,414,261,449,210,453,213,418,265,392,294,361,319,326,339,288,354,213,375"/>
+</map>

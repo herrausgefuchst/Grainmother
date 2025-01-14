@@ -1,0 +1,5 @@
+<map id="ChoiceParameter" name="ChoiceParameter">
+<area shape="rect" id="Node000001" title="Represents a parameter with multiple choice options." alt="" coords="5,79,128,105"/>
+<area shape="rect" id="Node000002" href="$dc/d70/class_audio_parameter.html" title="A class representing an audio parameter that can be observed by listeners." alt="" coords="9,5,124,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="69,46,69,79,64,79,64,46"/>
+</map>

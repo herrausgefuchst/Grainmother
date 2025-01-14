@@ -1,0 +1,7 @@
+<map id="ConvolverStereo" name="ConvolverStereo">
+<area shape="rect" id="Node000001" title="Implements a stereo audio convolution engine with support for SIMD optimization." alt="" coords="348,46,466,72"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,201,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="216,35,348,50,347,55,216,41"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,71,201,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="216,78,323,67,347,64,348,70,324,73,216,84"/>
+</map>

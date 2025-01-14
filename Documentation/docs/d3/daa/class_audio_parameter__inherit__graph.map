@@ -1,0 +1,13 @@
+<map id="AudioParameter" name="AudioParameter">
+<area shape="rect" id="Node000001" title="A class representing an audio parameter that can be observed by listeners." alt="" coords="222,79,337,105"/>
+<area shape="rect" id="Node000003" href="$d7/de9/class_button_parameter.html" title="Represents a parameter that can toggle between states, typically used for buttons." alt="" coords="5,153,125,178"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="230,112,102,155,101,150,228,107"/>
+<area shape="rect" id="Node000004" href="$d5/d5f/class_choice_parameter.html" title="Represents a parameter with multiple choice options." alt="" coords="149,153,272,178"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="260,117,224,154,220,150,256,114"/>
+<area shape="rect" id="Node000005" href="$dc/dca/class_slide_parameter.html" title="Represents a parameter with a sliding scale, supporting linear and frequency scaling." alt="" coords="295,153,406,178"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="304,114,340,150,337,154,300,117"/>
+<area shape="rect" id="Node000006" href="$d4/dbf/class_toggle_parameter.html" title="Represents a parameter that toggles between states, typically used for Buttons." alt="" coords="429,153,549,178"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="330,108,454,150,452,155,329,113"/>
+<area shape="rect" id="Node000002" href="$da/d0f/class_u_i_element_1_1_listener.html" title="A listener class for handling UIElement events." alt="" coords="211,5,348,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="282,46,282,79,277,79,277,46"/>
+</map>

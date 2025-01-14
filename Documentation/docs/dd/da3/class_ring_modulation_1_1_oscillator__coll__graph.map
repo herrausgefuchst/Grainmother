@@ -1,0 +1,5 @@
+<map id="RingModulation::Oscillator" name="RingModulation::Oscillator">
+<area shape="rect" id="Node000001" title="A class representing an audio oscillator capable of generating two sine waves with optional modulatio..." alt="" coords="5,94,180,120"/>
+<area shape="rect" id="Node000002" href="$d8/ddf/class_ring_modulation_1_1_l_f_o.html" title="A class representing a Low Frequency Oscillator (LFO) for audio signal processing." alt="" coords="20,5,165,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,47,95,94,90,94,90,47"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="Menu" name="Menu">
+<area shape="rect" id="Node000001" title="Represents a user interface menu for managing presets, global settings, and navigation." alt="" coords="47,79,101,105"/>
+<area shape="rect" id="Node000002" href="$da/d0f/class_u_i_element_1_1_listener.html" title="A listener class for handling UIElement events." alt="" coords="5,5,143,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="77,46,77,79,71,79,71,46"/>
+</map>

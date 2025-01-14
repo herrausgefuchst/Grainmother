@@ -1,0 +1,5 @@
+<map id="Granulation::FilterStereo" name="Granulation::FilterStereo">
+<area shape="rect" id="Node000001" title="A stereo filter class for audio processing, implementing Moog ladder and half&#45;ladder filter models." alt="" coords="9,124,172,150"/>
+<area shape="rect" id="Node000002" href="$d0/df9/class_granulation_1_1_t_p_t1st_order_filter_stereo.html" title="A transposed direct form 1st&#45;order filter for stereo audio processing." alt="" coords="5,5,176,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,62,93,124,88,124,88,62"/>
+</map>

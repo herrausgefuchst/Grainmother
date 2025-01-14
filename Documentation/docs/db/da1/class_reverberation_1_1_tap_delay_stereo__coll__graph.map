@@ -1,0 +1,9 @@
+<map id="Reverberation::TapDelayStereo" name="Reverberation::TapDelayStereo">
+<area shape="rect" id="Node000001" title="A helper class for EarlyReflections." alt="" coords="301,78,504,104"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="12,5,176,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="192,44,338,75,337,80,190,49"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="11,71,177,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="193,88,301,88,301,94,193,94"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="5,135,183,191"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="198,141,276,124,356,102,358,107,277,129,199,146"/>
+</map>

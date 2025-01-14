@@ -1,0 +1,9 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$d5/d29/class_granulation_1_1_envelope.html" title="A base class representing an amplitude envelope for grains." alt="" coords="5,55,155,80"/>
+<area shape="rect" id="Node000001" href="$d1/d42/class_granulation_1_1_hann_envelope.html" title=" " alt="" coords="216,5,396,31"/>
+<area shape="poly" id="edge8_Node000000_Node000001" title=" " alt="" coords="157,48,243,29,244,34,158,53"/>
+<area shape="rect" id="Node000002" href="$dd/d39/class_granulation_1_1_parabolic_envelope.html" title="A derived class implementing a parabolic amplitude envelope." alt="" coords="204,55,408,80"/>
+<area shape="poly" id="edge9_Node000000_Node000002" title=" " alt="" coords="170,65,204,65,204,70,170,70"/>
+<area shape="rect" id="Node000003" href="$d1/d9b/class_granulation_1_1_triangular_envelope.html" title=" " alt="" coords="203,104,409,130"/>
+<area shape="poly" id="edge10_Node000000_Node000003" title=" " alt="" coords="158,82,244,101,243,106,157,87"/>
+</map>

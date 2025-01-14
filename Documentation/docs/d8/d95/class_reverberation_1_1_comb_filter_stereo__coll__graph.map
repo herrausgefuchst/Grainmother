@@ -1,0 +1,5 @@
+<map id="Reverberation::CombFilterStereo" name="Reverberation::CombFilterStereo">
+<area shape="rect" id="Node000001" title="implements a Comb Filter with a one pole lowpass in the feedback loop and additional modulation of th..." alt="" coords="5,109,180,150"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="22,5,163,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,62,95,109,90,109,90,62"/>
+</map>

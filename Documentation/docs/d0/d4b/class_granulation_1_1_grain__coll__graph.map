@@ -1,0 +1,7 @@
+<map id="Granulation::Grain" name="Granulation::Grain">
+<area shape="rect" id="Node000001" title="Represents an individual grain in granular synthesis." alt="" coords="105,94,231,120"/>
+<area shape="rect" id="Node000002" href="$d5/d29/class_granulation_1_1_envelope.html" title="A base class representing an amplitude envelope for grains." alt="" coords="5,5,155,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,40,158,92,154,96,101,44"/>
+<area shape="rect" id="Node000003" href="$d2/d2c/class_granulation_1_1_grain_data.html" title="Manages data and behavior for an individual grain during granular synthesis." alt="" coords="179,5,333,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="235,44,182,96,178,92,231,40"/>
+</map>

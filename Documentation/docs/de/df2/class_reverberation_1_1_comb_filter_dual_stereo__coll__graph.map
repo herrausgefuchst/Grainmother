@@ -1,0 +1,5 @@
+<map id="Reverberation::CombFilterDualStereo" name="Reverberation::CombFilterDualStereo">
+<area shape="rect" id="Node000001" title="a kind of wrapper for two individual CombFilterStereo objects, used to be able to calculate with neon..." alt="" coords="5,109,180,150"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="8,5,177,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,62,95,109,90,109,90,62"/>
+</map>

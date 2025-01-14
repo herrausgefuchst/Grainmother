@@ -1,0 +1,5 @@
+<map id="LED" name="LED">
+<area shape="rect" id="Node000001" title="Manages the LED state and behavior based on the connected parameter and UI interaction." alt="" coords="66,79,113,105"/>
+<area shape="rect" id="Node000002" href="$de/d6b/class_audio_parameter_1_1_listener.html" title="A listener class to observe changes in AudioParameter." alt="" coords="5,5,174,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="92,46,92,79,87,79,87,46"/>
+</map>

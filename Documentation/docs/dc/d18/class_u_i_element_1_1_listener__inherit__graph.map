@@ -1,0 +1,7 @@
+<map id="UIElement::Listener" name="UIElement::Listener">
+<area shape="rect" id="Node000001" title="A listener class for handling UIElement events." alt="" coords="47,5,184,31"/>
+<area shape="rect" id="Node000002" href="$dc/d70/class_audio_parameter.html" title="A class representing an audio parameter that can be observed by listeners." alt="" coords="5,79,120,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="100,45,74,80,69,77,96,42"/>
+<area shape="rect" id="Node000007" href="$d2/db8/class_menu.html" title="Represents a user interface menu for managing presets, global settings, and navigation." alt="" coords="144,79,197,105"/>
+<area shape="poly" id="edge2_Node000001_Node000007" title=" " alt="" coords="136,41,163,77,159,80,132,45"/>
+</map>

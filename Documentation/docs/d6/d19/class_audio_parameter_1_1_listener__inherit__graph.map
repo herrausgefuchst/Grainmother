@@ -1,0 +1,11 @@
+<map id="AudioParameter::Listener" name="AudioParameter::Listener">
+<area shape="rect" id="Node000001" title="A listener class to observe changes in AudioParameter." alt="" coords="120,5,289,31"/>
+<area shape="rect" id="Node000002" href="$df/d4d/class_display.html" title="Manages the display output across various platforms such as OLED and Console." alt="" coords="5,79,71,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="164,40,67,81,65,76,161,35"/>
+<area shape="rect" id="Node000003" href="$d5/d92/class_effect_processor.html" title="A base class representing an audio effect processor, with setup and processing capabilities." alt="" coords="95,79,210,105"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="189,45,164,80,159,77,185,42"/>
+<area shape="rect" id="Node000007" href="$d3/dbe/class_l_e_d.html" title="Manages the LED state and behavior based on the connected parameter and UI interaction." alt="" coords="234,79,282,105"/>
+<area shape="poly" id="edge3_Node000001_Node000007" title=" " alt="" coords="225,42,251,77,247,80,220,45"/>
+<area shape="rect" id="Node000008" href="$d9/d0a/class_metronome.html" title="A metronome that synchronizes with audio parameters, triggering events at regular intervals based on ..." alt="" coords="306,79,392,105"/>
+<area shape="poly" id="edge4_Node000001_Node000008" title=" " alt="" coords="244,36,325,76,323,81,241,41"/>
+</map>

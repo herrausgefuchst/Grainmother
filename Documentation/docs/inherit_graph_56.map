@@ -1,0 +1,15 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$da/d0f/class_u_i_element_1_1_listener.html" title="A listener class for handling UIElement events." alt="" coords="5,105,143,131"/>
+<area shape="rect" id="Node000001" href="$dc/d70/class_audio_parameter.html" title="A class representing an audio parameter that can be observed by listeners." alt="" coords="191,80,305,106"/>
+<area shape="poly" id="edge17_Node000000_Node000001" title=" " alt="" coords="157,103,190,99,191,104,158,109"/>
+<area shape="rect" id="Node000006" href="$d2/db8/class_menu.html" title="Represents a user interface menu for managing presets, global settings, and navigation." alt="" coords="221,129,274,155"/>
+<area shape="poly" id="edge22_Node000000_Node000006" title=" " alt="" coords="158,127,221,136,220,141,157,132"/>
+<area shape="rect" id="Node000002" href="$d7/de9/class_button_parameter.html" title="Represents a parameter that can toggle between states, typically used for buttons." alt="" coords="354,5,474,31"/>
+<area shape="poly" id="edge18_Node000001_Node000002" title=" " alt="" coords="287,70,352,40,377,29,380,34,354,45,290,75"/>
+<area shape="rect" id="Node000003" href="$d5/d5f/class_choice_parameter.html" title="Represents a parameter with multiple choice options." alt="" coords="353,55,475,80"/>
+<area shape="poly" id="edge19_Node000001_Node000003" title=" " alt="" coords="320,79,352,74,353,79,321,84"/>
+<area shape="rect" id="Node000004" href="$dc/dca/class_slide_parameter.html" title="Represents a parameter with a sliding scale, supporting linear and frequency scaling." alt="" coords="359,104,469,130"/>
+<area shape="poly" id="edge20_Node000001_Node000004" title=" " alt="" coords="321,101,359,106,358,112,320,106"/>
+<area shape="rect" id="Node000005" href="$d4/dbf/class_toggle_parameter.html" title="Represents a parameter that toggles between states, typically used for Buttons." alt="" coords="354,153,474,179"/>
+<area shape="poly" id="edge21_Node000001_Node000005" title=" " alt="" coords="296,110,306,114,354,140,379,150,377,155,352,145,304,119,294,115"/>
+</map>

@@ -1,0 +1,13 @@
+<map id="Menu" name="Menu">
+<area shape="rect" id="Node000001" title="Represents a user interface menu for managing presets, global settings, and navigation." alt="" coords="435,63,488,88"/>
+<area shape="rect" id="Node000003" href="$d8/d48/class_menu_1_1_page.html" title=" " alt="" coords="610,63,701,88"/>
+<area shape="poly" id="edge3_Node000003_Node000001" title=" " alt="" coords="504,73,609,73,609,78,504,78"/>
+<area shape="rect" id="Node000002" href="$da/d0f/class_u_i_element_1_1_listener.html" title="A listener class for handling UIElement events." alt="" coords="68,5,206,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="221,21,313,33,411,53,435,61,433,66,410,58,312,38,221,27"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="605,96,586,100,549,104,511,100,487,91,488,86,513,95,549,99,586,95,604,91"/>
+<area shape="poly" id="edge4_Node000003_Node000003" title=" " alt="" coords="635,46,642,39,656,36,668,38,676,45,678,54,675,63,670,61,673,54,672,48,666,43,656,41,644,43,639,49"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="69,55,205,96"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="220,73,434,73,434,78,220,78"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="5,120,269,161"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="284,120,347,109,410,93,433,85,435,90,411,98,348,114,285,126"/>
+</map>

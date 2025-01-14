@@ -1,0 +1,7 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$d1/d4c/class_u_i_element.html" title="A class representing a UI element with listeners for various events." alt="" coords="5,31,89,56"/>
+<area shape="rect" id="Node000001" href="$d4/d77/class_button.html" title="A class representing a button UI element with various states and actions." alt="" coords="158,5,218,31"/>
+<area shape="poly" id="edge15_Node000000_Node000001" title=" " alt="" coords="104,31,157,21,158,26,105,36"/>
+<area shape="rect" id="Node000002" href="$d3/d10/class_potentiometer.html" title="A class representing a potentiometer UI element with various input sources." alt="" coords="137,55,239,80"/>
+<area shape="poly" id="edge16_Node000000_Node000002" title=" " alt="" coords="104,51,137,56,136,61,103,56"/>
+</map>

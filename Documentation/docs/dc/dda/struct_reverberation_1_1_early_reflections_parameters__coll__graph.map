@@ -1,0 +1,5 @@
+<map id="Reverberation::EarlyReflectionsParameters" name="Reverberation::EarlyReflectionsParameters">
+<area shape="rect" id="Node000001" title="custom parameter structrue for the EarlyReflections object" alt="" coords="5,124,212,165"/>
+<area shape="rect" id="Node000002" href="$db/d1e/class_linear_ramp.html" title="The RampLinear object implements a linear fade between two values." alt="" coords="63,5,154,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="111,47,111,124,106,124,106,47"/>
+</map>

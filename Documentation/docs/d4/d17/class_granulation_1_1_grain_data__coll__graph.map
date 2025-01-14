@@ -1,0 +1,5 @@
+<map id="Granulation::GrainData" name="Granulation::GrainData">
+<area shape="rect" id="Node000001" title="Manages data and behavior for an individual grain during granular synthesis." alt="" coords="10,94,165,120"/>
+<area shape="rect" id="Node000002" href="$d4/dc7/class_granulation_1_1_source_data.html" title="A class for managing a buffer of floating point values with circular writing." alt="" coords="5,5,170,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="90,47,90,94,85,94,85,47"/>
+</map>

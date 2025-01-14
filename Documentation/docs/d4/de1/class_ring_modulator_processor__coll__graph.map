@@ -1,0 +1,7 @@
+<map id="RingModulatorProcessor" name="RingModulatorProcessor">
+<area shape="rect" id="Node000001" title=" " alt="" coords="73,94,237,120"/>
+<area shape="rect" id="Node000002" href="$d5/d92/class_effect_processor.html" title="A base class representing an audio effect processor, with setup and processing capabilities." alt="" coords="5,5,121,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="89,40,144,92,140,96,85,44"/>
+<area shape="rect" id="Node000010" href="$d3/db7/class_ring_modulation_1_1_ring_modulator.html" title="A class for implementing ring modulation with multiple modulation types." alt="" coords="145,5,349,31"/>
+<area shape="poly" id="edge2_Node000001_Node000010" title=" " alt="" coords="225,44,170,96,166,92,221,40"/>
+</map>

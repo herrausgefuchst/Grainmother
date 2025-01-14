@@ -1,0 +1,7 @@
+<map id="Granulation::Delay" name="Granulation::Delay">
+<area shape="rect" id="Node000001" title="Implements a delay effect with feedback and linear interpolation." alt="" coords="56,109,185,135"/>
+<area shape="rect" id="Node000002" href="$db/d1e/class_linear_ramp.html" title="The RampLinear object implements a linear fade between two values." alt="" coords="5,13,97,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="71,49,114,107,109,110,67,52"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="120,5,262,46"/>
+<area shape="poly" id="edge2_Node000001_Node000005" title=" " alt="" coords="174,61,156,87,135,110,131,107,152,83,170,58"/>
+</map>

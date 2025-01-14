@@ -1,0 +1,7 @@
+<map id="GranulatorProcessor" name="GranulatorProcessor">
+<area shape="rect" id="Node000001" title=" " alt="" coords="73,94,213,120"/>
+<area shape="rect" id="Node000002" href="$d5/d92/class_effect_processor.html" title="A base class representing an audio effect processor, with setup and processing capabilities." alt="" coords="5,5,121,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="86,41,134,92,130,95,82,44"/>
+<area shape="rect" id="Node000010" href="$d5/d54/class_granulation_1_1_granulator.html" title="A class for granular synthesis processing and parameter management." alt="" coords="145,5,301,31"/>
+<area shape="poly" id="edge2_Node000001_Node000010" title=" " alt="" coords="204,44,156,95,152,92,200,41"/>
+</map>

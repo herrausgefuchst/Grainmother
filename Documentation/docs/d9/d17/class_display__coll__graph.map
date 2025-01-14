@@ -1,0 +1,13 @@
+<map id="Display" name="Display">
+<area shape="rect" id="Node000001" title="Manages the display output across various platforms such as OLED and Console." alt="" coords="308,94,373,120"/>
+<area shape="rect" id="Node000002" href="$de/d6b/class_audio_parameter_1_1_listener.html" title="A listener class to observe changes in AudioParameter." alt="" coords="5,5,174,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="140,34,308,92,306,97,138,39"/>
+<area shape="rect" id="Node000003" href="$d7/d36/struct_display_1_1_display_cache.html" title="Caches display content, allowing it to be formatted and retrieved as needed." alt="" coords="197,5,352,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="284,45,295,68,321,92,317,95,291,72,279,47"/>
+<area shape="rect" id="Node000009" href="$d8/d48/class_menu_1_1_page.html" title=" " alt="" coords="377,5,468,31"/>
+<area shape="poly" id="edge3_Node000001_Node000009" title=" " alt="" coords="404,44,378,72,355,95,351,92,374,68,400,40"/>
+<area shape="poly" id="edge4_Node000009_Node000009" title=" " alt="" coords="486,10,495,18,487,27,469,29,469,24,485,22,490,18,482,14"/>
+<area shape="rect" id="Node000014" href="$dc/d70/class_audio_parameter.html" title="A class representing an audio parameter that can be observed by listeners." alt="" coords="556,5,671,31"/>
+<area shape="poly" id="edge5_Node000001_Node000014" title=" " alt="" coords="566,39,465,73,374,99,373,94,463,67,564,34"/>
+<area shape="poly" id="edge6_Node000014_Node000014" title=" " alt="" coords="688,10,697,18,689,26,672,29,671,24,687,21,692,18,685,14"/>
+</map>

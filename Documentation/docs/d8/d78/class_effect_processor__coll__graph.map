@@ -1,0 +1,15 @@
+<map id="EffectProcessor" name="EffectProcessor">
+<area shape="rect" id="Node000001" title="A base class representing an audio effect processor, with setup and processing capabilities." alt="" coords="277,198,392,223"/>
+<area shape="rect" id="Node000002" href="$de/d6b/class_audio_parameter_1_1_listener.html" title="A listener class to observe changes in AudioParameter." alt="" coords="5,94,174,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="121,126,160,149,204,171,278,195,276,200,202,176,157,154,118,131"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="295,5,374,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="295,41,262,64,248,78,237,95,232,110,234,125,241,139,252,153,281,177,312,195,309,200,278,181,248,157,237,142,229,127,227,110,232,93,243,75,258,60,292,36"/>
+<area shape="rect" id="Node000005" href="$d9/de8/class_audio_parameter_group.html" title="Manages and organizes a group of audio parameters by type." alt="" coords="260,94,410,120"/>
+<area shape="poly" id="edge4_Node000005_Node000003" title=" " alt="" coords="338,47,338,94,332,94,332,47"/>
+<area shape="rect" id="Node000007" href="$db/d1e/class_linear_ramp.html" title="The RampLinear object implements a linear fade between two values." alt="" coords="433,94,524,120"/>
+<area shape="poly" id="edge6_Node000007_Node000003" title=" " alt="" coords="369,37,460,91,457,96,367,42"/>
+<area shape="poly" id="edge3_Node000001_Node000005" title=" " alt="" coords="338,135,338,197,332,197,332,135"/>
+<area shape="poly" id="edge5_Node000001_Node000007" title=" " alt="" coords="475,135,465,157,450,176,423,193,394,203,392,198,421,188,446,172,460,154,470,133"/>
+<area shape="rect" id="Node000008" href="$d0/d92/class_effect_averager.html" title="Implements a small moving averager of stereo input samples over a large buffer." alt="" coords="549,94,657,120"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="586,134,562,156,533,176,499,190,462,200,393,210,392,205,461,195,497,185,531,171,559,152,582,130"/>
+</map>

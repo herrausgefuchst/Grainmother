@@ -1,0 +1,5 @@
+<map id="Granulation::SourceData" name="Granulation::SourceData">
+<area shape="rect" id="Node000001" title="A class for managing a buffer of floating point values with circular writing." alt="" coords="5,109,170,135"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="27,5,148,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="90,61,90,109,85,109,85,61"/>
+</map>

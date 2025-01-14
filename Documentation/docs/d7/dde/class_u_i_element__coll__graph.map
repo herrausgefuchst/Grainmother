@@ -1,0 +1,7 @@
+<map id="UIElement" name="UIElement">
+<area shape="rect" id="Node000001" title="A class representing a UI element with listeners for various events." alt="" coords="98,94,181,120"/>
+<area shape="rect" id="Node000002" href="$da/d0f/class_u_i_element_1_1_listener.html" title="A listener class for handling UIElement events." alt="" coords="5,5,143,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="94,42,132,92,128,95,90,45"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="166,5,246,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="190,45,151,95,146,92,185,42"/>
+</map>

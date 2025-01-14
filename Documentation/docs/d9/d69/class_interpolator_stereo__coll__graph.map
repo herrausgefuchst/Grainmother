@@ -1,0 +1,5 @@
+<map id="InterpolatorStereo" name="InterpolatorStereo">
+<area shape="rect" id="Node000001" title="Implements a stereo audio interpolator for upsampling using polyphase FIR filters." alt="" coords="5,94,130,120"/>
+<area shape="rect" id="Node000002" href="$df/dc8/class_convolver_stereo.html" title="Implements a stereo audio convolution engine with support for SIMD optimization." alt="" coords="8,5,127,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="70,47,70,94,65,94,65,47"/>
+</map>

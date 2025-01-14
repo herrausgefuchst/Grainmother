@@ -1,0 +1,9 @@
+<map id="Menu::Page" name="Menu::Page">
+<area shape="rect" id="Node000001" title=" " alt="" coords="18,109,109,135"/>
+<area shape="poly" id="edge4_Node000001_Node000001" title=" " alt="" coords="126,113,136,122,127,130,110,133,109,127,125,125,130,122,123,117"/>
+<area shape="rect" id="Node000002" href="$d2/db8/class_menu.html" title="Represents a user interface menu for managing presets, global settings, and navigation." alt="" coords="37,198,90,223"/>
+<area shape="poly" id="edge2_Node000002_Node000001" title=" " alt="" coords="23,145,11,160,9,170,14,180,38,196,35,200,10,183,3,171,6,158,19,142"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="81,184,85,172,85,159,72,136,76,133,90,158,91,172,86,186"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="24,5,103,31"/>
+<area shape="poly" id="edge3_Node000001_Node000006" title=" " alt="" coords="66,47,66,109,61,109,61,47"/>
+</map>

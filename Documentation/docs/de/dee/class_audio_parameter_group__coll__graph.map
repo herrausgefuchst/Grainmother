@@ -1,0 +1,7 @@
+<map id="AudioParameterGroup" name="AudioParameterGroup">
+<area shape="rect" id="Node000001" title="Manages and organizes a group of audio parameters by type." alt="" coords="54,94,204,120"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,85,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="69,41,119,92,116,96,65,44"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="109,5,317,31"/>
+<area shape="poly" id="edge2_Node000001_Node000004" title=" " alt="" coords="193,44,142,96,139,92,189,41"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="SlideParameter" name="SlideParameter">
+<area shape="rect" id="Node000001" title="Represents a parameter with a sliding scale, supporting linear and frequency scaling." alt="" coords="7,79,118,105"/>
+<area shape="rect" id="Node000002" href="$dc/d70/class_audio_parameter.html" title="A class representing an audio parameter that can be observed by listeners." alt="" coords="5,5,120,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="65,46,65,79,60,79,60,46"/>
+</map>
