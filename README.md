@@ -18,6 +18,16 @@ The Granulator breaks audio into short grains to create lush textures, time-stre
 
 The Reverb provides a rich spatial effect, combining early reflections with a late reverberation algorithm inspired by Schroeder and Moorer. With selectable types like Church, Digital Vintage, Seasick, and Room, users can craft immersive spaces and finely adjust decay, damping, and diffusion to match their desired tone.
 
+The three effects can be processed in either parallel or series mode, with the user having the ability to define the processing order. Each effect features an individual Mix/Wet control, along with a master control for the entire effect engine.
+
+A dedicated menu, accessible via four buttons, allows for additional settings such as potentiometer behavior, MIDI input and output channels, and advanced effect parameters.
+
+An OLED display provides real-time feedback, showing parameter changes and navigating the menu.
+
+The Grainmother includes a built-in preset system that allows users to save and recall custom effect configurations. This feature provides quick access to stored settings, making it ideal for maintaining consistency during live performances or efficiently switching between sounds.
+
+The device supports full MIDI integration via the Mini-USB connector on the side. Parameters can be controlled using Control Change messages, and presets can be switched using Program Change messages from external MIDI devices. Additionally, the eight potentiometers can function as MIDI controllers, sending out Control Change messages for further flexibility.
+
 ## Documentation
 
 See the full documentation of the code [here](http://julianfuchs.ch/grainmother).
