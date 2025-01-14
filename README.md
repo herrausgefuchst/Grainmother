@@ -31,3 +31,22 @@ This project is licensed under the [Creative Commons Attribution-NonCommercial-S
 I would be very happy to share further insights into my concepts and designs with you. Please feel free to reach out to me for more information. Additionally, if you are interested in the product, I would be pleased to create a custom device tailored to your needs.
 
 For inquiries, please visit: [www.julianfuchs.ch](https://www.julianfuchs.ch)
+
+## References
+
+- **BELA.** 2024. [bela.io](https://bela.io)
+- **Bencina, Ross.** 2001. *Implementing Real-Time Granular Synthesis.*
+- **Dahl, Luke, and Jean-Marc Jot.** 2000. *A Reverberator Based on Absorbent All-Pass Filters.* Proceedings of the COST G-6 Conference on Digital Audio Effects (DAFX-00).
+- **Dattorro, Jon.** 1997. *Effect Design, Part 1: Reverberator and Other Filters.* Journal of the Audio Engineering Society.
+- **Hoffmann-Burchardi, Richard.** 2009. *Asymmetries Make the Difference: An Analysis of Transistor-Based Analog Ring Modulators.* Proc. of the 12th Int. Conference on Digital Audio Effects. Como, Italy.
+- **Moorer, James A.** 1978. *About This Reverberation Business.* Computer Music Journal.
+- **Opie, Tallaine.** 2024. *Granular Synthesis.* [granularsynthesis.com](http://www.granularsynthesis.com/). Accessed October 21, 2024.
+- **Parker, Julian.** 2011. *A Simple Digital Model of the Diode-Based Ring-Modulator.* Proc. of the 14th International Conference on Digital Audio Effects. Paris, France.
+- **Pirkle, Will C.** 2017. *Designing Audio Effect Plugins in C++.* New York: Routledge.
+- **Pirkle, Will.** 2013. *Virtual Analog 2nd Order Moog Half-Ladder Filter - App Note 8.*
+- **Schroeder, Manfred R.** 1962. *Natural Sounding Artificial Reverberation.* Journal of the Audio Engineering Society.
+- **Truax, Barry.** 1988. *Real-Time Granular Synthesis with a Digital Signal Processor.* Computer Music Journal, Vol. 12, No. 2.
+- **Välimäki, V., J. Parker, L. Savioja, J. O. Smith, and J. S. Abel.** 2012. *Fifty Years of Artificial Reverberation.* IEEE Transactions on Audio, Speech, and Language Processing, Vol. 20, No. 5.
+- **Valhalla.** 2024. [Valhalla DSP](https://valhalladsp.com). Accessed December 31, 2024.
+
+
