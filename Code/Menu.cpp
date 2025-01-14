@@ -346,8 +346,8 @@ inline void Menu::initializeJSON()
     
     // console print - version (developing)
     #ifndef BELA_CONNECTED
-    readfilePresets.open("/Users/julianfuchs/Dropbox/BelaProjects/GrainMother/GrainMother/presets.json");
-    readfileGlobals.open("/Users/julianfuchs/Dropbox/BelaProjects/GrainMother/GrainMother/globals.json");
+    readfilePresets.open("/Users/julianfuchs/Dropbox/BelaProjects/Grainmother/Code/presets.json");
+    readfileGlobals.open("/Users/julianfuchs/Dropbox/BelaProjects/Grainmother/Code/globals.json");
     // BELA - version (embedded)
     #else
     readfilePresets.open("presets.json");
@@ -549,8 +549,8 @@ Menu::~Menu()
     // get the JSON files for presets and global settings
     // console print - version (developing)
     #ifndef BELA_CONNECTED
-    std::ofstream writefilePresets("/Users/julianfuchs/Dropbox/BelaProjects/GrainMother/GrainMother/presets.json");
-    std::ofstream writefileGlobals("/Users/julianfuchs/Dropbox/BelaProjects/GrainMother/GrainMother/globals.json");
+    std::ofstream writefilePresets("/Users/julianfuchs/Dropbox/BelaProjects/Grainmother/Code/presets.json");
+    std::ofstream writefileGlobals("/Users/julianfuchs/Dropbox/BelaProjects/Grainmother/Code/globals.json");
     // BELA - version (embedded)
     #else
     std::ofstream writefilePresets("presets.json");
