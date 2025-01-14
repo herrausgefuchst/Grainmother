@@ -1,0 +1,868 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>/Users/julianfuchs/Dropbox (Privat)/DigitalSignalProcessing/Grainmother/Respository/PCB/Grainmother_PCB_Design_V1.0_250102.kicad_sch</source>
+    <date/>
+    <tool>Eeschema 7.0.10</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>GRAINMOTHER - Multieffect Board</title>
+        <company/>
+        <rev>0.4</rev>
+        <date>2024-02-29</date>
+        <source>Grainmother_PCB_Design_V1.0_250102.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="J1">
+      <value>~</value>
+      <footprint>Custom Parts:CONN_22-27-2081_MOL</footprint>
+      <libsource lib="Connector" part="Conn_01x08_Socket" description="Generic connector, single row, 01x08, script generated"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x08, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ed62c898-213a-46b6-bd43-c6111b3659ea</tstamps>
+    </comp>
+    <comp ref="J2">
+      <value>Conn_01x04_Socket</value>
+      <footprint>Custom Parts:CONN_22-27-2041_MOL</footprint>
+      <libsource lib="Connector" part="Conn_01x04_Socket" description="Generic connector, single row, 01x04, script generated"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x04, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>d341808c-b37c-41ab-8974-fb3050b3d46c</tstamps>
+    </comp>
+    <comp ref="J3">
+      <value>Conn_01x03_Socket</value>
+      <footprint>Custom Parts:CONN_22292031_MOL</footprint>
+      <libsource lib="Connector" part="Conn_01x03_Socket" description="Generic connector, single row, 01x03, script generated"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x03, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7f7ba139-8d40-451d-a494-1d80bcd6940b</tstamps>
+    </comp>
+    <comp ref="J4">
+      <value>Conn_01x03_Socket</value>
+      <footprint>Custom Parts:CONN_22292031_MOL</footprint>
+      <libsource lib="Connector" part="Conn_01x03_Socket" description="Generic connector, single row, 01x03, script generated"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x03, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>83335b50-d3a2-472f-8b0e-f079c3288445</tstamps>
+    </comp>
+    <comp ref="J5">
+      <value>Conn_01x03_Socket</value>
+      <footprint>Custom Parts:CONN_22292031_MOL</footprint>
+      <libsource lib="Connector" part="Conn_01x03_Socket" description="Generic connector, single row, 01x03, script generated"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x03, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>fa1bb12e-509c-49fa-a96f-204d5d87e909</tstamps>
+    </comp>
+    <comp ref="J6">
+      <value>Conn_01x03_Socket</value>
+      <footprint>Custom Parts:CONN_22292031_MOL</footprint>
+      <libsource lib="Connector" part="Conn_01x03_Socket" description="Generic connector, single row, 01x03, script generated"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x03, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1242c1e9-39a4-4feb-b59c-02c94e2b8b69</tstamps>
+    </comp>
+    <comp ref="J7">
+      <value>Conn_01x02_Socket</value>
+      <footprint>Custom Parts:CONN_22-27-2021_MOL</footprint>
+      <libsource lib="Connector" part="Conn_01x02_Socket" description="Generic connector, single row, 01x02, script generated"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x02, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ef5d2a7f-4a16-4d5a-9c08-0470e6880c79</tstamps>
+    </comp>
+    <comp ref="J8">
+      <value>Conn_01x02_Socket</value>
+      <footprint>Custom Parts:CONN_22-27-2021_MOL</footprint>
+      <libsource lib="Connector" part="Conn_01x02_Socket" description="Generic connector, single row, 01x02, script generated"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x02, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>47f9765a-be43-4c06-badd-9dafa4f828bc</tstamps>
+    </comp>
+    <comp ref="J9">
+      <value>Conn_01x04_Socket</value>
+      <footprint>Custom Parts:CONN_22-27-2041_MOL</footprint>
+      <libsource lib="Connector" part="Conn_01x04_Socket" description="Generic connector, single row, 01x04, script generated"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Generic connector, single row, 01x04, script generated"/>
+      <property name="ki_keywords" value="connector"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>dd9e91dc-9a94-4d61-ab6a-5db3c162073d</tstamps>
+    </comp>
+    <comp ref="R1">
+      <value>220</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>82ae1517-3ed2-433a-91f4-75ae6ceb8f0f</tstamps>
+    </comp>
+    <comp ref="R2">
+      <value>10k</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e8f2b5ac-0ffb-4976-9b10-8c5025f59f0d</tstamps>
+    </comp>
+    <comp ref="R3">
+      <value>220</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9dcc05e7-7261-4d35-90d0-b295f0c5bd70</tstamps>
+    </comp>
+    <comp ref="R4">
+      <value>10k</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>f7ca2ac2-0915-453c-afd1-483ad7204f27</tstamps>
+    </comp>
+    <comp ref="R5">
+      <value>220</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>6ecb68e3-1396-4c24-a830-3b50b852f112</tstamps>
+    </comp>
+    <comp ref="R6">
+      <value>10k</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ccbf69b5-9e57-4740-adbc-f69781d376ab</tstamps>
+    </comp>
+    <comp ref="R7">
+      <value>220</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>345ee35b-a86e-4f8b-8cbe-1884dca45c40</tstamps>
+    </comp>
+    <comp ref="R8">
+      <value>10k</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1e8da0c5-dce3-480d-a5ca-bf1a6fb982fc</tstamps>
+    </comp>
+    <comp ref="R9">
+      <value>220</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>678e845b-a3cd-4311-b39f-25316b826839</tstamps>
+    </comp>
+    <comp ref="R10">
+      <value>10k</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>bd455c38-4803-446a-8e14-f6078ffcfcfc</tstamps>
+    </comp>
+    <comp ref="R11">
+      <value>220</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a69fc25c-5c3c-46e6-87b7-f2af5da96ee1</tstamps>
+    </comp>
+    <comp ref="R12">
+      <value>10k</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>05b6a5d4-77f4-48ca-b074-f620c968b96f</tstamps>
+    </comp>
+    <comp ref="R13">
+      <value>10k</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1f261f74-f84f-40a1-8386-35a10adf3a30</tstamps>
+    </comp>
+    <comp ref="R14">
+      <value>10k</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>82679c84-fcad-40eb-80ee-ff3196f95920</tstamps>
+    </comp>
+    <comp ref="R15">
+      <value>10k</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ddf1e3b3-0c5e-4f6d-bcfb-4a24203d4cd6</tstamps>
+    </comp>
+    <comp ref="R16">
+      <value>10k</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>342a63ef-b64a-4223-b167-a7bf27a8f875</tstamps>
+    </comp>
+    <comp ref="R17">
+      <value>220</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>17033465-f50c-4fe7-9e0b-ef2f96ab109a</tstamps>
+    </comp>
+    <comp ref="R18">
+      <value>220</value>
+      <footprint>Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal</footprint>
+      <libsource lib="Device" part="R" description="Resistor"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Resistor"/>
+      <property name="ki_keywords" value="R res resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>4577863a-940a-4a22-bccd-96926d6b9b1a</tstamps>
+    </comp>
+    <comp ref="RV1">
+      <value>~</value>
+      <footprint>Custom Parts:Potentiometer_Bourns_PTV111-3_Vertical</footprint>
+      <libsource lib="Device" part="R_Potentiometer" description="Potentiometer"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Potentiometer"/>
+      <property name="ki_keywords" value="resistor variable"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>ea51e2db-358e-4a45-847b-870e3750063b</tstamps>
+    </comp>
+    <comp ref="RV2">
+      <value>~</value>
+      <footprint>Custom Parts:Potentiometer_Bourns_PTV111-3_Vertical</footprint>
+      <libsource lib="Device" part="R_Potentiometer" description="Potentiometer"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Potentiometer"/>
+      <property name="ki_keywords" value="resistor variable"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>66fd4d8b-c363-4dfa-ba77-6065e0939c6a</tstamps>
+    </comp>
+    <comp ref="RV3">
+      <value>~</value>
+      <footprint>Custom Parts:Potentiometer_Bourns_PTV111-3_Vertical</footprint>
+      <libsource lib="Device" part="R_Potentiometer" description="Potentiometer"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Potentiometer"/>
+      <property name="ki_keywords" value="resistor variable"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>1b00dd1e-1855-46d0-b1b8-1166fafa5dfb</tstamps>
+    </comp>
+    <comp ref="RV4">
+      <value>~</value>
+      <footprint>Custom Parts:Potentiometer_Bourns_PTV111-3_Vertical</footprint>
+      <libsource lib="Device" part="R_Potentiometer" description="Potentiometer"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Potentiometer"/>
+      <property name="ki_keywords" value="resistor variable"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>9aed01f5-5cdc-43f4-b9d5-792141ddb60e</tstamps>
+    </comp>
+    <comp ref="RV5">
+      <value>~</value>
+      <footprint>Custom Parts:Potentiometer_Bourns_PTV111-3_Vertical</footprint>
+      <libsource lib="Device" part="R_Potentiometer" description="Potentiometer"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Potentiometer"/>
+      <property name="ki_keywords" value="resistor variable"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>5125cf88-8166-4b8f-a8b8-7f88b90af369</tstamps>
+    </comp>
+    <comp ref="RV6">
+      <value>~</value>
+      <footprint>Custom Parts:Potentiometer_Bourns_PTV111-3_Vertical</footprint>
+      <libsource lib="Device" part="R_Potentiometer" description="Potentiometer"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Potentiometer"/>
+      <property name="ki_keywords" value="resistor variable"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>27522229-774f-4b80-8fe3-d489219cb165</tstamps>
+    </comp>
+    <comp ref="RV7">
+      <value>~</value>
+      <footprint>Custom Parts:Potentiometer_Bourns_PTV111-3_Vertical</footprint>
+      <libsource lib="Device" part="R_Potentiometer" description="Potentiometer"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Potentiometer"/>
+      <property name="ki_keywords" value="resistor variable"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>72bab54d-039a-4cec-959c-140b9956a63e</tstamps>
+    </comp>
+    <comp ref="RV8">
+      <value>~</value>
+      <footprint>Custom Parts:Potentiometer_Bourns_PTV111-3_Vertical</footprint>
+      <libsource lib="Device" part="R_Potentiometer" description="Potentiometer"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Potentiometer"/>
+      <property name="ki_keywords" value="resistor variable"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>e04cf6ff-b091-4e88-ae4e-1a431d44e673</tstamps>
+    </comp>
+    <comp ref="SW_FX1">
+      <value>SW_Push_LED</value>
+      <footprint>Custom Parts:SW-DIGITAST_NarrowSpacing_LeftSided</footprint>
+      <libsource lib="Switch" part="SW_Push_LED" description="Push button switch with LED, generic"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Push button switch with LED, generic"/>
+      <property name="ki_keywords" value="switch normally-open pushbutton push-button LED"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3bc6ad42-cc30-4c56-9804-d7a65c395a54</tstamps>
+    </comp>
+    <comp ref="SW_FX2">
+      <value>SW_Push_LED</value>
+      <footprint>Custom Parts:SW-DIGITAST_NarrowSpacing_LeftSided</footprint>
+      <libsource lib="Switch" part="SW_Push_LED" description="Push button switch with LED, generic"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Push button switch with LED, generic"/>
+      <property name="ki_keywords" value="switch normally-open pushbutton push-button LED"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>53dfe679-58ea-468d-a06e-63946755ac05</tstamps>
+    </comp>
+    <comp ref="SW_FX3">
+      <value>SW_Push_LED</value>
+      <footprint>Custom Parts:SW-DIGITAST_NarrowSpacing_LeftSided</footprint>
+      <libsource lib="Switch" part="SW_Push_LED" description="Push button switch with LED, generic"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Push button switch with LED, generic"/>
+      <property name="ki_keywords" value="switch normally-open pushbutton push-button LED"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>7b9eba20-d572-4cac-830b-69ab4f7746d9</tstamps>
+    </comp>
+    <comp ref="SW_FX4">
+      <value>SW_Push_LED</value>
+      <footprint>Custom Parts:SW-DIGITAST_NarrowSpacing_LeftSided</footprint>
+      <libsource lib="Switch" part="SW_Push_LED" description="Push button switch with LED, generic"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Push button switch with LED, generic"/>
+      <property name="ki_keywords" value="switch normally-open pushbutton push-button LED"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>46891348-0d9f-42f6-9197-717e408ac066</tstamps>
+    </comp>
+    <comp ref="SW_FX5">
+      <value>SW_Push_LED</value>
+      <footprint>Custom Parts:SW-DIGITAST_NarrowSpacing_LeftSided</footprint>
+      <libsource lib="Switch" part="SW_Push_LED" description="Push button switch with LED, generic"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Push button switch with LED, generic"/>
+      <property name="ki_keywords" value="switch normally-open pushbutton push-button LED"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>dcb06ab7-4f75-467d-8fff-21793dfacfaa</tstamps>
+    </comp>
+    <comp ref="SW_FX6">
+      <value>SW_Push_LED</value>
+      <footprint>Custom Parts:SW-DIGITAST_NarrowSpacing_LeftSided</footprint>
+      <libsource lib="Switch" part="SW_Push_LED" description="Push button switch with LED, generic"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Push button switch with LED, generic"/>
+      <property name="ki_keywords" value="switch normally-open pushbutton push-button LED"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>a5089eeb-0c35-473d-b84f-278f68aed59f</tstamps>
+    </comp>
+    <comp ref="SW_MENU1">
+      <value>~</value>
+      <footprint>Custom Parts:SW-DIGITAST_NarrowSpacing_noLED_LeftSided</footprint>
+      <libsource lib="Switch" part="SW_Push" description="Push button switch, generic, two pins"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Push button switch, generic, two pins"/>
+      <property name="ki_keywords" value="switch normally-open pushbutton push-button"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>c0c9bb74-3eb7-4a08-ae70-5a4a3c7392ff</tstamps>
+    </comp>
+    <comp ref="SW_MENU2">
+      <value>~</value>
+      <footprint>Custom Parts:SW-DIGITAST_NarrowSpacing_noLED_LeftSided</footprint>
+      <libsource lib="Switch" part="SW_Push" description="Push button switch, generic, two pins"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Push button switch, generic, two pins"/>
+      <property name="ki_keywords" value="switch normally-open pushbutton push-button"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>3c9878f5-41fa-4c32-8792-babf80f753c5</tstamps>
+    </comp>
+    <comp ref="SW_MENU3">
+      <value>~</value>
+      <footprint>Custom Parts:SW-DIGITAST_NarrowSpacing_noLED_LeftSided</footprint>
+      <libsource lib="Switch" part="SW_Push" description="Push button switch, generic, two pins"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Push button switch, generic, two pins"/>
+      <property name="ki_keywords" value="switch normally-open pushbutton push-button"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>b526913d-ae1b-462e-9e66-dc2c0a77e745</tstamps>
+    </comp>
+    <comp ref="SW_MENU4">
+      <value>~</value>
+      <footprint>Custom Parts:SW-DIGITAST_NarrowSpacing_noLED_LeftSided</footprint>
+      <libsource lib="Switch" part="SW_Push" description="Push button switch, generic, two pins"/>
+      <property name="Sheetname" value=""/>
+      <property name="Sheetfile" value="Grainmother_PCB_Design_V1.0_250102.kicad_sch"/>
+      <property name="ki_description" value="Push button switch, generic, two pins"/>
+      <property name="ki_keywords" value="switch normally-open pushbutton push-button"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamps>197fbd3a-c6ed-45ed-bbc9-a08efeefc509</tstamps>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="Connector" part="Conn_01x02_Socket">
+      <description>Generic connector, single row, 01x02, script generated</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x02_Socket</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="Conn_01x03_Socket">
+      <description>Generic connector, single row, 01x03, script generated</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x03_Socket</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="Conn_01x04_Socket">
+      <description>Generic connector, single row, 01x04, script generated</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x04_Socket</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+        <pin num="4" name="Pin_4" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="Conn_01x08_Socket">
+      <description>Generic connector, single row, 01x08, script generated</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x08_Socket</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+        <pin num="4" name="Pin_4" type="passive"/>
+        <pin num="5" name="Pin_5" type="passive"/>
+        <pin num="6" name="Pin_6" type="passive"/>
+        <pin num="7" name="Pin_7" type="passive"/>
+        <pin num="8" name="Pin_8" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="R">
+      <description>Resistor</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>R_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="R_Potentiometer">
+      <description>Potentiometer</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Potentiometer*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">RV</field>
+        <field name="Value">R_Potentiometer</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+        <pin num="3" name="3" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Switch" part="SW_Push">
+      <description>Push button switch, generic, two pins</description>
+      <docs>~</docs>
+      <fields>
+        <field name="Reference">SW</field>
+        <field name="Value">SW_Push</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Switch" part="SW_Push_LED">
+      <description>Push button switch with LED, generic</description>
+      <docs>~</docs>
+      <fields>
+        <field name="Reference">SW</field>
+        <field name="Value">SW_Push_LED</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+        <pin num="3" name="K" type="passive"/>
+        <pin num="4" name="A" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="Connector">
+      <uri>/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols//Connector.kicad_sym</uri>
+    </library>
+    <library logical="Device">
+      <uri>/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols//Device.kicad_sym</uri>
+    </library>
+    <library logical="Switch">
+      <uri>/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols//Switch.kicad_sym</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="+3.3V">
+      <node ref="J7" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R10" pin="2" pintype="passive"/>
+      <node ref="R12" pin="2" pintype="passive"/>
+      <node ref="R13" pin="1" pintype="passive"/>
+      <node ref="R14" pin="1" pintype="passive"/>
+      <node ref="R15" pin="1" pintype="passive"/>
+      <node ref="R16" pin="1" pintype="passive"/>
+      <node ref="R2" pin="2" pintype="passive"/>
+      <node ref="R4" pin="2" pintype="passive"/>
+      <node ref="R6" pin="2" pintype="passive"/>
+      <node ref="R8" pin="2" pintype="passive"/>
+      <node ref="RV1" pin="3" pinfunction="3" pintype="passive"/>
+      <node ref="RV2" pin="3" pinfunction="3" pintype="passive"/>
+      <node ref="RV3" pin="3" pinfunction="3" pintype="passive"/>
+      <node ref="RV4" pin="3" pinfunction="3" pintype="passive"/>
+      <node ref="RV5" pin="3" pinfunction="3" pintype="passive"/>
+      <node ref="RV6" pin="3" pinfunction="3" pintype="passive"/>
+      <node ref="RV7" pin="3" pinfunction="3" pintype="passive"/>
+      <node ref="RV8" pin="3" pinfunction="3" pintype="passive"/>
+    </net>
+    <net code="2" name="GND">
+      <node ref="J7" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="J9" pin="3" pinfunction="Pin_3" pintype="passive"/>
+      <node ref="J9" pin="4" pinfunction="Pin_4" pintype="passive"/>
+      <node ref="RV1" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="RV2" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="RV3" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="RV4" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="RV5" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="RV6" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="RV7" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="RV8" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="SW_FX1" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="SW_FX1" pin="3" pinfunction="K" pintype="passive"/>
+      <node ref="SW_FX2" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="SW_FX2" pin="3" pinfunction="K" pintype="passive"/>
+      <node ref="SW_FX3" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="SW_FX3" pin="3" pinfunction="K" pintype="passive"/>
+      <node ref="SW_FX4" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="SW_FX4" pin="3" pinfunction="K" pintype="passive"/>
+      <node ref="SW_FX5" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="SW_FX5" pin="3" pinfunction="K" pintype="passive"/>
+      <node ref="SW_FX6" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="SW_FX6" pin="3" pinfunction="K" pintype="passive"/>
+      <node ref="SW_MENU1" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="SW_MENU2" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="SW_MENU3" pin="1" pinfunction="1" pintype="passive"/>
+      <node ref="SW_MENU4" pin="1" pinfunction="1" pintype="passive"/>
+    </net>
+    <net code="3" name="IN_L1">
+      <node ref="J4" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+    </net>
+    <net code="4" name="IN_L2">
+      <node ref="J4" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+    </net>
+    <net code="5" name="IN_L3">
+      <node ref="J4" pin="3" pinfunction="Pin_3" pintype="passive"/>
+      <node ref="R5" pin="2" pintype="passive"/>
+    </net>
+    <net code="6" name="IN_L4">
+      <node ref="J6" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R7" pin="2" pintype="passive"/>
+    </net>
+    <net code="7" name="IN_L5">
+      <node ref="J6" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="R9" pin="2" pintype="passive"/>
+    </net>
+    <net code="8" name="IN_L6">
+      <node ref="J6" pin="3" pinfunction="Pin_3" pintype="passive"/>
+      <node ref="R11" pin="2" pintype="passive"/>
+    </net>
+    <net code="9" name="IN_P_9_09">
+      <node ref="J8" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="R17" pin="2" pintype="passive"/>
+    </net>
+    <net code="10" name="IN_P_9_27">
+      <node ref="J8" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R18" pin="2" pintype="passive"/>
+    </net>
+    <net code="11" name="Net-(SW_FX1-A)">
+      <node ref="R1" pin="1" pintype="passive"/>
+      <node ref="SW_FX1" pin="4" pinfunction="A" pintype="passive"/>
+    </net>
+    <net code="12" name="Net-(SW_FX2-A)">
+      <node ref="R3" pin="1" pintype="passive"/>
+      <node ref="SW_FX2" pin="4" pinfunction="A" pintype="passive"/>
+    </net>
+    <net code="13" name="Net-(SW_FX3-A)">
+      <node ref="R5" pin="1" pintype="passive"/>
+      <node ref="SW_FX3" pin="4" pinfunction="A" pintype="passive"/>
+    </net>
+    <net code="14" name="Net-(SW_FX4-A)">
+      <node ref="R7" pin="1" pintype="passive"/>
+      <node ref="SW_FX4" pin="4" pinfunction="A" pintype="passive"/>
+    </net>
+    <net code="15" name="Net-(SW_FX5-A)">
+      <node ref="R9" pin="1" pintype="passive"/>
+      <node ref="SW_FX5" pin="4" pinfunction="A" pintype="passive"/>
+    </net>
+    <net code="16" name="Net-(SW_FX6-A)">
+      <node ref="R11" pin="1" pintype="passive"/>
+      <node ref="SW_FX6" pin="4" pinfunction="A" pintype="passive"/>
+    </net>
+    <net code="17" name="OUT_B1">
+      <node ref="J3" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R4" pin="1" pintype="passive"/>
+      <node ref="SW_FX2" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="18" name="OUT_B2">
+      <node ref="J5" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R8" pin="1" pintype="passive"/>
+      <node ref="SW_FX4" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="19" name="OUT_B3">
+      <node ref="J3" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="R2" pin="1" pintype="passive"/>
+      <node ref="SW_FX1" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="20" name="OUT_B4">
+      <node ref="J5" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="R10" pin="1" pintype="passive"/>
+      <node ref="SW_FX5" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="21" name="OUT_B5">
+      <node ref="J3" pin="3" pinfunction="Pin_3" pintype="passive"/>
+      <node ref="R6" pin="1" pintype="passive"/>
+      <node ref="SW_FX3" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="22" name="OUT_B6">
+      <node ref="J5" pin="3" pinfunction="Pin_3" pintype="passive"/>
+      <node ref="R12" pin="1" pintype="passive"/>
+      <node ref="SW_FX6" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="23" name="OUT_B7">
+      <node ref="J2" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R16" pin="2" pintype="passive"/>
+      <node ref="SW_MENU4" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="24" name="OUT_B8">
+      <node ref="J2" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="R15" pin="2" pintype="passive"/>
+      <node ref="SW_MENU3" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="25" name="OUT_B9">
+      <node ref="J2" pin="3" pinfunction="Pin_3" pintype="passive"/>
+      <node ref="R13" pin="2" pintype="passive"/>
+      <node ref="SW_MENU1" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="26" name="OUT_B10">
+      <node ref="J2" pin="4" pinfunction="Pin_4" pintype="passive"/>
+      <node ref="R14" pin="2" pintype="passive"/>
+      <node ref="SW_MENU2" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="27" name="OUT_DPST1">
+      <node ref="J9" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R18" pin="1" pintype="passive"/>
+    </net>
+    <net code="28" name="OUT_DPST2">
+      <node ref="J9" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="R17" pin="1" pintype="passive"/>
+    </net>
+    <net code="29" name="OUT_P1">
+      <node ref="J1" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="RV5" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="30" name="OUT_P2">
+      <node ref="J1" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="RV1" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="31" name="OUT_P3">
+      <node ref="J1" pin="3" pinfunction="Pin_3" pintype="passive"/>
+      <node ref="RV2" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="32" name="OUT_P4">
+      <node ref="J1" pin="4" pinfunction="Pin_4" pintype="passive"/>
+      <node ref="RV3" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="33" name="OUT_P5">
+      <node ref="J1" pin="5" pinfunction="Pin_5" pintype="passive"/>
+      <node ref="RV4" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="34" name="OUT_P6">
+      <node ref="J1" pin="6" pinfunction="Pin_6" pintype="passive"/>
+      <node ref="RV8" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="35" name="OUT_P7">
+      <node ref="J1" pin="7" pinfunction="Pin_7" pintype="passive"/>
+      <node ref="RV7" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+    <net code="36" name="OUT_P8">
+      <node ref="J1" pin="8" pinfunction="Pin_8" pintype="passive"/>
+      <node ref="RV6" pin="2" pinfunction="2" pintype="passive"/>
+    </net>
+  </nets>
+</export>
