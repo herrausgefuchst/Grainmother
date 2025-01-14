@@ -20,7 +20,7 @@ The Reverb provides a rich spatial effect, combining early reflections with a la
 
 ## Documentation
 
-
+See the full documentation of the code [here](http://julianfuchs.ch/grainmother).
 
 ## License
 
