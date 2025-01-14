@@ -1,4 +1,4 @@
-# GRAINMOTHER Documenation
+# GRAINMOTHER
 
 A Multi-Effect Audio Engine based on the BELA Platform
 
@@ -17,6 +17,10 @@ The Ring Modulator combines the input signal with a carrier signal, producing co
 The Granulator breaks audio into short grains to create lush textures, time-stretching, and pitch-shifting effects. Grains can be randomized in properties such as panning and length while a delay, a dynamic feedback and filtering options allow for intricate sound design. Its intuitive control set makes it versatile for creating anything from subtle enhancements to fragmented, evolving soundscapes.
 
 The Reverb provides a rich spatial effect, combining early reflections with a late reverberation algorithm inspired by Schroeder and Moorer. With selectable types like Church, Digital Vintage, Seasick, and Room, users can craft immersive spaces and finely adjust decay, damping, and diffusion to match their desired tone.
+
+## Documentation
+
+
 
 ## License
 
