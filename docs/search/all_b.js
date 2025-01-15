@@ -52,6 +52,5 @@ var searchData=
   ['msec2bpm_49',['msec2bpm',['../d7/d00/group___helping_functions.html#ga97e2c44d11dfe1a9874a407cc7a4f241',1,'Functions.h']]],
   ['multfreq_50',['MULTFREQ',['../d3/de7/group___reverb_parameters.html#ggae86853f66f1b049fbf327ce81eeb2687aa494d1d9ea47a189aa493a23082ce57e',1,'Reverberation']]],
   ['multgain_51',['MULTGAIN',['../d3/de7/group___reverb_parameters.html#ggae86853f66f1b049fbf327ce81eeb2687aea1b7b3e87589e81ed8c792273f80367',1,'Reverberation']]],
-  ['multi_20effect_20audio_20engine_20based_20on_20the_20bela_20platform_52',['Grainmother - A Multi-Effect Audio Engine based on the BELA Platform',['../index.html#intro',1,'']]],
-  ['mutegain_53',['muteGain',['../d5/d92/class_effect_processor.html#ad78d22732ac0868ef7e3bc314a231eb4',1,'EffectProcessor']]]
+  ['mutegain_52',['muteGain',['../d5/d92/class_effect_processor.html#ad78d22732ac0868ef7e3bc314a231eb4',1,'EffectProcessor']]]
 ];

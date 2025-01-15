@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=latex 2024.8.9)  14 JAN 2025 15:07
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=latex 2024.8.9)  15 JAN 2025 08:24
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -80,8 +80,7 @@ File: l3backend-dvips.def 2024-02-20 L3 backend support: dvips
 \g__pdf_backend_annotation_int=\count197
 \g__pdf_backend_link_int=\count198
 \g__pdf_backend_link_sf_int=\count199
-)
-No file _formulas.aux.
+) (./_formulas.aux)
 \openout1 = `_formulas.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 30.
@@ -131,10 +130,10 @@ L3 programming layer <2024-02-20>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 1565 strings out of 474117
- 25735 string characters out of 5743709
+ 1568 strings out of 474117
+ 25789 string characters out of 5743709
  1926184 words of memory out of 5000000
- 23962 multiletter control sequences out of 15000+600000
+ 23963 multiletter control sequences out of 15000+600000
  558069 words of font info for 36 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  72i,5n,79p,224b,103s stack positions out of 10000i,1000n,20000p,200000b,200000s

@@ -241,100 +241,22 @@ void midiOutputMessageCallback(uint ccIndex_, uint ccValue_)
 /**
  * @mainpage GRAINMOTHER
  *
- * @section intro Grainmother - A Multi-Effect Audio Engine based on the BELA Platform
- * Grainmother is a customizable multi-effect audio engine built on the BELA platform, designed for musicians and sound designers who want to craft unique sounds without relying on external software. The project combines granular synthesis, reverb, and ring modulation into a single device that is controlled hands-on, rather than through traditional pedal interfaces. <br>
- * The goal of Grainmother is to provide a flexible, standalone effects processor optimized for live performances. By leveraging BELA’s real-time audio processing capabilities and a custom hardware interface, it offers intuitive controls that encourage creative experimentation. <br>
- * This project is fully open-source, with all code and schematics available for those interested in exploring or building upon the device. Grainmother is a practical tool for anyone looking to expand their sound design possibilities in a hardware-based setup.
+ * A Multi-Effect Audio Engine based on the BELA Platform
  *
- * @subsection ringmodulator Ringmodulator
- * The Ring Modulator creates unique and complex sound textures by combining the input signal with a carrier signal. It supports advanced modulation types, including diode-based, transistor-based, and a hybrid combination of the two. Additional features include oversampling, bit crushing, and noise modulation.
+ * Grainmother is a multi-effect audio engine built on the BELA platform. It’s designed for musicians and sound designers who want to create unique sounds without relying on external software. The project combines granular synthesis, reverb, and ring modulation into a single device controlled hands-on, rather than through traditional pedal interfaces. <br>
+ * The goal of Grainmother is to provide a flexible, standalone effects processor optimized for live performances. Leveraging BELA’s real-time audio processing capabilities and a custom hardware interface, it offers intuitive controls for creative experimentation.<br>
+ * This project is fully open-source, with all code and schematics available for those interested in exploring or building upon the device.
  *
- * @subsubsection parameters Parameters
- *
- * The Ring Modulator offers extensive control through the following parameters:
- * - **Tune**: Sets the frequency of the carrier signal.
- * - **Rate**: Adjusts the speed of low-frequency modulation.
- * - **Depth**: Determines the intensity of low-frequency modulation.
- * - **Waveform**: Selects the waveform of low-frequency modulation, with options such as:
- *   - Sine
- *   - Triangle
- *   - Saw
- *   - Pulse
- *   - Random
- * - **Saturation**: Adds nonlinear distortion to the modulation process, simulating analog behavior.
- * - **Spread**: Introduces a phase shift between left and right channels for stereo widening.
- * - **Noise**: Adds randomized noise ring modulation for a grittier texture.
- * - **Bitcrush**: Reduces the bit depth for digital distortion effects.
- *
- * @subsubsection chain Signal Processing Chain
- *
- * 1. **Carrier Signal Generation**:
- *    - A configurable oscillator generates the carrier signal, modulated by an additional LFO.
- *    - The oscillator supports stereo processing, allowing independent phase shifts for each channel.
- *
- * 2. **Bitcrushing**:
- *    - The signal can be pre-processed through a bit crusher to reduce bit depth.
- *
- * 3. **Ring Modulation**:
- *    - The input signal is multiplied by the carrier signal using one of the following algorithms:
- *      - **Diode-Based Modulation**: Simulates the nonlinear behavior of diodes in an analog circuit.
- *      - **Transistor-Based Modulation**: Models the asymmetrical response of transistors.
- *      - **Hybrid Modulation**: Blends diode and transistor characteristics for a unique tone.
- *
- * 4. **Noise and Distortion**:
- *    - Optional noise is mixed into the modulation process for added texture.
- *
- * 5. **Oversampling**:
- *    - The modulation process uses an oversampling ratio of 2x for improved audio fidelity.
- *    - An interpolator and decimator handle upsampling and downsampling efficiently.
- *
- * @subsection granulator Granulator
- * The Granulator breaks the input signal into short fragments called grains. Each grain has a defined lifespan (grain length) between 1 and 100 ms and is shaped by an amplitude envelope. The type of envelope can be manually selected, with the options Parabolic, Hann, and Triangular. <br>
- * The distribution of grains is controlled by the parameter Density, which is internally defined as the interonset time between grains in samples. Each grain receives the samples to process from a class called SourceData. This class stores the input samples in a circular buffer, allowing them to be read from variable start points. When a new grain is created, the start position of the read pointer and its reading speed are defined. These parameters are referred to as Initial Delay and Pitch. Using the Glide parameter, a modulation of the reading speed within the grain can be generated. Both Pitch and Glide are limited to a maximum modulation of one octave up or down. Additionally, the reading direction can be inverted using the Reverse parameter. <br>
- * Grain properties such as Panning, Interonset (Density), Grain Length, and Initial Delay can be randomly distributed via the Variation parameter. Low values result in subtle panning variations that create a wider sound, while high values cause strong randomization of all four parameters. This produces fragmented, textural soundscapes.
- *
- * @subsubsection chain Signal Processing Chain
- *
- * 1. **Grain Clouds**:
- *    - The stereo input signals are processed independently, resulting in two grain clouds
- *      that sum the active grains per channel.
- *
- * 2. **Filter**:
- *    - The output signal is passed through a lowpass filter, selectable as either a
- *      **Moog Ladder** (-24 dB/octave) or **Moog Half Ladder** (-12 dB/octave).
- *    - The resonance is proportional to the cutoff frequency: lower frequencies result
- *      in higher resonance.
- *    - Both the filter type and resonance intensity are adjustable.
- *
- * 3. **Delay Effect**:
- *    - The delay time is directly linked to the **Density** parameter.
- *    - The **Delay Speed Ratio** parameter adjusts the ratio of the delay time to the
- *      interonset time.
- *
- * 4. **Dynamic Feedback**:
- *    - A dynamic feedback amplitude is calculated based on the output signal amplitude
- *      and the **Feedback** parameter.
- *    - The feedback signal is scaled, filtered through a highpass filter, and added back
- *      to the input signal.
- *
- * 5. **Saturation and Output**:
- *    - The final output is saturated using a **tanh** function to prevent clipping and
- *      create a harmonically rich sound.
- *
- *
- * @subsection reverb Reverb
- * The Reverb simulates 24 early reflections using a tap delay, then sends this signal into a late reverberation algorithm similar to those from Schroeder and Moorer. The late reverberation consists of a series of all-pass filters, a set of parallel comb filters, and another set of series all-pass filters. To combine these two elements correctly, the decay has to be delayed to align right after the latest early reflection. In addition, some equalizers can shape the sound. A parametric EQ is implemented pre-FX and used as a “multiplier” of the input signal. A low-cut and high-cut filter can be set upon request; these are implemented post-FX.
- *
- * @subsubsection reverbtypes The Reverb Types
- * The user can change the reverb type, which involves many internal parameter changes (referred to as typeParameters). The EarlyReflections class includes three different reflection simulations: Church, Foyer, and Bathroom. This set of tap delays changes according to the type, as well as a diffusion factor (the all-pass filter gain in the early reflections) and a damping factor (low-pass gain in the early reflections). The decay primarily adjusts the composition of all-pass and comb filters and their corresponding delays. Additionally, damping, diffusion, and the rate and depth of modulating the all-pass filter delay times are type parameters.
- *
- * Four different types have been implemented:
- * •    CHURCH
- * •    DIGITAL VINTAGE
- * •    SEASICK
- * •    ROOM
- *
- * You can look up the corresponding parameter sets in the Reverberation::Reverb::setReverbType() function.
+ * @section features Features
+ * Grainmother features three distinct audio effects, each designed to provide unique sound-shaping capabilities.<br>
+ * The Ring Modulator combines the input signal with a carrier signal, using analog simulations such as diode-based, transistor-based, and hybrid approaches. An additional LFO modulates the carrier signal, while bit crushing and noise modulation extend the effect. This allows for a range of sounds, from lush amplitude modulation to extremely harsh, crushed noise.<br>
+ * The Granulator breaks audio into short grains ranging from 1 to 100 milliseconds. In addition to standard controls like Grain Length and Density, properties such as panning and length can be randomized. A delay, dynamic feedback, and filtering options provide powerful tools for intricate sound design. This versatile set of parameters enables everything from subtle enhancements to fragmented, evolving soundscapes.<br>
+ * The Reverb delivers a rich spatial effect by blending early reflections with a late reverberation algorithm inspired by Schroeder and Moorer. Selectable types, including Church, Digital Vintage, Seasick, and Room, allow users to craft immersive spaces and fine-tune parameters such as decay, pre-delay, and modulation. A unique feature is the feedback loop within the early reflection algorithm: lower values increase echo density artificially, while higher values create unique, morphing sounds.<br>
+ * The three effects can be processed in either parallel or series mode, with the user having the ability to define the processing order. Each effect features an individual Mix/Wet control, along with a master control for the entire effect engine. All processing is done true stereo.<br>
+ * A dedicated menu, accessible via four buttons, allows for additional settings such as potentiometer behavior, MIDI input and output channels, and advanced effect parameters.<br>
+ * An OLED display provides real-time feedback, showing parameter changes and navigating the menu.<br>
+ * The Grainmother includes a built-in preset system that allows users to save and recall custom effect configurations. This feature provides quick access to stored settings, making it ideal for maintaining consistency during live performances or efficiently switching between sounds.<br>
+ * The device supports full MIDI integration via the Mini-USB connector on the side. Parameters can be controlled using Control Change messages, and presets can be switched using Program Change messages from external MIDI devices. Additionally, the eight potentiometers can function as MIDI controllers, sending out Control Change messages for further flexibility.
  *
  * @section license License
  * Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License
