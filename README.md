@@ -2,7 +2,7 @@
 
 A Multi-Effect Audio Engine based on the BELA Platform
 
-Grainmother is a customizable multi-effect audio engine built on the [**BELA**](https://bela.io) platform. It’s designed for musicians and sound designers who want to create unique sounds without relying on external software. The project combines granular synthesis, reverb, and ring modulation into a single device controlled hands-on, rather than through traditional pedal interfaces.
+Grainmother is a multi-effect audio engine built on the [**BELA**](https://bela.io) platform. It’s designed for musicians and sound designers who want to create unique sounds without relying on external software. The project combines granular synthesis, reverb, and ring modulation into a single device controlled hands-on, rather than through traditional pedal interfaces.
 
 The goal of Grainmother is to provide a flexible, standalone effects processor optimized for live performances. Leveraging BELA’s real-time audio processing capabilities and a custom hardware interface, it offers intuitive controls for creative experimentation.
 
@@ -10,23 +10,23 @@ This project is fully open-source, with all code and schematics available for th
 
 ## Features
 
-Grainmother features three distinct audio effects, each designed to inspire creativity and provide unique sound-shaping capabilities. 
+Grainmother features three distinct audio effects, each designed to provide unique sound-shaping capabilities. 
 
-The Ring Modulator combines the input signal with a carrier signal, producing complex textures through advanced modulation types such as diode-based, transistor-based, and hybrid approaches. With additional features like oversampling, bit crushing, and noise modulation are available. It offers fine control over parameters like tune, depth, waveform, and saturation.
+The **Ring Modulator** combines the input signal with a carrier signal, using analog simulations such as diode-based, transistor-based, and hybrid approaches. An additional LFO modulates the carrier signal, while bit crushing and noise modulation extend the effect. This allows for a range of sounds, from lush amplitude modulation to extremely harsh, crushed noise.
 
-The Granulator breaks audio into short grains to create lush textures, time-stretching, and pitch-shifting effects. Grains can be randomized in properties such as panning and length while a delay, a dynamic feedback and filtering options allow for intricate sound design. Its intuitive control set makes it versatile for creating anything from subtle enhancements to fragmented, evolving soundscapes.
+The **Granulator** breaks audio into short grains ranging from 1 to 100 milliseconds. In addition to standard controls like Grain Length and Density, properties such as panning and length can be randomized. A delay, dynamic feedback, and filtering options provide powerful tools for intricate sound design. This versatile set of parameters enables everything from subtle enhancements to fragmented, evolving soundscapes.
 
-The Reverb provides a rich spatial effect, combining early reflections with a late reverberation algorithm inspired by Schroeder and Moorer. With selectable types like Church, Digital Vintage, Seasick, and Room, users can craft immersive spaces and finely adjust decay, damping, and diffusion to match their desired tone.
+The **Reverb** delivers a rich spatial effect by blending early reflections with a late reverberation algorithm inspired by Schroeder and Moorer. Selectable types, including Church, Digital Vintage, Seasick, and Room, allow users to craft immersive spaces and fine-tune parameters such as decay, pre-delay, and modulation. A unique feature is the feedback loop within the early reflection algorithm: lower values increase echo density artificially, while higher values create unique, morphing sounds.
 
-The three effects can be processed in either parallel or series mode, with the user having the ability to define the processing order. Each effect features an individual Mix/Wet control, along with a master control for the entire effect engine.
+The three effects can be processed in either **parallel** or **series** mode, with the user having the ability to define the processing order. Each effect features an individual Mix/Wet control, along with a master control for the entire effect engine. All processing is done **true stereo**. 
 
-A dedicated menu, accessible via four buttons, allows for additional settings such as potentiometer behavior, MIDI input and output channels, and advanced effect parameters.
+A dedicated **menu**, accessible via four buttons, allows for additional settings such as potentiometer behavior, MIDI input and output channels, and advanced effect parameters.
 
-An OLED display provides real-time feedback, showing parameter changes and navigating the menu.
+An **OLED display** provides real-time feedback, showing parameter changes and navigating the menu.
 
-The Grainmother includes a built-in preset system that allows users to save and recall custom effect configurations. This feature provides quick access to stored settings, making it ideal for maintaining consistency during live performances or efficiently switching between sounds.
+The Grainmother includes a built-in **preset system** that allows users to save and recall custom effect configurations. This feature provides quick access to stored settings, making it ideal for maintaining consistency during live performances or efficiently switching between sounds.
 
-The device supports full MIDI integration via the Mini-USB connector on the side. Parameters can be controlled using Control Change messages, and presets can be switched using Program Change messages from external MIDI devices. Additionally, the eight potentiometers can function as MIDI controllers, sending out Control Change messages for further flexibility.
+The device supports **full MIDI integration** via the Mini-USB connector on the side. Parameters can be controlled using Control Change messages, and presets can be switched using Program Change messages from external MIDI devices. Additionally, the eight potentiometers can function as MIDI controllers, sending out Control Change messages for further flexibility.
 
 ## Documentation
 
