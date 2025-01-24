@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="20.570999mm"
+   height="30.406mm"
+   viewBox="0 0 20.570999 30.406001"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (e7c3feb1, 2024-10-09)"
+   sodipodi:docname="250124_LasercutterTest_v1.0.svg"
+   inkscape:export-filename="250124_LasercutterTest_v1.0.pdf"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="4.0643174"
+     inkscape:cx="39.490026"
+     inkscape:cy="62.249075"
+     inkscape:window-width="1440"
+     inkscape:window-height="847"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <rect
+       x="433.51849"
+       y="171.05428"
+       width="75.119072"
+       height="51.135269"
+       id="rect2" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-45.33494,-54.014679)">
+    <path
+       id="rect54703"
+       style="display:inline;vector-effect:non-scaling-stroke;fill-opacity:0;fill-rule:evenodd;stroke:#ff0000;stroke-width:0.265361;-inkscape-stroke:hairline"
+       inkscape:label="Display"
+       d="M 46.12869,54.808429 H 64.699829 V 83.2144 H 46.12869 Z" />
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,-69.630949,25.433047)"
+       id="text2"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8px;line-height:1.4;font-family:'Panno Text';-inkscape-font-specification:'Panno Text';font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-variant-east-asian:normal;font-feature-settings:normal;font-variation-settings:normal;text-indent:0;text-align:center;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:0.4px;word-spacing:normal;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;white-space:pre;shape-inside:url(#rect2);display:inline;vector-effect:none;fill:#808080;fill-opacity:1;fill-rule:evenodd;stroke:#ff0000;stroke-width:0;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000"
+       x="17.171951"
+       y="0"><tspan
+         x="442.61426"
+         y="178.95333"
+         id="tspan3"><tspan
+           style="font-weight:622;font-family:'.SF Arabic Rounded';-inkscape-font-specification:'.SF Arabic Rounded weight=622';baseline-shift:baseline;vector-effect:none;stop-color:#000000;stop-opacity:1"
+           id="tspan1">Grainlength
+</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.17675px;line-height:0.8;font-family:Impact;-inkscape-font-specification:'Impact Bold';text-align:center;text-decoration-color:#000000;letter-spacing:0.365466px;direction:rtl;white-space:pre;display:inline;vector-effect:non-scaling-stroke;fill:#b3b3b3;fill-opacity:1;fill-rule:evenodd;stroke-width:0.264583;stroke-linecap:round;stroke-linejoin:round;-inkscape-stroke:hairline;paint-order:fill markers stroke"
+       x="60.5508"
+       y="68.019707"
+       id="text1"
+       transform="scale(0.98663455,1.0135465)"><tspan
+         sodipodi:role="line"
+         id="tspan1-5"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:condensed;font-size:4.17675px;font-family:Impact;-inkscape-font-specification:'Impact Condensed';letter-spacing:0.365466px;fill:#b3b3b3;stroke-width:0.264583"
+         x="60.916267"
+         y="68.019707">CRUSH</tspan></text>
+    <g
+       style="display:inline;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+       id="g356"
+       transform="matrix(3.706433,0,0,2.0167938,-439.37689,-119.72868)"
+       inkscape:label="Title">
+      <path
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+         d="m 133.0369,87.3929 -1.0023,3.5171 h -0.6786 l 1.0083,-3.5171 z"
+         id="path326" />
+      <path
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+         d="m 134.09371,87.511094 0.0374,2e-4 0.0366,2e-4 0.0358,3e-4 0.0351,4e-4 0.0343,6e-4 0.0335,6e-4 0.0327,7e-4 0.032,8e-4 0.0313,9e-4 0.0304,0.001 0.0297,0.0011 0.0571,0.0024 0.054,0.0029 0.051,0.0032 0.0478,0.0036 0.0449,0.0039 0.0417,0.0044 0.0387,0.0047 0.0356,0.0051 0.0325,0.0055 0.0295,0.0058 0.0412,0.0104 0.0397,0.0131 0.0383,0.0158 0.0369,0.0185 0.0354,0.0212 0.0339,0.0239 0.0326,0.0265 0.031,0.0293 0.0297,0.032 0.0189,0.0227 0.0184,0.024 0.009,0.0125 0.0172,0.0261 0.0161,0.0279 0.015,0.0297 0.0139,0.0316 0.0127,0.0333 0.0117,0.0352 0.0106,0.037 0.009,0.0388 0.008,0.0406 0.007,0.0424 0.006,0.0442 0.005,0.0461 0.004,0.0479 0.003,0.0496 0.002,0.0515 5e-4,0.0534 -4e-4,0.0485 -0.001,0.0466 -0.002,0.0445 -0.003,0.0426 -0.004,0.0406 -0.004,0.0386 -0.005,0.0366 -0.006,0.0346 -0.007,0.0326 -0.008,0.0307 -0.008,0.0286 -0.0141,0.0392 -0.0159,0.0347 -0.0177,0.0303 -0.006,0.0091 -0.0208,0.0252 -0.0242,0.0228 -0.0277,0.0204 -0.031,0.018 -0.0346,0.0157 -0.0379,0.0133 -0.0414,0.0109 -0.0295,0.0059 -0.031,0.0049 -0.0325,0.0038 -0.034,0.0027 -0.0356,0.0017 -0.0184,5e-4 0.0331,0.0056 0.0318,0.0061 0.0303,0.0067 0.0289,0.0072 0.0408,0.0118 0.0376,0.0131 0.0346,0.0143 0.0314,0.0155 0.0282,0.0167 0.0252,0.018 0.0286,0.0259 0.0122,0.0137 0.0222,0.0276 0.02,0.027 0.0177,0.0265 0.0156,0.0259 0.0164,0.0316 0.0129,0.0308 0.01,0.0299 0.001,0.0059 0.007,0.0367 0.003,0.0293 0.003,0.0349 0.003,0.0404 0.002,0.0299 0.001,0.0324 0.001,0.0349 0.001,0.0373 8e-4,0.0397 6e-4,0.0422 5e-4,0.0447 2e-4,0.047 1e-4,0.0496 v 0.9005 h -0.8529 v -1.1292 l -1e-4,-0.0317 -4e-4,-0.0301 -0.001,-0.0422 -0.002,-0.0386 -0.002,-0.035 -0.003,-0.0314 -0.005,-0.0363 -0.006,-0.0298 -0.01,-0.0284 -0.007,-0.0123 -0.0212,-0.0217 -0.0262,-0.0143 -0.0338,-0.0105 -0.0339,-0.0057 -0.0309,-0.0026 -0.0343,-9e-4 v 1.5007 h -0.9144 v -2.7668 h 0.9144 v 0.7034 l 0.0346,-8e-4 0.0314,-0.0026 0.0335,-0.0054 0.0289,-0.0078 0.0279,-0.0123 0.0101,-0.0063 0.0197,-0.0237 0.0111,-0.0273 0.009,-0.0358 0.005,-0.0347 0.003,-0.0297 0.002,-0.0328 0.001,-0.0358 2e-4,-0.0256 v -0.1854 l -7e-4,-0.0359 -0.002,-0.0325 -0.004,-0.0292 -0.007,-0.0318 -0.0117,-0.0313 -0.0181,-0.0269 -0.006,-0.0058 -0.0248,-0.0172 -0.0313,-0.0129 -0.0322,-0.0077 -0.0304,-0.0041 -0.0339,-0.0019 -0.0145,-2e-4 h -0.9144 v -0.6096 h 0.6375 z"
+         id="path332" />
+    </g>
+    <path
+       id="path105-8"
+       style="display:inline;vector-effect:non-scaling-stroke;fill:#cccccc;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.281349;stroke-dasharray:none;-inkscape-stroke:hairline"
+       inkscape:label="USB Slot 1"
+       d="m 47.40024,74.083928 v 8.00001 h 10.99985 v -8.00001 z m 1.1498,1.99986 h 8.70025 v 3.99976 h -8.70025 z" />
+    <path
+       id="path106"
+       style="display:inline;vector-effect:non-scaling-stroke;fill:none;fill-rule:evenodd;stroke:#ff0014;stroke-width:0.281349;stroke-dasharray:none;-inkscape-stroke:hairline"
+       inkscape:label="USB Slot 1"
+       d="m 57.250165,76.083788 h -8.7 v 4 h 8.7 z" />
+  </g>
+</svg>

@@ -709,6 +709,7 @@ void Menu::buttonPressed (UIElement* _uielement)
                 ParameterPage* page = static_cast<ParameterPage*>(currentPage);
                 page->getParameter()->setDefaultValue();
             }
+            // the Naming page will skip all other letters and save the preset with the current name (shortcut)
             if (isoftype<NamingPage>(currentPage))
             {
                 getPage("load_preset")->setCurrentChoice(getPage("save_preset")->getCurrentChoiceIndex()+1);

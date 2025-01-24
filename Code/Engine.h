@@ -54,7 +54,7 @@ public:
      *
      * This function initializes the audio engine by setting the sample rate and block size, initializing
      * engine parameters, and allocating memory for the effect processors. It also sets up the effects,
-     * adds them to the parameter group, and configures the global wet/dry ramp.
+     * adds their parameters to the parameter group, and configures the global wet/dry ramp.
      *
      * @param sampleRate_ The sample rate.
      * @param blockSize_ The block size.
@@ -74,7 +74,11 @@ public:
      */
     float32x2_t processAudioSamples(float32x2_t input_, uint sampleIndex_);
     
-    /** @brief should be called every audio block to update internal behaviours */
+    /** 
+     * @brief updates internal blockwise processing
+     *
+     * @note should be called every audio block
+     */
     void updateAudioBlock();
     
     /**
@@ -96,12 +100,7 @@ public:
      */
     void setBypass(bool bypassed_);
     
-    /**
-     * @brief Updates the ramps for the wet/dry mix.
-     *
-     * This function processes the ramp for the global wet signal, adjusting the mix between the wet
-     * and dry signals. It checks if the ramp has finished and updates the bypass state accordingly.
-     */
+    /** @brief Updates the ramps */
     void updateRamps();
     
     /** @brief Sets the Dry/Wet Gains for the whole Effect Machine */
@@ -113,6 +112,7 @@ public:
      * This function retrieves an AudioParameter based on a string identifier, allowing access to
      * parameters by their unique IDs.
      *
+     * @attention stops running if parameter is not found
      * @param parameterID_ The ID of the parameter to retrieve.
      * @return A pointer to the requested AudioParameter.
      */
@@ -124,6 +124,7 @@ public:
      * This function retrieves an AudioParameter based on its group and index within that group,
      * facilitating access to parameters that are organized into groups.
      *
+     * @attention stops running if parameter is not found
      * @param paramGroup_ The group index of the parameter.
      * @param paramIndex_ The index of the parameter within the group.
      * @return A pointer to the requested AudioParameter.
@@ -136,6 +137,7 @@ public:
      * This function retrieves an AudioParameter by the name of its group and the specific parameter ID,
      * enabling more intuitive access to parameters within named groups.
      *
+     * @attention stops running if parameter is not found
      * @param paramGroup_ The name of the parameter group.
      * @param paramID_ The ID of the parameter within the group.
      * @return A pointer to the requested AudioParameter.
@@ -148,6 +150,7 @@ public:
      * This function retrieves an AudioParameter by the name of its group and the index of the parameter
      * within that group, offering flexible access to parameters organized by name.
      *
+     * @attention stops running if parameter is not found
      * @param paramGroup_ The name of the parameter group.
      * @param paramIndex_ The index of the parameter within the group.
      * @return A pointer to the requested AudioParameter.
@@ -167,10 +170,10 @@ public:
     /**
      * @brief Gets the program parameters.
      *
-     * This function returns an array of pointers to the program parameter groups, providing access
+     * This function returns an array of pointers to the parameter groups, providing access
      * to the entire set of parameters managed by the audio engine.
      *
-     * @return An array of pointers to the program parameter groups.
+     * @return An array of pointers to the parameter groups.
      */
     std::array<AudioParameterGroup*, NUM_PARAMETERGROUPS> getProgramParameters() { return programParameters; }
     
@@ -180,6 +183,7 @@ public:
      * This function retrieves an effect processor based on its index, allowing direct access to specific
      * effects within the engine.
      *
+     * @attention stops running if effect is not found
      * @param index_ The index of the effect to retrieve.
      * @return A pointer to the requested EffectProcessor.
      */
@@ -243,10 +247,10 @@ public:
     void setup(const float minBPM_, const float maxBPM_, const float sampleRate_);
     
     /**
-     * @brief Processes the tap counter to manage tempo timing.
+     * @brief Increments the internal tap counter and stops counting if the counter exceeds the threshold
+     * for the minimum BPM.
      *
-     * This function increments the internal tap counter and stops counting if the counter exceeds the threshold
-     * for the minimum BPM. It is typically called regularly to manage the counting process.
+     * @note: called samplewise
      */
     void process();
     
@@ -288,8 +292,8 @@ private:
     float tempoMsec;  ///< The current tempo in milliseconds.
     uint tempoSamples;  ///< The current tempo in audio samples.
     
-    uint maxBpmCounts;  ///< The maximum number of samples corresponding to the maximum BPM.
-    uint minBpmCounts;  ///< The minimum number of samples corresponding to the minimum BPM.
+    uint maxBpmCounts;  ///< The minimum number of samples corresponding to the maximum BPM.
+    uint minBpmCounts;  ///< The maximum number of samples corresponding to the minimum BPM.
     uint tapCounter = 0;  ///< Counter to track the number of samples between taps.
 
 public:
@@ -322,8 +326,9 @@ public:
     /**
      * @brief Processes the metronome, triggering tics based on the current tempo.
      *
-     * This function should be called regularly (e.g., on each audio processing block) to advance the metronome's
-     * internal counter and trigger a tic when the counter reaches the required number of samples per beat.
+     * This function advances the metronome's internal counter and trigger a tic when the counter reaches the required number of samples per beat.
+     *
+     * @note call this regularly (each sample)
      */
     void process();
     
@@ -338,7 +343,7 @@ public:
      * @param param_ A pointer to the AudioParameter that has changed.
      *
      * This function overrides the AudioParameter::Listener method and updates the tempo in response to changes
-     * in the associated audio parameter.
+     * in the associated audio parameter. Parameter Values should be in BPM.
      */
     void parameterChanged(AudioParameter* param_) override;
     
@@ -365,19 +370,10 @@ private:
  * @brief Manages the user interface components and their interactions with the audio engine.
  *
  * The UserInterface class is responsible for setting up and managing all user-facing controls, displays,
- * and indicators. It links these UI elements to the underlying audio engine parameters, ensuring that user
+ * and indicators. It links these UI elements to the underlying audio parameters, ensuring that user
  * actions are correctly mapped to the corresponding audio processing functions. The class handles tasks
  * such as initializing UI components, managing button and potentiometer actions, updating display content,
  * and responding to changes in global settings, presets, and effect orders.
- *
- * @note The UserInterface class performs the following key tasks:
- * - Initializes UI elements such as buttons, potentiometers, LEDs, and the display.
- * - Sets up the menu system and links it to the audio engine's parameters.
- * - Manages the interaction between UI components and the audio engine, including the handling of
- *   non-audio tasks like tempo tapping and metronome processing.
- * - Provides methods for handling specific UI events, such as parameter nudging, scrolling, and resetting
- *   to default values.
- * - Responds to changes in global settings, presets, and effect orders, ensuring the UI reflects these changes.
  */
 class UserInterface
 {
@@ -395,26 +391,11 @@ public:
      * their corresponding audio parameters.
      * @param sampleRate_ The sample rate at which the audio engine operates. This is used to configure
      * components like the tempo tapper and metronome.
-     *
-     * @note The function performs the following tasks:
-     * - Saves the reference to the AudioEngine.
-     * - Initializes UI elements such as buttons, potentiometers, and LEDs.
-     * - Connects LEDs to their corresponding audio parameters to ensure they reflect parameter values.
-     * - Initializes the menu structure, including setting up the page architecture and loading the first preset.
-     * - Configures listeners for interactions between the UI, parameters, outputs, and the AudioEngine.
-     * - Sets up the display, including establishing an OSC connection and setting the initial page to be displayed.
-     * - Configures the tempo tapper with the appropriate minimum and maximum tempo values.
-     * - Sets up the metronome based on the current tempo.
-     * - Alerts the user by flashing LEDs upon successful setup completion.
      */
     void setup(AudioEngine* engine_, const float sampleRate_);
     
     /**
      * @brief Processes non-audio tasks related to the tempo tapper and metronome.
-     *
-     * This function handles the processing of non-audio tasks, specifically those related to the tempo tapper
-     * and metronome. It checks if the tempo tapper is active and processes it if necessary, and it also processes
-     * the metronome to ensure its timing functions are maintained.
      */
     void processNonAudioTasks();
     
@@ -504,7 +485,7 @@ private:
     /**
      * @brief Sets the focus of the user interface to the currently selected effect, updating the associated controls and indicators.
      *
-     * This function retrieves the currently focused effect based on the "effect_edit_focus" parameter and updates the user interface
+     * This function retrieves the currently focused effect based on the Effect Edit Focus parameter and updates the user interface
      * elements accordingly. It reassigns potentiometer controls to the parameters of the focused effect, updates the action button
      * to control the appropriate parameter, and adjusts the LED indicators to reflect which effect is currently being edited.
      */

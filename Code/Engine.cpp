@@ -1,6 +1,6 @@
 #include "Engine.h"
 
-#define CONSOLE_PRINT
+//#define CONSOLE_PRINT
 
 // =======================================================================================
 // MARK: - AUDIO ENGINE
@@ -17,11 +17,9 @@ AudioEngine::AudioEngine() : engineParameters("engine", Engine::NUM_PARAMETERS)
 
 void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
 {
-    // Assign member variables
     sampleRate = sampleRate_;
     blockSize = blockSize_;
     
-    // Initialize engine parameters
     initializeEngineParameters();
     
     // get the indexi of the predfined effect order
@@ -29,7 +27,7 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     uint granEffectIndex = ENUM2INT(EffectOrder::GRANULATOR);
     uint ringEffectIndex = ENUM2INT(EffectOrder::RINGMODULATOR);
     
-    // Define the alignment - typically 16 bytes for SIMD types
+    // Define the alignment - 16 bytes for SIMD types
     constexpr std::size_t alignment = 16;
 
     // Aligned allocation and object construction for effects
@@ -54,10 +52,10 @@ void AudioEngine::setup(const float sampleRate_, const unsigned int blockSize_)
     for (unsigned int n = 1; n < NUM_EFFECTS + 1; ++n)
         programParameters.at(n) = effectProcessor[n - 1]->getEffectParameterGroup();
     
-    // Set up the wet ramp for global bypass control and initialize the corresponding dry multiplier
+    // Set up the wet ramp for global bypass control and wet/dry mix and initialize the corresponding dry multiplier
     globalWet.setup(1.f, sampleRate, RAMP_BLOCKSIZE);
     globalWetCache = globalWet();
-    globalDry = 1.f - globalWet();
+    globalDry = getDryAmount(globalWet());
 }
 
 
@@ -121,7 +119,7 @@ void AudioEngine::initializeEngineParameters()
 
 float32x2_t AudioEngine::processAudioSamples(float32x2_t input_, uint sampleIndex_)
 {
-    // process the ramp for wetness in a certain rate
+    // process ramps in a certain rate
     if ((sampleIndex_ & RAMP_BLOCKSIZE_WRAP) == 0) updateRamps();
     
     // don't process anything if the bypassed flag is set true
@@ -190,11 +188,14 @@ void AudioEngine::setEffectOrder()
         for (uint m = 0; m < NUM_EFFECTS; ++m)
         {
             processFunction[n][m] = nullptr;
+            
+            // if effect index not set, than this slot is -1
             processIndex[n][m] = -1;
         }
     }
     
     // retrieve the current choice of effect order
+    // this is a string like '1 - 2 - 3' for series processing or '1 | 2 | 3' for parallel processing
     String effectOrder = getParameter("effect_order")->getValueAsString();
     
     // Split the effectOrder string into parallel segments
@@ -277,13 +278,14 @@ void AudioEngine::setEffectOrder()
 
 void AudioEngine::setBypass(bool bypassed_)
 {
-    // If bypass is enabled, ramp down the wet signal to 0 over 0.05 seconds.
+    // If bypass is enabled, ramp down the wet signal to below one
+    // this is needed to set the bypassed flag correctly
     if (bypassed_)
     {
         globalWetCache = globalWet();
         globalWet.setRampTo(-0.01f, 0.05f);
     }
-    // If bypass is disabled, ramp up the wet signal to 1 over 0.05 seconds and set bypassed to false.
+    // If bypass is disabled, ramp up the wet signal to the cache value and set bypassed to false.
     else
     {
         globalWet.setRampTo(globalWetCache, 0.05f);
@@ -317,7 +319,7 @@ void AudioEngine::updateRamps()
         globalDry = getDryAmount(globalWet());
     }
     
-    // If the ramp is finished and the wet signal has reached 0, set bypassed to true.
+    // If the ramp is finished and the wet signal has reached below 0, set bypassed to true.
     else if (!bypassed && globalWet() < 0.f)
     {
         bypassed = true;
@@ -337,7 +339,7 @@ AudioParameter* AudioEngine::getParameter(const String parameterID_)
     }
     
     if (!parameter)
-        engine_rt_error( "AudioEngine couldnt find Parameter with ID " + parameterID_, __FILE__, __LINE__, false);
+        engine_rt_error( "AudioEngine couldnt find Parameter with ID " + parameterID_, __FILE__, __LINE__, true);
     
     return parameter;
 }
@@ -348,7 +350,7 @@ AudioParameter* AudioEngine::getParameter(const unsigned int paramgroup_, const 
     AudioParameter* parameter = programParameters[paramgroup_]->getParameter(paramindex_);
     
     if (!parameter)
-        engine_rt_error("AudioEngine couldnt find Parameter with index " + TOSTRING(paramindex_) + " in Parametergroup " + TOSTRING(paramgroup_), __FILE__, __LINE__, false);
+        engine_rt_error("AudioEngine couldnt find Parameter with index " + TOSTRING(paramindex_) + " in Parametergroup " + TOSTRING(paramgroup_), __FILE__, __LINE__, true);
     
     return parameter;
 }
@@ -412,6 +414,9 @@ AudioParameter* AudioEngine::getParameterFromCCIndex(const uint ccIndex_)
         }
         if (found) break;
     }
+    
+    if (!parameter)
+        engine_rt_error("AudioEngine couldnt find Parameter with CC Index " + TOSTRING(ccIndex_), __FILE__, __LINE__, false);
     
     return parameter;
 }
@@ -596,14 +601,10 @@ void UserInterface::initializeListeners()
     button[BUTTON_FX3].onPress = [this] {
         engine->getParameter("effect_edit_focus")->setValue(2); };
 
-    engine->getParameter("effect_edit_focus")->onChange.push_back([this] { setEffectEditFocus(); });
-
     // Set the current effect edit focus.
     // Adds the parameters of the currently focused effect as listeners to the potentiometers.
+    // TODO: is this needed?
     setEffectEditFocus();
-    
-    engine->getParameter("reverb", "reverb_type")->setDisplayedParameter(&display.getReferenceTemporaryParameter());
-    engine->getParameter("ringmodulator", "ringmod_waveform")->setDisplayedParameter(&display.getReferenceTemporaryParameter());
     
     
     // POTENTIOMETER ACTIONS
@@ -613,14 +614,13 @@ void UserInterface::initializeListeners()
     potentiometer[NUM_POTENTIOMETERS-1].onChange = [this] { mixPotentiometerChanged(); };
     potentiometer[NUM_POTENTIOMETERS-1].decouple(engine->getParameter("global_mix")->getNormalizedValue());
     
-    // If a potentiometer reaches its cached value, the Action parameter LED blinks once.
+    // If a potentiometer reaches its cached value, all LEDs blink once.
     for (uint n = 0; n < NUM_POTENTIOMETERS-1; ++n)
         potentiometer[n].onCatch = [this] { alertLEDs(LED::State::BLINKONCE); };
         
     // When a potentiometer is touched, the display shows its associated parameter.
     for (uint n = 0; n < NUM_POTENTIOMETERS-1; ++n)
         potentiometer[n].onTouch = [this, n] { displayTouchedParameter(n); };
-
     
     // PARAMETER ACTIONS
     // ==================================================================================
@@ -655,13 +655,18 @@ void UserInterface::initializeListeners()
     engine->getParameter("effect2_engaged")->addListener(engine->getEffect(1));
     engine->getParameter("effect3_engaged")->addListener(engine->getEffect(2));
     
+    // TODO: is this needed?
     engine->setEffectOrder();
     
-    // Engine sets a small Ramp for input and effect output if the Global Bypass button is pressed
+    // TODO: moved, but correct here?
+    engine->getParameter("effect_edit_focus")->onChange.push_back([this] { setEffectEditFocus(); });
+    
+    // Engine sets a small Ramp if the Global Bypass button is pressed
     engine->getParameter("global_bypass")->onChange.push_back([this] {
         engine->setBypass(engine->getParameter("global_bypass")->getValueAsFloat());
     });
     
+    // Engine calculates internal wet/dry values if Global Mix Parameter changes
     engine->getParameter("global_mix")->onChange.push_back([this] { engine->setGlobalMix(); });
     
     // MENU ACTIONS
@@ -689,6 +694,11 @@ void UserInterface::initializeListeners()
 
     // The Tempo LED blinks in sync with the Metronome's tempo.
     metronome.onTic = [this] { led[LED_TEMPO].blinkOnce(); };
+    
+    // store a reference to the pointer to the currently displayed AudioParameter in the "Button-Choice-Parameters"
+    // this is done, so that the parameter doesn't change when a first click on the button is detected
+    engine->getParameter("reverb", "reverb_type")->setDisplayedParameter(&display.getReferenceTemporaryParameter());
+    engine->getParameter("ringmodulator", "ringmod_waveform")->setDisplayedParameter(&display.getReferenceTemporaryParameter());
 }
 
 
@@ -715,6 +725,7 @@ void UserInterface::updateNonAudioTasks()
         
         // since the parameter changed, the potentiometer needs to be decoupled
         // and refreshed with the new normalized value
+        // FIXME: what if a pot-parameter is scrolling but not currently focused?
         if (scrollingParameter->getIndex() < NUM_POTENTIOMETERS)
         {
             uint paramIndex = scrollingParameter->getIndex();
@@ -730,6 +741,7 @@ void UserInterface::globalSettingChanged(Menu::Page* page_)
 {
     if (page_->getID() == "pot_behaviour")
     {
+        //FIXME: savety guards
         Potentiometer::setPotBevaviour(INT2ENUM(page_->getCurrentChoiceIndex(), PotBehaviour));
         
         alertLEDs(LED::ALERT);
@@ -760,13 +772,70 @@ void UserInterface::effectOrderChanged()
 }
 
 
+void UserInterface::handleMidiControlChangeMessage(const uint ccIndex_, const uint ccValue_)
+{
+    // Refer to the MIDI implementation PDF for more details.
+    // All values above 100 correspond to a program change where certain effects are engaged or bypassed.
+    if (ccIndex_ > 100)
+    {
+        // Values above 107 are not assigned to any functionality.
+        if (ccIndex_ <= 108)
+        {
+            // Handle the program change message by setting the preset.
+            menu.handleMidiProgramChangeMessage(ccValue_);
+            
+            // Determine which effects are engaged based on the ccIndex.
+            int ringmodEngaged = (ccIndex_ == 101 || ccIndex_ == 103 || ccIndex_ == 106 || ccIndex_ == 107);
+            int granulatorEngaged = (ccIndex_ == 101 || ccIndex_ == 104 || ccIndex_ == 106 || ccIndex_ == 108);
+            int reverbEngaged = (ccIndex_ == 101 || ccIndex_ == 105 || ccIndex_ == 107 || ccIndex_ == 108);
+            
+            // Update the engagement state of the effects.
+            engine->getParameter("engine", "effect1_engaged")->setValue(ringmodEngaged);
+            engine->getParameter("engine", "effect2_engaged")->setValue(granulatorEngaged);
+            engine->getParameter("engine", "effect3_engaged")->setValue(reverbEngaged);
+        }
+        
+        return;
+    }
+    
+    // Find the parameter associated with the incoming ccIndex.
+    auto param = engine->getParameterFromCCIndex(ccIndex_);
+    
+    // Exit if no parameter is found for the ccIndex.
+    if (!param) return;
+    
+    // Update the MIDI value of the parameter.
+    param->setMidiValue(ccValue_);
+    
+    // If the changed parameter is part of the current set of focused parameters on the control surface,
+    // decouple the potentiometer and update its reference value.
+    if (param->getIndex() < NUM_POTENTIOMETERS - 1)
+    {
+        int currentEffectIndex = engine->getParameter("effect_edit_focus")->getValueAsInt();
+        
+        if (ccIndex_ <= 20 && currentEffectIndex == (int)EffectOrder::RINGMODULATOR)
+            potentiometer[ccIndex_ - 1].decouple(param->getNormalizedValue());
+        
+        else if (ccIndex_ <= 40 && currentEffectIndex == (int)EffectOrder::GRANULATOR)
+            potentiometer[ccIndex_ - 21].decouple(param->getNormalizedValue());
+        
+        else if (ccIndex_ <= 60 && currentEffectIndex == (int)EffectOrder::REVERB)
+            potentiometer[ccIndex_ - 41].decouple(param->getNormalizedValue());
+    }
+    
+    // Special case: Handle the global mix potentiometer separately.
+    if (param->getID() == "global_mix")
+        potentiometer[NUM_POTENTIOMETERS - 1].decouple(param->getNormalizedValue());
+}
+
+
 void UserInterface::setEffectEditFocus()
 {
     // get a pointer to the effect-edit-focus-parameter
-    auto focus = engine->getParameter("effect_edit_focus");
+    auto focusParam = engine->getParameter("effect_edit_focus");
     
-    // retrieve the index of the focused effect from parameter
-    auto effect = engine->getEffect(focus->getValueAsInt());
+    // get a pointer to the effect processor that's currently focussed
+    auto effect = engine->getEffect(focusParam->getValueAsInt());
     
     // for all potentiometers:
     for (unsigned int n = 0; n < NUM_POTENTIOMETERS-1; n++)
@@ -790,7 +859,7 @@ void UserInterface::setEffectEditFocus()
     led[LED_ACTION].parameterChanged(effect->getParameter(NUM_POTENTIOMETERS));
     
     // Calculate the indices of the focused effect LED and the others.
-    int focussedEffectLedIndex = focus->getValueAsInt() + LED_FX1;
+    int focussedEffectLedIndex = focusParam->getValueAsInt() + LED_FX1;
     std::vector<int> ledIndices = { LED_FX1, LED_FX2, LED_FX3 };
 
     // Remove the focused LED index from the vector to get the non-focused indices.
@@ -1100,63 +1169,6 @@ void UserInterface::alertLEDs(LED::State state_)
 }
 
 
-void UserInterface::handleMidiControlChangeMessage(const uint ccIndex_, const uint ccValue_)
-{
-    // Refer to the MIDI implementation PDF for more details.
-    // All values above 100 correspond to a program change where certain effects are engaged or bypassed.
-    if (ccIndex_ > 100)
-    {
-        // Values above 107 are not assigned to any functionality.
-        if (ccIndex_ <= 108)
-        {
-            // Handle the program change message by setting the preset.
-            menu.handleMidiProgramChangeMessage(ccValue_);
-            
-            // Determine which effects are engaged based on the ccIndex.
-            int ringmodEngaged = (ccIndex_ == 101 || ccIndex_ == 103 || ccIndex_ == 106 || ccIndex_ == 107);
-            int granulatorEngaged = (ccIndex_ == 101 || ccIndex_ == 104 || ccIndex_ == 106 || ccIndex_ == 108);
-            int reverbEngaged = (ccIndex_ == 101 || ccIndex_ == 105 || ccIndex_ == 107 || ccIndex_ == 108);
-            
-            // Update the engagement state of the effects.
-            engine->getParameter("engine", "effect1_engaged")->setValue(ringmodEngaged);
-            engine->getParameter("engine", "effect2_engaged")->setValue(granulatorEngaged);
-            engine->getParameter("engine", "effect3_engaged")->setValue(reverbEngaged);
-        }
-        
-        return;
-    }
-    
-    // Find the parameter associated with the incoming ccIndex.
-    auto param = engine->getParameterFromCCIndex(ccIndex_);
-    
-    // Exit if no parameter is found for the ccIndex.
-    if (!param) return;
-    
-    // Update the MIDI value of the parameter.
-    param->setMidiValue(ccValue_);
-    
-    // If the changed parameter is part of the current set of focused parameters on the control surface,
-    // decouple the potentiometer and update its reference value.
-    if (param->getIndex() < NUM_POTENTIOMETERS - 1)
-    {
-        int currentEffectIndex = engine->getParameter("effect_edit_focus")->getValueAsInt();
-        
-        if (ccIndex_ <= 20 && currentEffectIndex == (int)EffectOrder::RINGMODULATOR)
-            potentiometer[ccIndex_ - 1].decouple(param->getNormalizedValue());
-        
-        else if (ccIndex_ <= 40 && currentEffectIndex == (int)EffectOrder::GRANULATOR)
-            potentiometer[ccIndex_ - 21].decouple(param->getNormalizedValue());
-        
-        else if (ccIndex_ <= 60 && currentEffectIndex == (int)EffectOrder::REVERB)
-            potentiometer[ccIndex_ - 41].decouple(param->getNormalizedValue());
-    }
-    
-    // Special case: Handle the global mix potentiometer separately.
-    if (param->getID() == "global_mix")
-        potentiometer[NUM_POTENTIOMETERS - 1].decouple(param->getNormalizedValue());
-}
-
-
 // =======================================================================================
 // MARK: - TEMPOTAPPER
 // =======================================================================================
@@ -1164,7 +1176,6 @@ void UserInterface::handleMidiControlChangeMessage(const uint ccIndex_, const ui
 
 void TempoTapper::setup(const float minBPM_, const float maxBPM_, const float sampleRate_)
 {
-    // Set the sample rate for the audio processing.
     sampleRate = sampleRate_;
 
     // Calculate the maximum and minimum BPM counts based on the sample rate and BPM limits.
@@ -1205,9 +1216,8 @@ void TempoTapper::calculateNewTempo()
 bool TempoTapper::tapTempo()
 {
     // A new tap arrives:
-    // 1. The tap starts the counter (first tap).
-    // 2. A previous tap was detected within a valid time range, which means a new 
-    //    BPM should be calculated and the counter restarted.
+    // either: The tap starts the counter (first tap).
+    // or: A previous tap was detected within a valid time range, which means a new BPM should be calculated and the counter restarted.
 
     bool newTempoDetected = false;
 
@@ -1241,7 +1251,6 @@ bool TempoTapper::tapTempo()
 
 void Metronome::setup(const float sampleRate_, const float defaultTempoBpm_)
 {
-    // Initialize the sample rate.
     sampleRate = sampleRate_;
     
     // Convert the default tempo from BPM to the corresponding number of samples per beat.
